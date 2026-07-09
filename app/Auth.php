@@ -5,6 +5,14 @@ class Auth
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            session_set_cookie_params([
+                'lifetime' => 0,
+                'path' => '/',
+                'domain' => '',
+                'secure' => false,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
             session_start();
         }
     }
@@ -12,9 +20,11 @@ class Auth
     public static function login(int $userId, array $userData = []): void
     {
         self::start();
+        session_regenerate_id(true);
         $_SESSION['user_id'] = $userId;
         $_SESSION['user'] = $userData;
         $_SESSION['logged_in'] = true;
+        $_SESSION['_csrf'] = bin2hex(random_bytes(32));
     }
 
     public static function logout(): void

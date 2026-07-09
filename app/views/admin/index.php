@@ -22,7 +22,7 @@
             foreach ($sections as $key => $sec):
                 $active = $section === $key ? 'bg-[#B76E79] text-white shadow-lg shadow-[#B76E79]/30' : 'text-gray-600 hover:bg-[#FDF6F0] hover:text-[#B76E79]';
             ?>
-            <a href="/admin?section=<?= $key ?>" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all <?= $active ?>">
+            <a href="/admin/<?= $key ?>" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all <?= $active ?>">
                 <i class="fa-solid <?= $sec[0] ?> w-5 text-center"></i>
                 <span><?= $sec[1] ?></span>
             </a>
@@ -72,7 +72,7 @@
                         <div class="flex items-center gap-3 py-2.5 border-b border-[#efe5dc] last:border-0">
                             <div class="w-9 h-9 rounded-full bg-[#FDF6F0] text-[#B76E79] flex items-center justify-center text-xs flex-shrink-0"><i class="fa-solid fa-user"></i></div>
                             <div class="flex-1"><span class="font-semibold text-sm"><?= e($a['user_name']) ?></span><span class="text-[#9e9e9e] text-xs mr-2"><?= e($a['service_title']) ?></span></div>
-                            <span class="text-xs text-[#9e9e9e]"><?= e($a['appointment_date']) ?></span>
+                            <span class="text-xs text-[#9e9e9e]"><?= jdate('Y/m/d', strtotime($a['appointment_date'])) ?></span>
                         </div>
                         <?php endforeach; ?>
                     <?php else: ?><p class="text-[#9e9e9e] text-sm text-center py-6">نوبتی ثبت نشده</p>

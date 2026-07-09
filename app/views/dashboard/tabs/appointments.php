@@ -44,8 +44,8 @@
                     </div>
                     <div class="flex gap-4 text-[#9e9e9e] text-sm flex-wrap">
                         <span><i class="fa-regular fa-user text-[#B76E79] ml-1"></i><?= e($apt['artist_name'] ?? 'نامشخص') ?></span>
-                        <span><i class="fa-regular fa-calendar text-[#B76E79] ml-1"></i><?= e($apt['appointment_date']) ?></span>
-                        <span><i class="fa-regular fa-clock text-[#B76E79] ml-1"></i><?= e($apt['appointment_time']) ?></span>
+                        <span><i class="fa-regular fa-calendar text-[#B76E79] ml-1"></i><?= jdate('Y/m/d', strtotime($apt['appointment_date'])) ?></span>
+                        <span><i class="fa-regular fa-clock text-[#B76E79] ml-1"></i><?= e(substr($apt['appointment_time'], 0, 5)) ?></span>
                     </div>
                     <div class="font-bold text-[#B76E79] mt-1.5"><?= priceFormat($apt['price']) ?></div>
                 </div>

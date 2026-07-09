@@ -123,7 +123,10 @@ class ShopController extends BaseController
 
     public function checkout(): void
     {
-        Auth::requireAuth();
+        if (!Auth::check()) {
+            $this->json(['require_login' => true, 'error' => 'لطفاً ابتدا وارد شوید.'], 401);
+            return;
+        }
         $this->verifyCsrf();
 
         $cart = $_SESSION['cart'] ?? [];

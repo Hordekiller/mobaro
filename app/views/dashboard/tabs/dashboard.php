@@ -57,8 +57,8 @@
                 <div class="font-bold"><?= e($nextAppointment['service_title']) ?></div>
                 <div class="text-[#9e9e9e] text-sm">با <?= e($nextAppointment['artist_name'] ?? '') ?></div>
                 <div class="flex gap-3 text-sm text-[#B76E79] font-semibold mt-1">
-                    <span><i class="fa-regular fa-calendar"></i> <?= e($nextAppointment['appointment_date']) ?></span>
-                    <span><i class="fa-regular fa-clock"></i> <?= e($nextAppointment['appointment_time']) ?></span>
+                    <span><i class="fa-regular fa-calendar"></i> <?= jdate('Y/m/d', strtotime($nextAppointment['appointment_date'])) ?></span>
+                    <span><i class="fa-regular fa-clock"></i> <?= e(substr($nextAppointment['appointment_time'], 0, 5)) ?></span>
                 </div>
             </div>
         </div>

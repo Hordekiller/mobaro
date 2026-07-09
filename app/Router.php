@@ -60,10 +60,17 @@ class Router
         http_response_code($code);
         require __DIR__ . '/views/layouts/header.php';
 
+        $messages = [
+            403 => 'شما دسترسی به این صفحه را ندارید.',
+            404 => 'صفحه مورد نظر وجود ندارد.',
+            419 => 'درخواست نامعتبر است.',
+            500 => 'خطایی غیرمنتظره رخ داده است.',
+        ];
+
         if ($code === 404) {
             require __DIR__ . '/views/errors/404.php';
         } else {
-            $errorMessage = $code === 500 ? 'خطایی غیرمنتظره رخ داده است.' : 'خطایی رخ داد.';
+            $errorMessage = $messages[$code] ?? 'خطایی رخ داد.';
             require __DIR__ . '/views/errors/500.php';
         }
 

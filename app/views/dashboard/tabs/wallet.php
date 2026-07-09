@@ -33,7 +33,7 @@
                 <?php if (!empty($transactions)): ?>
                     <?php foreach ($transactions as $t): ?>
                     <tr class="border-b border-[#efe5dc]">
-                        <td class="py-3.5 px-3 text-sm"><?= e($t['created_at']) ?></td>
+                        <td class="py-3.5 px-3 text-sm"><?= jdate('Y/m/d', strtotime($t['created_at'])) ?></td>
                         <td class="py-3.5 px-3 text-sm"><?= e($t['description']) ?></td>
                         <td class="py-3.5 px-3 text-sm text-left font-bold <?= in_array($t['type'], ['wallet_deposit', 'points_earn']) ? 'text-green-600' : 'text-red-500' ?>">
                             <?= in_array($t['type'], ['wallet_deposit', 'points_earn']) ? '+' : '-' ?>

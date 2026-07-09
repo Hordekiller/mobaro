@@ -16,7 +16,7 @@
             </div>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1 flex-wrap">
-                    <h4 class="font-bold text-sm"><?= e($addr['label'] ?: 'آدرس') ?></h4>
+                    <h4 class="font-bold text-sm"><?= e($addr['title'] ?: 'آدرس') ?></h4>
                     <?php if ($addr['is_default']): ?>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/10 text-[#D4AF37]">پیش‌فرض</span>
                     <?php endif; ?>
@@ -60,6 +60,10 @@
                 <textarea name="address" rows="3" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="استان، شهر، خیابان، کوچه، پلاک" required></textarea>
             </div>
             <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1.5">شهر</label>
+                    <input type="text" name="city" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="تهران">
+                </div>
                 <div>
                     <label class="block text-sm font-semibold mb-1.5">کد پستی</label>
                     <input type="text" name="zip_code" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">

@@ -25,7 +25,12 @@ class AdminController extends BaseController
              ORDER BY a.created_at DESC LIMIT 10"
         );
 
-        $recentOrders = Database::fetchAll("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5");
+        $recentOrders = Database::fetchAll(
+            "SELECT o.*, u.name as user_name, u.family as user_family
+             FROM orders o
+             JOIN users u ON o.user_id = u.id
+             ORDER BY o.created_at DESC LIMIT 5"
+        );
 
         $this->view('admin/index', compact('stats', 'recentAppointments', 'recentOrders') + ['section' => 'dashboard']);
     }
@@ -33,7 +38,7 @@ class AdminController extends BaseController
     public function section(string $section): void
     {
         $this->requireAdmin();
-        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'testimonials', 'settings', 'hair-models', 'tutorials'];
+        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'testimonials', 'settings', 'hair-models', 'tutorials', 'orders'];
 
         if (!in_array($section, $validSections)) {
             redirect('/admin');
@@ -61,6 +66,7 @@ class AdminController extends BaseController
             'testimonials' => 'testimonials',
             'hair-models' => 'hair_models',
             'tutorials' => 'tutorials',
+            'orders' => 'orders',
         ];
 
         $columnsMap = $this->getColumns($section);
@@ -134,6 +140,12 @@ class AdminController extends BaseController
                 ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
                 ['key' => 'views', 'label' => 'بازدید', 'type' => 'text'],
             ],
+            'orders' => [
+                ['key' => 'tracking_code', 'label' => 'کد پیگیری', 'type' => 'text'],
+                ['key' => 'total', 'label' => 'مبلغ', 'type' => 'price'],
+                ['key' => 'status', 'label' => 'وضعیت', 'type' => 'status'],
+                ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
+            ],
             'settings' => [
                 ['key' => 'setting_key', 'label' => 'کلید', 'type' => 'text'],
                 ['key' => 'setting_value', 'label' => 'مقدار', 'type' => 'textarea'],
@@ -157,6 +169,7 @@ class AdminController extends BaseController
         $allowedFields = array_column($this->getColumns($section), 'key');
         $allowedFields[] = 'description';
         $allowedFields[] = 'bio';
+        $allowedFields[] = 'address';
 
         $data = [];
         foreach ($allowedFields as $field) {
@@ -167,6 +180,15 @@ class AdminController extends BaseController
 
         if ($section === 'settings') {
             $this->updateSettings();
+            return;
+        }
+
+        if ($section === 'orders') {
+            if ($id && isset($data['status'])) {
+                Database::update($table, ['status' => $data['status']], 'id = :id', ['id' => $id]);
+                flash('success', 'وضعیت سفارش به‌روزرسانی شد.');
+            }
+            redirect('/admin/orders');
             return;
         }
 
@@ -262,6 +284,18 @@ class AdminController extends BaseController
         $this->view('admin/index', $data);
     }
 
+    private function sectionOrders(array &$data): void
+    {
+        $data['items'] = Database::fetchAll(
+            "SELECT o.*, u.name as user_name, u.family as user_family
+             FROM orders o
+             JOIN users u ON o.user_id = u.id
+             ORDER BY o.created_at DESC"
+        );
+        $data['columns'] = $this->getColumns('orders');
+        $this->view('admin/index', $data);
+    }
+
     private function sectionToTable(string $section): ?string
     {
         $map = [
@@ -272,6 +306,7 @@ class AdminController extends BaseController
             'testimonials' => 'testimonials',
             'hair-models' => 'hair_models',
             'tutorials' => 'tutorials',
+            'orders' => 'orders',
         ];
         return $map[$section] ?? null;
     }

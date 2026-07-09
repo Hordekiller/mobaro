@@ -36,14 +36,14 @@
             <input type="email" name="email" value="<?= e($user['email'] ?? '') ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="example@mail.com">
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">تاریخ تولد</label>
-            <input type="date" name="birth_date" value="<?= e($user['birth_date'] ?? '') ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
+            <label class="block text-sm font-semibold mb-1.5">سطح کاربری</label>
+            <input type="text" value="<?= e($user['level'] ?? '') ?>" disabled class="w-full px-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl text-gray-500 outline-none">
         </div>
     </div>
 
     <div class="mt-6 text-sm text-[#9e9e9e] leading-relaxed bg-[#FDF6F0] rounded-xl p-4">
         <i class="fa-regular fa-circle-info text-[#B76E79] ml-1"></i>
-        عضویت شما از <strong><?= e($user['created_at']) ?></strong>
+        عضویت شما از <strong><?= jdate('Y F Y', strtotime($user['created_at'])) ?></strong>
     </div>
 
     <button type="submit" class="w-full mt-5 py-3.5 bg-gradient-to-l from-[#B76E79] to-[#9c5761] text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">ذخیره تغییرات</button>

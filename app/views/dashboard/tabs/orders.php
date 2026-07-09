@@ -13,7 +13,7 @@
         <div class="flex justify-between items-center pb-3.5 border-b border-dashed border-[#efe5dc] mb-3.5 flex-wrap gap-2.5">
             <div>
                 <span class="font-bold">کد سفارش: <?= e($order['tracking_code']) ?></span>
-                <span class="text-[#9e9e9e] text-sm mr-3"><?= e($order['created_at']) ?></span>
+                <span class="text-[#9e9e9e] text-sm mr-3"><?= jdate('Y/m/d', strtotime($order['created_at'])) ?></span>
             </div>
             <span class="px-3 py-1 rounded-full text-xs font-semibold
                 <?= match($order['status']) {
