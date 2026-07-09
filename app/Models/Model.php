@@ -17,6 +17,15 @@ class Model
 
     public static function where(string $column, mixed $value): array
     {
+        $allowed = [];
+        $stmt = Database::connection()->prepare("SHOW COLUMNS FROM " . static::$table);
+        $stmt->execute();
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $allowed[] = $row['Field'];
+        }
+        if (!in_array($column, $allowed)) {
+            throw new InvalidArgumentException("Column '{$column}' not allowed in query.");
+        }
         return Database::fetchAll("SELECT * FROM " . static::$table . " WHERE {$column} = ? ORDER BY id DESC", [$value]);
     }
 

@@ -24,7 +24,7 @@ class Config
 
             // App
             'app.name' => 'Mobaro',
-            'app.url' => getenv('APP_URL') ?: 'http://localhost:8000',
+            'app.url' => getenv('APP_URL') ?: 'http://localhost:8080',
             'app.env' => getenv('APP_ENV') ?: 'development',
             'app.debug' => (getenv('APP_DEBUG') ?: 'true') === 'true',
 
