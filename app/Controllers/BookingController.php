@@ -16,6 +16,7 @@ class BookingController extends BaseController
 
     public function getServices(): void
     {
+        $this->verifyCsrf();
         $services = Database::fetchAll(
             "SELECT s.*, a.name as artist_name
              FROM services s
@@ -27,6 +28,7 @@ class BookingController extends BaseController
 
     public function getSlots(): void
     {
+        $this->verifyCsrf();
         $date = sanitize($_POST['date'] ?? date('Y-m-d'));
         $serviceId = (int) ($_POST['service_id'] ?? 0);
 

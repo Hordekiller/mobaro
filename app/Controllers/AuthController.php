@@ -117,7 +117,7 @@ class AuthController extends BaseController
         $newPassword = substr(bin2hex(random_bytes(4)), 0, 8);
         Database::update('users', ['password' => Auth::hash($newPassword)], 'id = :id', ['id' => $user['id']]);
 
-        flash('success', 'رمز عبور جدید به شماره شما پیامک شد. (دمو: ' . $newPassword . ')');
+        flash('success', 'رمز عبور جدید به شماره شما پیامک شد.');
         redirect('/login');
     }
 }
