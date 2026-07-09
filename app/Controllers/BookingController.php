@@ -4,9 +4,7 @@ class BookingController extends BaseController
 {
     public function index(): void
     {
-        $services = Database::fetchAll("SELECT * FROM services WHERE is_active = 1");
-        $artists = Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
-        $this->view('home/booking', compact('services', 'artists'));
+        redirect('/');
     }
 
     public function getServices(): void

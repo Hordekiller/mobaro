@@ -32,6 +32,9 @@ mb_internal_encoding('UTF-8');
 
 if (Config::get('app.debug')) {
     set_error_handler(function ($severity, $message, $file, $line) {
+        if (str_contains($message, 'Undefined array key') || str_contains($message, 'Undefined index')) {
+            return null;
+        }
         throw new ErrorException($message, 0, $severity, $file, $line);
     });
 }

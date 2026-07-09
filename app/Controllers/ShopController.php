@@ -4,17 +4,7 @@ class ShopController extends BaseController
 {
     public function index(): void
     {
-        $category = sanitize($_GET['category'] ?? 'all');
-        $products = Database::fetchAll("SELECT * FROM products WHERE is_active = 1 ORDER BY id");
-
-        $categories = Database::fetchAll("SELECT DISTINCT category FROM products WHERE is_active = 1");
-
-        if ($category !== 'all') {
-            $products = array_values(array_filter($products, fn($p) => $p['category'] === $category));
-        }
-
-        $cart = $_SESSION['cart'] ?? [];
-        $this->view('home/shop', compact('products', 'categories', 'category', 'cart'));
+        redirect('/');
     }
 
     public function cart(): void
