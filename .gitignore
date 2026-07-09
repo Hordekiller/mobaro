@@ -27,3 +27,18 @@ logs/
 # Temp
 tmp/
 temp/
+
+# Temporary/dev files at root
+home.html
+Profile.html
+html.zip
+create-menu.php
+fix-header-data.php
+setup-header.php
+update-header-final.php
+update-header-v2.php
+update-header-v3.php
+update-header-v4.php
+
+# Analysis output
+analysis-output/
