@@ -142,7 +142,7 @@ class DashboardController extends BaseController
         $data = ['name' => $name, 'family' => $family, 'email' => $email];
 
         if (!empty($_FILES['avatar']['name'])) {
-            $uploaded = $this->uploadAvatar($_FILES['avatar']);
+            $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar_' . $userId);
             if ($uploaded) {
                 $data['avatar'] = $uploaded;
             }
@@ -255,24 +255,5 @@ class DashboardController extends BaseController
             Database::insert('wishlist', ['user_id' => Auth::id(), 'product_id' => $productId]);
             $this->json(['success' => true, 'action' => 'added', 'message' => 'به علاقه‌مندی‌ها اضافه شد']);
         }
-    }
-
-    private function uploadAvatar(array $file): ?string
-    {
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-        if (!in_array($ext, $allowed) || $file['size'] > 5 * 1024 * 1024) {
-            return null;
-        }
-
-        $filename = 'avatar_' . Auth::id() . '_' . time() . '.' . $ext;
-        $path = __DIR__ . '/../../public/assets/images/' . $filename;
-
-        if (move_uploaded_file($file['tmp_name'], $path)) {
-            return $filename;
-        }
-
-        return null;
     }
 }

@@ -171,13 +171,13 @@ class AdminController extends BaseController
         }
 
         if (!empty($_FILES['image']['name'])) {
-            $uploaded = $this->uploadFile($_FILES['image']);
+            $uploaded = FileUploader::upload($_FILES['image'], 'product');
             if ($uploaded) {
                 $data['image'] = $uploaded;
             }
         }
         if (!empty($_FILES['avatar']['name'])) {
-            $uploaded = $this->uploadFile($_FILES['avatar']);
+            $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar');
             if ($uploaded) {
                 $data['avatar'] = $uploaded;
             }
@@ -274,33 +274,5 @@ class AdminController extends BaseController
             'tutorials' => 'tutorials',
         ];
         return $map[$section] ?? null;
-    }
-
-    private function uploadFile(array $file): ?string
-    {
-        $allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, $allowedExt) || $file['size'] > 5 * 1024 * 1024) {
-            return null;
-        }
-
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $file['tmp_name']);
-        finfo_close($finfo);
-
-        if (!in_array($mime, $allowedMime)) {
-            return null;
-        }
-
-        $filename = time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-        $path = __DIR__ . '/../../public/assets/images/' . $filename;
-
-        if (move_uploaded_file($file['tmp_name'], $path)) {
-            return $filename;
-        }
-
-        return null;
     }
 }

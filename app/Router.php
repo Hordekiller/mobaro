@@ -57,11 +57,16 @@ class Router
 
     private static function renderError(int $code): void
     {
-        $title = $code === 404 ? 'صفحه یافت نشد' : 'خطا';
-        $message = $code === 404 ? 'صفحه مورد نظر وجود ندارد.' : 'خطایی رخ داد.';
         http_response_code($code);
         require __DIR__ . '/views/layouts/header.php';
-        echo "<div class='min-h-screen flex items-center justify-center'><div class='text-center'><h1 class='text-6xl font-bold text-rose-600'>{$code}</h1><p class='text-zinc-500 mt-4'>{$message}</p><a href='/' class='mt-6 inline-block px-8 py-4 bg-rose-600 text-white rounded-3xl'>بازگشت به خانه</a></div></div>";
+
+        if ($code === 404) {
+            require __DIR__ . '/views/errors/404.php';
+        } else {
+            $errorMessage = $code === 500 ? 'خطایی غیرمنتظره رخ داده است.' : 'خطایی رخ داد.';
+            require __DIR__ . '/views/errors/500.php';
+        }
+
         require __DIR__ . '/views/layouts/footer.php';
     }
 }
