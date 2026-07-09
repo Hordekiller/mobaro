@@ -1,5 +1,14 @@
 <?php
 
+function env(string $key, mixed $default = null): mixed
+{
+    static $dotenv = [];
+    if (empty($dotenv)) {
+        $dotenv = $_ENV;
+    }
+    return $dotenv[$key] ?? $default;
+}
+
 function asset(string $path): string
 {
     return Config::get('app.url') . '/assets/' . ltrim($path, '/');

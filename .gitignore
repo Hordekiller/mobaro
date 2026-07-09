@@ -16,6 +16,9 @@ public/uploads/*
 !public/uploads/.gitkeep
 database/config.php
 
+# Composer
+vendor/
+
 # Environment
 .env
 .env.local
