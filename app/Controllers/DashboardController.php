@@ -58,7 +58,7 @@ class DashboardController extends BaseController
             redirect('/dashboard');
         }
 
-        $data = compact('user');
+        $data = compact('user', 'tab');
 
         switch ($tab) {
             case 'appointments':
@@ -85,9 +85,13 @@ class DashboardController extends BaseController
 
             case 'orders':
                 $data['orders'] = Database::fetchAll(
-                    "SELECT o.*, GROUP_CONCAT(CONCAT(oi.product_name, ' (x', oi.quantity, ')') SEPARATOR ', ') as items_list
+                    "SELECT o.*,
+                            GROUP_CONCAT(CONCAT(oi.product_name, ' (x', oi.quantity, ')') SEPARATOR ', ') as items_list,
+                            GROUP_CONCAT(COALESCE(p.image, '') SEPARATOR '||') as items_images,
+                            GROUP_CONCAT(oi.product_id SEPARATOR '||') as items_ids
                      FROM orders o
                      LEFT JOIN order_items oi ON o.id = oi.order_id
+                     LEFT JOIN products p ON oi.product_id = p.id
                      WHERE o.user_id = ?
                      GROUP BY o.id
                      ORDER BY o.created_at DESC",

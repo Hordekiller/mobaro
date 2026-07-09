@@ -18,7 +18,27 @@
     </div>
 </div>
 
-<div class="bg-white rounded-[18px] p-5 shadow-[0_4px_20px_rgba(183,110,121,0.06)]">
+<div class="mt-5">
+    <h3 class="font-bold text-lg mb-4">تخفیف‌های من</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div class="bg-gradient-to-l from-[#FDF6F0] to-white border-2 border-dashed border-[#B76E79] rounded-[14px] p-4 flex justify-between items-center gap-2.5">
+            <div>
+                <h5 class="font-bold mb-1">تخفیف نوبت اول</h5>
+                <p class="text-xs text-[#9e9e9e]">۲۰٪ تخفیف برای اولین رزرو</p>
+            </div>
+            <button onclick="copyCode('MOBARO20')" class="px-3.5 py-2 bg-[#B76E79] text-white rounded-lg text-sm font-semibold hover:shadow-lg transition-all whitespace-nowrap">MOBARO20</button>
+        </div>
+        <div class="bg-gradient-to-l from-[#FDF6F0] to-white border-2 border-dashed border-[#B76E79] rounded-[14px] p-4 flex justify-between items-center gap-2.5">
+            <div>
+                <h5 class="font-bold mb-1">تخفیف محصولات</h5>
+                <p class="text-xs text-[#9e9e9e]">۱۵٪ تخفیف خرید اول</p>
+            </div>
+            <button onclick="copyCode('WELCOME15')" class="px-3.5 py-2 bg-[#B76E79] text-white rounded-lg text-sm font-semibold hover:shadow-lg transition-all whitespace-nowrap">WELCOME15</button>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-[18px] p-5 shadow-[0_4px_20px_rgba(183,110,121,0.06)] mt-5">
     <h3 class="font-bold text-lg mb-4">تراکنش‌های اخیر</h3>
     <div class="overflow-x-auto">
         <table class="w-full border-collapse">
@@ -48,3 +68,13 @@
         </table>
     </div>
 </div>
+
+<script>
+function copyCode(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        showToast('کد تخفیف کپی شد: ' + code, 'success');
+    }).catch(() => {
+        showToast('خطا در کپی کد', 'error');
+    });
+}
+</script>

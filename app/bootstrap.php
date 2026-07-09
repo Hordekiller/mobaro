@@ -8,6 +8,11 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 ini_set('display_errors', env('APP_DEBUG', 'true') === 'true' ? '1' : '0');
 
+$sessPath = __DIR__ . '/../storage/sessions';
+if (!is_dir($sessPath)) {
+    @mkdir($sessPath, 0777, true);
+}
+session_save_path($sessPath);
 Auth::start();
 csrf();
 

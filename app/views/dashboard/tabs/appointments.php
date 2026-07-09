@@ -3,12 +3,12 @@
     <p class="text-[#9e9e9e] text-sm">مدیریت نوبت‌های رزرو شده</p>
 </div>
 
-<a href="/#booking" class="w-full block text-center py-4 bg-gradient-to-l from-[#B76E79] to-[#9c5761] text-white rounded-xl font-bold mb-5 hover:shadow-lg transition-all">
+<a href="/#booking" class="w-full block text-center py-4 bg-gradient-to-l from-[#e11d48] to-[#be123c] text-white rounded-xl font-bold mb-5 hover:shadow-lg transition-all">
     <i class="fa-solid fa-plus ml-2"></i>رزرو نوبت جدید
 </a>
 
-<div class="flex gap-2 bg-white p-1.5 rounded-xl shadow-[0_4px_20px_rgba(183,110,121,0.06)] mb-5 overflow-x-auto" id="appointment-tabs">
-    <button onclick="filterApts(this, 'future')" class="tab-btn active px-5 py-2.5 rounded-lg bg-[#B76E79] text-white font-medium text-sm whitespace-nowrap transition-all">نوبت‌های آینده</button>
+<div class="flex gap-2 bg-white p-1.5 rounded-xl shadow-[0_4px_20px_rgba(225,29,72,0.06)] mb-5 overflow-x-auto" id="appointment-tabs">
+    <button onclick="filterApts(this, 'future')" class="tab-btn active px-5 py-2.5 rounded-lg bg-[#e11d48] text-white font-medium text-sm whitespace-nowrap transition-all">نوبت‌های آینده</button>
     <button onclick="filterApts(this, 'past')" class="tab-btn px-5 py-2.5 rounded-lg bg-transparent text-[#9e9e9e] font-medium text-sm whitespace-nowrap transition-all">نوبت‌های گذشته</button>
     <button onclick="filterApts(this, 'cancelled')" class="tab-btn px-5 py-2.5 rounded-lg bg-transparent text-[#9e9e9e] font-medium text-sm whitespace-nowrap transition-all">لغو شده</button>
 </div>
@@ -31,10 +31,10 @@
                 default => $apt['status'],
             };
         ?>
-        <div class="bg-white rounded-xl p-5 shadow-[0_4px_20px_rgba(183,110,121,0.06)] mb-3.5 hover:-translate-y-0.5 hover:shadow-lg transition-all"
+        <div class="bg-white rounded-xl p-5 shadow-[0_4px_20px_rgba(225,29,72,0.06)] mb-3.5 hover:-translate-y-0.5 hover:shadow-lg transition-all"
              data-status="<?= e($apt['status']) ?>" data-date="<?= e($apt['appointment_date']) ?>">
             <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-center">
-                <div class="w-[60px] h-[60px] bg-gradient-to-br from-[#FDF6F0] to-white border-2 border-[#d18d97] rounded-[14px] flex items-center justify-center text-[#B76E79] text-xl flex-shrink-0">
+                <div class="w-[60px] h-[60px] bg-gradient-to-br from-[#fff1f2] to-white border-2 border-[#fda4af] rounded-[14px] flex items-center justify-center text-[#e11d48] text-xl flex-shrink-0">
                     <i class="fa-solid fa-calendar-day"></i>
                 </div>
                 <div class="min-w-0">
@@ -43,15 +43,15 @@
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold <?= $statusClass ?>"><?= $statusLabel ?></span>
                     </div>
                     <div class="flex gap-4 text-[#9e9e9e] text-sm flex-wrap">
-                        <span><i class="fa-regular fa-user text-[#B76E79] ml-1"></i><?= e($apt['artist_name'] ?? 'نامشخص') ?></span>
-                        <span><i class="fa-regular fa-calendar text-[#B76E79] ml-1"></i><?= jdate('Y/m/d', strtotime($apt['appointment_date'])) ?></span>
-                        <span><i class="fa-regular fa-clock text-[#B76E79] ml-1"></i><?= e(substr($apt['appointment_time'], 0, 5)) ?></span>
+                        <span><i class="fa-regular fa-user text-[#e11d48] ml-1"></i><?= e($apt['artist_name'] ?? 'نامشخص') ?></span>
+                        <span><i class="fa-regular fa-calendar text-[#e11d48] ml-1"></i><?= jdate('Y/m/d', strtotime($apt['appointment_date'])) ?></span>
+                        <span><i class="fa-regular fa-clock text-[#e11d48] ml-1"></i><?= e(substr($apt['appointment_time'], 0, 5)) ?></span>
                     </div>
-                    <div class="font-bold text-[#B76E79] mt-1.5"><?= priceFormat($apt['price']) ?></div>
+                    <div class="font-bold text-[#e11d48] mt-1.5"><?= priceFormat($apt['price']) ?></div>
                 </div>
                 <?php if ($apt['status'] === 'confirmed' || $apt['status'] === 'pending'): ?>
                 <div class="flex flex-col gap-1.5">
-                    <button class="px-3 py-1.5 bg-[#B76E79] text-white rounded-lg text-xs font-semibold">تغییر</button>
+                    <button class="px-3 py-1.5 bg-[#e11d48] text-white rounded-lg text-xs font-semibold">تغییر</button>
                     <button class="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-semibold">لغو</button>
                 </div>
                 <?php endif; ?>
@@ -69,10 +69,10 @@
 <script>
 function filterApts(btn, filter) {
     document.querySelectorAll('#appointment-tabs .tab-btn').forEach(b => {
-        b.classList.remove('bg-[#B76E79]', 'text-white');
+        b.classList.remove('bg-[#e11d48]', 'text-white');
         b.classList.add('bg-transparent', 'text-[#9e9e9e]');
     });
-    btn.classList.add('bg-[#B76E79]', 'text-white');
+    btn.classList.add('bg-[#e11d48]', 'text-white');
     btn.classList.remove('bg-transparent', 'text-[#9e9e9e]');
 
     document.querySelectorAll('#appointments-list > div').forEach(card => {

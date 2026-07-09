@@ -5,10 +5,14 @@ class HomeController extends BaseController
     public function index(): void
     {
         $services = Database::fetchAll(
-            "SELECT s.*, a.name as artist_name, a.avatar as artist_avatar
+            "SELECT s.*,
+                    SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT a.name ORDER BY a.id SEPARATOR '|'), '|', 1) as artist_name,
+                    SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT a.avatar ORDER BY a.id SEPARATOR '|'), '|', 1) as artist_avatar
              FROM services s
-             LEFT JOIN artists a ON s.artist_id = a.id
+             LEFT JOIN artist_services a_s ON s.id = a_s.service_id
+             LEFT JOIN artists a ON a_s.artist_id = a.id
              WHERE s.is_active = 1
+             GROUP BY s.id
              ORDER BY s.id"
         );
 

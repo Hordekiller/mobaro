@@ -81,7 +81,22 @@
                 </div>
             </div>
 
-            <div class="pt-16 mt-20 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-[10px]">
+            <div class="pt-8 mt-12 border-t border-white/10 flex flex-row justify-center items-center gap-8">
+                <div class="trust-badge-placeholder flex flex-col items-center gap-1 text-zinc-500">
+                    <div class="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-certificate text-3xl text-zinc-600"></i>
+                    </div>
+                    <span class="text-[10px]">نماد اعتماد الکترونیک</span>
+                </div>
+                <div class="trust-badge-placeholder flex flex-col items-center gap-1 text-zinc-500">
+                    <div class="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-shield-halved text-3xl text-zinc-600"></i>
+                    </div>
+                    <span class="text-[10px]">ساماندهی</span>
+                </div>
+            </div>
+
+            <div class="pt-10 mt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-[10px]">
                 <div>© ۱۴۰۴ <?= e($settings['brand_name'] ?? 'موبارو') ?>. تمامی حقوق محفوظ است.</div>
                 <div class="flex items-center gap-x-6 text-[10px] mt-6 md:mt-0">
                     <?php if (Auth::check()): ?>
@@ -101,7 +116,7 @@
 
     <div id="toast-container" class="hidden fixed bottom-6 right-6 z-[999999]"></div>
 
-    <script src="/assets/js/frontend.js?v=1.0"></script>
+    <script src="/assets/js/frontend.js?v=2.2"></script>
     <script>
         <?php if ($msg = flash('success')): ?>
         setTimeout(() => showToast('<?= e($msg) ?>', 'success'), 500);

@@ -5,9 +5,10 @@ class ApiController extends BaseController
     public function services(): void
     {
         $services = Database::fetchAll(
-            "SELECT s.*, a.name as artist_name
+            "SELECT s.*, a.id as artist_id, a.name as artist_name
              FROM services s
-             LEFT JOIN artists a ON s.artist_id = a.id
+             INNER JOIN artist_services a_s ON s.id = a_s.service_id
+             INNER JOIN artists a ON a_s.artist_id = a.id
              WHERE s.is_active = 1"
         );
         $this->json(['services' => $services]);

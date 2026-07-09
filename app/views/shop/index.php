@@ -1,44 +1,316 @@
 <?php $title = 'فروشگاه | موبارو'; ?>
-<div class="min-h-screen bg-[#FDF6F0] pt-24">
-    <div class="max-w-screen-2xl mx-auto px-8 py-8">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-extrabold text-zinc-800">فروشگاه محصولات</h1>
-            <p class="text-zinc-500 mt-3">محصولات حرفه‌ای مراقبت از مو و زیبایی</p>
-        </div>
 
-        <div class="flex flex-wrap gap-3 justify-center mb-10">
-            <a href="/shop" class="px-6 py-2.5 rounded-full text-sm font-semibold transition-all <?= $category === 'all' ? 'bg-[#B76E79] text-white shadow-md' : 'bg-white text-zinc-600 hover:bg-[#FDF6F0] border border-zinc-200' ?>">همه</a>
-            <?php foreach ($categories as $cat): ?>
-            <a href="/shop?category=<?= urlencode($cat) ?>" class="px-6 py-2.5 rounded-full text-sm font-semibold transition-all <?= $category === $cat ? 'bg-[#B76E79] text-white shadow-md' : 'bg-white text-zinc-600 hover:bg-[#FDF6F0] border border-zinc-200' ?>"><?= e($cat) ?></a>
-            <?php endforeach; ?>
-        </div>
-
-        <?php if (empty($products)): ?>
-            <div class="text-center py-20 text-zinc-400">
-                <i class="fa-solid fa-box-open text-6xl mb-4"></i>
-                <p>محصولی یافت نشد</p>
+<div class="min-h-screen bg-zinc-50">
+    <!-- Breadcrumb -->
+    <div class="bg-gradient-to-r from-rose-50 to-pink-50 py-6">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <div class="flex items-center gap-2 text-sm text-zinc-600">
+                <a href="/" class="hover:text-rose-500 transition">خانه</a>
+                <i class="fa-solid fa-chevron-left text-xs text-rose-400"></i>
+                <span class="text-rose-500 font-medium">فروشگاه</span>
             </div>
-        <?php else: ?>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <?php foreach ($products as $product): ?>
-            <div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(183,110,121,0.06)] hover:-translate-y-1 hover:shadow-lg transition-all">
-                <div class="relative">
-                    <img src="/assets/images/<?= e($product['image'] ?? '') ?>" class="w-full h-52 object-cover" onerror="this.src='https://picsum.photos/seed/p<?= $product['id'] ?>/400/400'">
-                    <span class="absolute top-3 right-3 bg-white/90 text-xs font-semibold px-3 py-1 rounded-full"><?= e($product['category'] ?? '') ?></span>
-                </div>
-                <div class="p-4">
-                    <h3 class="font-bold text-zinc-800"><?= e($product['name']) ?></h3>
-                    <p class="text-xs text-zinc-400 mt-1 line-clamp-2"><?= e($product['description'] ?? '') ?></p>
-                    <div class="flex items-center justify-between mt-4">
-                        <span class="text-[#B76E79] font-bold text-lg"><?= priceFormat($product['price']) ?></span>
-                        <button onclick="quickAddToCart(<?= $product['id'] ?>)" class="w-10 h-10 bg-[#FDF6F0] rounded-full flex items-center justify-center text-[#B76E79] hover:bg-[#B76E79] hover:text-white transition-all">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
+            <h2 class="text-2xl md:text-3xl font-bold mt-3 text-zinc-800">محصولات آرایشی و بهداشتی</h2>
+            <p class="text-zinc-500 mt-2">بهترین محصولات با کیفیت برتر</p>
+        </div>
+    </div>
+
+    <div class="max-w-screen-2xl mx-auto px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Sidebar Filters -->
+            <aside class="lg:w-72 flex-shrink-0">
+                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-28 sidebar-filter max-h-[calc(100vh-150px)] overflow-y-auto">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-bold text-lg text-zinc-800">فیلترها</h3>
+                        <a href="/shop" class="text-rose-500 text-sm hover:underline">حذف همه</a>
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-zinc-700 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-rose-400"></i>
+                            دسته‌بندی‌ها
+                        </h4>
+                        <div class="space-y-3">
+                            <a href="/shop" class="flex items-center justify-between group <?= $category === 'all' ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                                <span class="group-hover:text-rose-500 transition">همه محصولات</span>
+                                <span class="text-xs text-zinc-400"><?= $totalProducts ?></span>
+                            </a>
+                            <?php foreach ($categoryRows as $cat): ?>
+                            <a href="/shop?category=<?= urlencode($cat['category']) ?>" class="flex items-center justify-between group <?= $category === $cat['category'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                                <span class="group-hover:text-rose-500 transition"><?= e($cat['category']) ?></span>
+                                <span class="text-xs text-zinc-400"><?= $cat['cnt'] ?></span>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <hr class="border-zinc-100 my-6">
+
+                    <!-- Price Range -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-zinc-700 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-tag text-rose-400"></i>
+                            محدوده قیمت
+                        </h4>
+                        <input type="range" min="0" max="5000000" value="2500000" class="range-slider mb-4" id="priceRange">
+                        <div class="flex justify-between text-sm text-zinc-600">
+                            <span>۰ تومان</span>
+                            <span id="priceValue" class="font-medium text-rose-500">۲,۵۰۰,۰۰۰ تومان</span>
+                        </div>
+                    </div>
+
+                    <hr class="border-zinc-100 my-6">
+
+                    <!-- Brands -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-zinc-700 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-star text-rose-400"></i>
+                            برندها
+                        </h4>
+                        <div class="space-y-3">
+                            <?php foreach ($brandRows as $br): ?>
+                            <a href="/shop?brand=<?= urlencode($br['brand']) ?>" class="flex items-center justify-between group <?= $brand === $br['brand'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                                <span class="group-hover:text-rose-500 transition"><?= e($br['brand']) ?></span>
+                                <span class="text-xs text-zinc-400"><?= $br['cnt'] ?></span>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <hr class="border-zinc-100 my-6">
+
+                    <!-- Rating -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-zinc-700 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-star text-rose-400"></i>
+                            امتیاز
+                        </h4>
+                        <div class="space-y-3">
+                            <?php foreach ([5,4,3] as $r): ?>
+                            <a href="/shop?rating=<?= $r ?>" class="flex items-center gap-3 group <?= ($_GET['rating'] ?? '') == $r ? 'text-rose-500' : 'text-zinc-600' ?>">
+                                <div class="star-rating text-amber-400 text-sm">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="<?= $i <= $r ? 'fa-solid' : 'fa-regular text-zinc-300' ?> fa-star"></i>
+                                    <?php endfor; ?>
+                                </div>
+                                <span class="text-xs group-hover:text-rose-500 transition">و بالاتر</span>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 </div>
+            </aside>
+
+            <!-- Products Section -->
+            <div class="flex-1">
+                <!-- Sort and View Options -->
+                <div class="bg-white rounded-2xl shadow-lg p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <span class="text-zinc-600">نمایش <span class="font-bold text-rose-500" id="productCountDisplay"><?= count($products) ?></span> محصول</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-zinc-600 text-sm">مرتب‌سازی:</span>
+                            <a href="/shop?sort=newest" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'newest' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">جدیدترین</a>
+                            <a href="/shop?sort=popular" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'popular' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">پرفروش‌ترین</a>
+                            <a href="/shop?sort=price_asc" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_asc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">ارزان‌ترین</a>
+                            <a href="/shop?sort=price_desc" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_desc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">گران‌ترین</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <form method="GET" action="/shop" class="relative mb-6">
+                    <?php if ($category !== 'all'): ?>
+                    <input type="hidden" name="category" value="<?= e($category) ?>">
+                    <?php endif; ?>
+                    <?php if ($brand !== 'all'): ?>
+                    <input type="hidden" name="brand" value="<?= e($brand) ?>">
+                    <?php endif; ?>
+                    <input type="hidden" name="sort" value="<?= e($sort) ?>">
+                    <input type="text" name="search" value="<?= e($search) ?>" placeholder="جستجوی محصولات..." 
+                           class="w-full py-4 px-6 pr-14 rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:outline-none transition bg-white shadow-sm">
+                    <i class="fa-solid fa-search absolute right-5 top-1/2 -translate-y-1/2 text-rose-400 text-lg"></i>
+                </form>
+
+                <!-- Products Grid -->
+                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <?php foreach ($products as $product): ?>
+                    <?php 
+                        $item = $product;
+                        $discount = 0;
+                        if (!empty($item['old_price']) && $item['old_price'] > $item['price']) {
+                            $discount = round((($item['old_price'] - $item['price']) / $item['old_price']) * 100);
+                        }
+                    ?>
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300 product-card-shop">
+                        <div class="relative product-image overflow-hidden">
+                            <a href="/product/<?= $item['id'] ?>">
+                                <img src="/assets/images/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-full h-64 object-cover transition-transform duration-500" onerror="this.src='https://picsum.photos/seed/p<?= $item['id'] ?>/400/400'">
+                            </a>
+                            <div class="absolute top-4 right-4 flex flex-col gap-2">
+                                <?php if ($discount > 0): ?>
+                                <span class="bg-gradient-to-l from-red-500 to-red-600 text-white text-xs px-3 py-1 rounded-full font-bold"><?= $discount ?>% تخفیف</span>
+                                <?php endif; ?>
+                                <?php if (!empty($item['is_new'])): ?>
+                                <span class="bg-gradient-to-l from-emerald-500 to-emerald-600 text-white text-xs px-3 py-1 rounded-full font-bold">جدید</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="absolute top-4 left-4">
+                                <button onclick="toggleWishlistItem(<?= $item['id'] ?>)" class="heart-btn w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transition <?= in_array($item['id'], $wishlist) ? 'active' : '' ?>">
+                                    <i class="<?= in_array($item['id'], $wishlist) ? 'fa-solid' : 'fa-regular' ?> fa-heart text-rose-500"></i>
+                                </button>
+                            </div>
+                            <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                                <button onclick="openQuickView(<?= $item['id'] ?>)" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-700 hover:bg-rose-500 hover:text-white transition">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                                <button onclick="addToCart(<?= $item['id'] ?>, this)" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-700 hover:bg-rose-500 hover:text-white transition">
+                                    <i class="fa-solid fa-bag-shopping"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <span class="text-xs text-rose-500 font-medium"><?= e($item['brand'] ?? '') ?></span>
+                            <a href="/product/<?= $item['id'] ?>">
+                                <h3 class="font-bold text-zinc-800 mt-1 mb-2 line-clamp-1 hover:text-rose-500 transition-colors"><?= e($item['name']) ?></h3>
+                            </a>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="star-rating text-amber-400 text-sm">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <?php if ($i <= floor($item['rating'] ?? 0)): ?>
+                                            <i class="fa-solid fa-star"></i>
+                                        <?php elseif ($i - 0.5 <= ($item['rating'] ?? 0)): ?>
+                                            <i class="fa-solid fa-star-half-alt"></i>
+                                        <?php else: ?>
+                                            <i class="fa-regular fa-star text-zinc-300"></i>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
+                                </div>
+                                <span class="text-zinc-400 text-sm">(<?= number_format($item['reviews'] ?? 0) ?>)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <?php if (!empty($item['old_price']) && $item['old_price'] > $item['price']): ?>
+                                    <span class="text-zinc-400 text-sm line-through ml-2"><?= number_format($item['old_price']) ?> تومان</span>
+                                    <?php endif; ?>
+                                    <span class="text-lg font-bold text-rose-500"><?= number_format($item['price']) ?> تومان</span>
+                                </div>
+                                <button onclick="addToCart(<?= $item['id'] ?>, this)" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm transition-all">
+                                    <i class="fa-solid fa-plus ml-1"></i>افزودن
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php if (empty($products)): ?>
+                    <div class="col-span-full text-center py-16">
+                        <i class="fa-regular fa-box text-6xl text-zinc-300 mb-4"></i>
+                        <p class="text-zinc-500 text-lg">محصولی یافت نشد</p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Pagination -->
+                <?php if ($totalPages > 1): ?>
+                <div class="flex justify-center items-center gap-2 mt-10" id="pagination">
+                    <?php if ($page > 1): ?>
+                    <a href="?page=<?= $page - 1 ?>&category=<?= e($category) ?>&brand=<?= e($brand) ?>&sort=<?= e($sort) ?>&search=<?= e($search) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                    <?php endif; ?>
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="?page=<?= $i ?>&category=<?= e($category) ?>&brand=<?= e($brand) ?>&sort=<?= e($sort) ?>&search=<?= e($search) ?>" class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition <?= $i === $page ? 'bg-rose-600 text-white' : 'border border-zinc-200 text-zinc-600 hover:border-rose-400 hover:text-rose-500' ?>"><?= $i ?></a>
+                    <?php endfor; ?>
+                    <?php if ($page < $totalPages): ?>
+                    <a href="?page=<?= $page + 1 ?>&category=<?= e($category) ?>&brand=<?= e($brand) ?>&sort=<?= e($sort) ?>&search=<?= e($search) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             </div>
-            <?php endforeach; ?>
         </div>
-        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+const shopProducts = <?= json_encode(array_map(function($p) {
+    return [
+        'id' => (int)$p['id'],
+        'name' => $p['name'],
+        'brand' => $p['brand'] ?? '',
+        'category' => $p['category'] ?? '',
+        'price' => (int)$p['price'],
+        'old_price' => (int)($p['old_price'] ?? 0),
+        'discount' => (!empty($p['old_price']) && $p['old_price'] > $p['price']) ? round((($p['old_price'] - $p['price']) / $p['old_price']) * 100) : 0,
+        'rating' => (float)($p['rating'] ?? 0),
+        'reviews' => (int)($p['reviews'] ?? 0),
+        'image' => '/assets/images/' . e($p['image']),
+        'is_new' => (bool)($p['is_new'] ?? 0),
+        'is_sale' => (!empty($p['old_price']) && $p['old_price'] > $p['price']),
+        'description' => $p['description'] ?? '',
+    ];
+}, $products), JSON_UNESCAPED_UNICODE) ?>;
+</script>
+
+<!-- Quick View Modal -->
+<div id="quickViewModal" class="quick-view-modal">
+    <div class="bg-white rounded-3xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 md:p-8">
+            <div class="flex justify-end mb-4">
+                <button onclick="closeQuickView()" class="text-zinc-400 hover:text-zinc-600">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8" id="quickViewContent">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cart Sidebar -->
+<div id="cartSidebar" class="cart-sidebar hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="toggleCart()"></div>
+    <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-zinc-800">سبد خرید</h3>
+                <button onclick="toggleCart()" class="text-zinc-400 hover:text-zinc-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="cartItems" class="flex-1 overflow-y-auto">
+            </div>
+            <div class="border-t pt-6 mt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-zinc-600">جمع کل:</span>
+                    <span id="cartTotal" class="text-xl font-bold text-rose-500">۰ تومان</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-xl font-medium mb-3 transition-all">
+                    تکمیل خرید
+                </button>
+                <button onclick="toggleCart()" class="w-full border border-zinc-200 text-zinc-600 py-3 rounded-xl font-medium hover:bg-zinc-50 transition">
+                    ادامه خرید
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wishlist Sidebar -->
+<div id="wishlistSidebar" class="cart-sidebar hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="toggleWishlistSidebar()"></div>
+    <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-zinc-800">لیست علاقه‌مندی‌ها</h3>
+                <button onclick="toggleWishlistSidebar()" class="text-zinc-400 hover:text-zinc-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="wishlistItems" class="flex-1 overflow-y-auto">
+            </div>
+        </div>
     </div>
 </div>

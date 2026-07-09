@@ -29,7 +29,15 @@
         </div>
 
         <div class="flex gap-2 mb-3.5 flex-wrap">
-            <?php if (!empty($order['items_list'])): ?>
+            <?php if (!empty($order['items_images'])): ?>
+                <?php $imgs = explode('||', $order['items_images']); ?>
+                <?php foreach ($imgs as $i => $img): if (empty($img)) continue; ?>
+                    <img src="/assets/images/<?= e($img) ?>"
+                         class="w-[60px] h-[60px] rounded-xl object-cover border-2 border-[#efe5dc]"
+                         onerror="this.src='https://ui-avatars.com/api/?name=P&background=B76E79&color=fff&size=60'"
+                         alt="product">
+                <?php endforeach; ?>
+            <?php elseif (!empty($order['items_list'])): ?>
                 <p class="text-sm text-[#9e9e9e]"><?= e($order['items_list']) ?></p>
             <?php endif; ?>
         </div>

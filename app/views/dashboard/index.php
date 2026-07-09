@@ -10,12 +10,15 @@ $currentTab = isset($tab) ? $tab : 'dashboard';
                 <div class="text-center pb-5 border-b border-[#efe5dc]">
                     <div class="relative w-[100px] h-[100px] mx-auto mb-3">
                         <?php if ($user['avatar']): ?>
-                            <img src="/<?= e($user['avatar']) ?>" class="w-full h-full rounded-full object-cover border-4 border-[#FDF6F0] shadow-[0_4px_20px_rgba(183,110,121,0.25)]">
+                            <img src="/assets/images/<?= e($user['avatar']) ?>" class="w-full h-full rounded-full object-cover border-4 border-[#FDF6F0] shadow-[0_4px_20px_rgba(183,110,121,0.25)]">
                         <?php else: ?>
                             <div class="w-full h-full rounded-full bg-gradient-to-br from-rose-300 to-rose-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-[#FDF6F0] shadow-[0_4px_20px_rgba(183,110,121,0.25)]">
                                 <?= e(mb_substr($user['name'], 0, 1)) ?>
                             </div>
                         <?php endif; ?>
+                        <a href="/dashboard/account" class="absolute bottom-0 left-0 w-8 h-8 bg-[#B76E79] text-white rounded-full flex items-center justify-center border-2 border-white hover:bg-[#9c5761] hover:scale-110 transition-all shadow-md">
+                            <i class="fa-solid fa-camera text-xs"></i>
+                        </a>
                     </div>
                     <div class="font-bold text-lg"><?= e($user['name'] . ' ' . $user['family']) ?></div>
                     <div class="text-[#9e9e9e] text-sm"><?= e($user['phone']) ?></div>

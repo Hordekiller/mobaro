@@ -31,6 +31,9 @@ logs/
 tmp/
 temp/
 
+# Storage sessions
+storage/sessions/
+
 # Temporary/dev files at root
 home.html
 Profile.html
@@ -42,6 +45,13 @@ update-header-final.php
 update-header-v2.php
 update-header-v3.php
 update-header-v4.php
+Blog page.html
+Blog.html
+academy.html
+shop.html
+dore page.html
+*mahsol*.html
+logo.png
 
 # Analysis output
 analysis-output/

@@ -2,6 +2,10 @@
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="flex items-center justify-between mb-12">
             <h2 class="font-semibold text-5xl tracking-tighter">فروشگاه محصولات آرایشی</h2>
+            <a href="/shop" class="text-rose-500 hover:text-rose-600 font-medium flex items-center gap-2 transition-colors">
+                مشاهده تمام محصولات
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10" id="shop-grid">
             <?php foreach ($products as $product): ?>

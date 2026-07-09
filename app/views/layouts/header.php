@@ -8,12 +8,12 @@
     <?php $_csrf_token = $_SESSION['_csrf'] ?? ''; ?>
     <meta name="csrf" content="<?= e($_csrf_token) ?>">
     <script>function csrfParam(){var t=document.querySelector('meta[name="csrf"]');return'_csrf='+encodeURIComponent(t?t.getAttribute('content'):'')}</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/frontend.css?v=1.0">
+    <script src="/assets/libs/tailwind/tailwind-full.js"></script>
+    <link rel="stylesheet" href="/assets/libs/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fonts/google-fonts-woff2.css">
+    <link rel="stylesheet" href="/assets/fonts/vazirmatn-font-face.css">
+    <link rel="stylesheet" href="/assets/css/frontend.css?v=2.2">
+    <link rel="stylesheet" href="/assets/css/profile-styles.css?v=2.2">
     <style>
         :root {
             --primary: <?= e($settings['color_primary'] ?? '#e11d48') ?>;
@@ -31,8 +31,8 @@
         <div class="max-w-screen-2xl mx-auto">
             <div class="px-8 py-5 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-x-3">
-                    <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner">
-                        <i class="fa-solid fa-spa text-white text-3xl"></i>
+                    <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner overflow-hidden">
+                        <img src="/assets/images/logo.png" alt="موبارو" class="w-full h-full object-cover" onerror="this.innerHTML='<i class=\'fa-solid fa-spa text-white text-3xl\'></i>'">
                     </div>
                     <span class="logo-font text-4xl font-bold tracking-tighter text-rose-600">
                         <?= e($settings['brand_name'] ?? 'موبارو') ?>
@@ -49,12 +49,19 @@
                 </div>
 
                 <div class="flex items-center gap-x-4">
-                    <a href="/cart" class="flex items-center gap-x-2 px-5 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
+                    <button onclick="toggleWishlistSidebar()" class="relative flex items-center gap-x-2 px-4 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
+                        <i class="fa-regular fa-heart text-rose-500"></i>
+                        <span id="wishlist-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
+                            <?= count($_SESSION['wishlist'] ?? []) ?>
+                        </span>
+                    </button>
+
+                    <button onclick="toggleCart()" class="flex items-center gap-x-2 px-5 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
                         <i class="fa-solid fa-cart-shopping text-rose-500"></i>
                         <span id="cart-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
                             <?= array_sum(array_column($_SESSION['cart'] ?? [], 'qty')) ?>
                         </span>
-                    </a>
+                    </button>
 
                     <?php if (Auth::check()): ?>
                         <a href="/dashboard" class="flex items-center gap-x-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white px-7 py-3 rounded-3xl text-sm font-semibold shadow-md shadow-rose-200">

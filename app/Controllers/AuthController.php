@@ -21,18 +21,18 @@ class AuthController extends BaseController
     public function login(): void
     {
         $this->verifyCsrf();
-        $phone = sanitize($_POST['phone'] ?? '');
+        $login = sanitize($_POST['phone'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if (empty($phone) || empty($password)) {
-            $this->redirectWithErrors('/login', ['phone' => 'شماره تلفن و رمز عبور را وارد کنید.']);
+        if (empty($login) || empty($password)) {
+            $this->redirectWithErrors('/login', ['phone' => 'شماره تلفن یا نام کاربری و رمز عبور را وارد کنید.']);
             return;
         }
 
-        $user = Database::fetch("SELECT * FROM users WHERE phone = ?", [$phone]);
+        $user = Database::fetch("SELECT * FROM users WHERE phone = ? OR name = ?", [$login, $login]);
 
         if (!$user || !Auth::verify($password, $user['password'])) {
-            $this->redirectWithErrors('/login', ['password' => 'شماره تلفن یا رمز عبور اشتباه است.']);
+            $this->redirectWithErrors('/login', ['password' => 'شماره تلفن / نام کاربری یا رمز عبور اشتباه است.']);
             return;
         }
 
