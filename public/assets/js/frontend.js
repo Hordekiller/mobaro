@@ -286,6 +286,15 @@ function finishBooking() {
     currentBookingStep = 0;
 }
 
+function setBookingStep(step) {
+    const bookingEl = document.getElementById('booking');
+    if (!bookingEl) return;
+    if (step === 0) {
+        currentBookingStep = 0;
+        renderBookingStep();
+    }
+}
+
 // ========== TESTIMONIAL CAROUSEL ==========
 function prevTestimonial() {
     const container = document.getElementById('testimonial-carousel');

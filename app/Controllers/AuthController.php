@@ -72,7 +72,7 @@ class AuthController extends BaseController
             'family' => $family,
             'phone' => $phone,
             'password' => Auth::hash($password),
-            'level' => 'نقره‌ای',
+            'level' => 'silver',
             'points' => 50,
             'wallet' => 0,
         ]);

@@ -4,7 +4,27 @@ class ShopController extends BaseController
 {
     public function index(): void
     {
-        redirect('/');
+        $category = sanitize($_GET['category'] ?? 'all');
+        $products = Database::fetchAll("SELECT * FROM products WHERE is_active = 1 ORDER BY id");
+
+        $categories = [];
+        $rows = Database::fetchAll("SELECT DISTINCT category FROM products WHERE is_active = 1");
+        foreach ($rows as $r) {
+            $categories[] = $r['category'];
+        }
+
+        if ($category !== 'all') {
+            $products = array_values(array_filter($products, fn($p) => ($p['category'] ?? '') === $category));
+        }
+
+        $cart = $_SESSION['cart'] ?? [];
+        $settings = [];
+        $rows = Database::fetchAll("SELECT setting_key, setting_value FROM settings");
+        foreach ($rows as $row) {
+            $settings[$row['setting_key']] = $row['setting_value'];
+        }
+
+        $this->view('shop/index', compact('products', 'categories', 'category', 'cart', 'settings'));
     }
 
     public function cart(): void

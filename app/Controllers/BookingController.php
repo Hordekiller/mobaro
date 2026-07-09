@@ -4,7 +4,14 @@ class BookingController extends BaseController
 {
     public function index(): void
     {
-        redirect('/');
+        $services = Database::fetchAll("SELECT * FROM services WHERE is_active = 1");
+        $artists = Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
+        $settings = [];
+        $rows = Database::fetchAll("SELECT setting_key, setting_value FROM settings");
+        foreach ($rows as $row) {
+            $settings[$row['setting_key']] = $row['setting_value'];
+        }
+        $this->view('booking/index', compact('services', 'artists', 'settings'));
     }
 
     public function getServices(): void
