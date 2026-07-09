@@ -2,9 +2,9 @@
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="grid md:grid-cols-12 gap-16">
             <div class="md:col-span-5">
-                <div class="max-w-xs">
+                <div>
                     <span class="uppercase text-xs tracking-widest font-medium text-rose-500">یاد بگیرید • رشد کنید</span>
-                    <h2 class="text-5xl font-semibold leading-none tracking-tighter mt-4">آموزش‌های رایگان زیبایی</h2>
+                    <h2 class="text-3xl md:text-5xl font-semibold leading-none tracking-tighter mt-4">آموزش‌های رایگان زیبایی</h2>
                     <p class="mt-6 text-zinc-600">ویدیوهای آموزشی کوتاه برای یادگیری آرایش، مراقبت از مو و پوست در خانه</p>
                     <button onclick="watchFeaturedVideo()" class="mt-8 flex items-center gap-x-4 group">
                         <div class="w-16 h-16 bg-rose-600 text-white rounded-3xl flex items-center justify-center text-4xl shadow-inner group-active:scale-95 transition-transform">▶</div>

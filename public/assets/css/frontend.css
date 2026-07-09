@@ -121,6 +121,26 @@ button { cursor: pointer; font-family: inherit; border: none; }
     .shop-grid { grid-template-columns: 1fr; }
 }
 
+/* ========== MOBILE BOTTOM NAV ========== */
+#bottom-nav {
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.bottom-nav-item {
+    color: #9ca3af;
+    transition: all 0.2s ease;
+    position: relative;
+}
+.bottom-nav-item.active {
+    color: #e11d48;
+}
+.bottom-nav-item.active i {
+    transform: scale(1.1);
+}
+.bottom-nav-item i {
+    transition: transform 0.2s ease;
+}
+
 /* ========== SHOP SIDEBAR FILTERS ========== */
 .sidebar-filter { max-height: 200px; overflow-y: auto; }
 .sidebar-filter::-webkit-scrollbar { width: 4px; }

@@ -24,7 +24,7 @@
         .logo-font { font-family: 'Playfair Display', serif; }
     </style>
 </head>
-<body class="bg-zinc-50 text-zinc-800 overflow-x-hidden">
+<body class="bg-zinc-50 text-zinc-800 overflow-x-hidden pb-20 md:pb-0">
     <div id="progress-bar" class="scroll-progress w-0"></div>
 
     <nav class="bg-white border-b border-zinc-100 shadow-sm fixed w-full z-50">
@@ -49,54 +49,33 @@
                 </div>
 
                 <div class="flex items-center gap-x-4">
-                    <button onclick="toggleWishlistSidebar()" class="relative flex items-center gap-x-2 px-4 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
-                        <i class="fa-regular fa-heart text-rose-500"></i>
-                        <span id="wishlist-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
-                            <?= count($_SESSION['wishlist'] ?? []) ?>
-                        </span>
-                    </button>
+                    <div class="hidden md:flex items-center gap-x-4">
+                        <button onclick="toggleWishlistSidebar()" class="relative flex items-center gap-x-2 px-4 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
+                            <i class="fa-regular fa-heart text-rose-500"></i>
+                            <span id="wishlist-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
+                                <?= count($_SESSION['wishlist'] ?? []) ?>
+                            </span>
+                        </button>
 
-                    <button onclick="toggleCart()" class="flex items-center gap-x-2 px-5 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
-                        <i class="fa-solid fa-cart-shopping text-rose-500"></i>
-                        <span id="cart-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
-                            <?= array_sum(array_column($_SESSION['cart'] ?? [], 'qty')) ?>
-                        </span>
-                    </button>
+                        <button onclick="toggleCart()" class="flex items-center gap-x-2 px-5 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
+                            <i class="fa-solid fa-cart-shopping text-rose-500"></i>
+                            <span id="cart-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
+                                <?= array_sum(array_column($_SESSION['cart'] ?? [], 'qty')) ?>
+                            </span>
+                        </button>
 
-                    <?php if (Auth::check()): ?>
-                        <a href="/dashboard" class="flex items-center gap-x-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white px-7 py-3 rounded-3xl text-sm font-semibold shadow-md shadow-rose-200">
-                            <i class="fa-solid fa-user"></i>
-                            <span>پنل کاربری</span>
-                        </a>
-                    <?php else: ?>
-                        <a href="/login" class="flex items-center gap-x-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white px-7 py-3 rounded-3xl text-sm font-semibold shadow-md shadow-rose-200">
-                            <i class="fa-solid fa-user"></i>
-                            <span>ورود / ثبت‌نام</span>
-                        </a>
-                    <?php endif; ?>
-
-                    <button onclick="toggleMobileMenu()" class="md:hidden w-11 h-11 flex items-center justify-center text-2xl text-zinc-700">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t py-6 px-6">
-            <div class="flex flex-col gap-y-6 text-lg">
-                <a href="/" class="font-medium">خانه</a>
-                <a href="/#services" class="font-medium">خدمات</a>
-                <a href="/#models" class="font-medium">مدل‌های مو</a>
-                <a href="/#education" class="font-medium">آموزش‌های زیبایی</a>
-                <a href="/shop" class="font-medium">فروشگاه</a>
-                <a href="/#about" class="font-medium">درباره ما</a>
-                <div class="pt-6 border-t flex flex-col gap-y-3">
-                    <?php if (Auth::check()): ?>
-                        <a href="/dashboard" class="w-full py-4 bg-rose-600 text-white rounded-3xl font-semibold text-center">پنل کاربری</a>
-                        <a href="/logout" class="w-full py-4 border border-zinc-300 rounded-3xl font-semibold text-center">خروج</a>
-                    <?php else: ?>
-                        <a href="/login" class="w-full py-4 bg-rose-600 text-white rounded-3xl font-semibold text-center">ورود به حساب کاربری</a>
-                    <?php endif; ?>
+                        <?php if (Auth::check()): ?>
+                            <a href="/dashboard" class="flex items-center gap-x-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white px-7 py-3 rounded-3xl text-sm font-semibold shadow-md shadow-rose-200">
+                                <i class="fa-solid fa-user"></i>
+                                <span>پنل کاربری</span>
+                            </a>
+                        <?php else: ?>
+                            <a href="/login" class="flex items-center gap-x-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white px-7 py-3 rounded-3xl text-sm font-semibold shadow-md shadow-rose-200">
+                                <i class="fa-solid fa-user"></i>
+                                <span>ورود / ثبت‌نام</span>
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>

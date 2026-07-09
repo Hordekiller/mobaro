@@ -16,11 +16,11 @@
 
             <div class="flex items-center gap-x-4">
                 <a href="/#booking"
-                   class="flex-1 md:flex-none bg-white text-rose-600 hover:bg-amber-100 px-10 py-6 rounded-3xl font-bold text-xl shadow-2xl shadow-rose-500/30 transition-all active:scale-95 text-center">
+                   class="flex-1 md:flex-none bg-white text-rose-600 hover:bg-amber-100 px-6 py-4 md:px-10 md:py-6 rounded-3xl font-bold text-xl shadow-2xl shadow-rose-500/30 transition-all active:scale-95 text-center">
                     رزرو نوبت
                 </a>
                 <a href="/#models"
-                   class="flex-1 md:flex-none border-2 border-white/80 hover:border-white px-8 py-6 rounded-3xl font-semibold text-lg transition-all text-center">
+                   class="flex-1 md:flex-none border-2 border-white/80 hover:border-white px-6 py-4 md:px-8 md:py-6 rounded-3xl font-semibold text-lg transition-all text-center">
                     مشاهده مدل‌ها
                 </a>
             </div>
@@ -45,7 +45,7 @@
         <div class="hidden md:flex justify-end relative">
             <div class="relative">
                 <div class="absolute -left-6 -top-6 bg-white rounded-3xl p-5 shadow-2xl z-10">
-                    <div class="flex items-center gap-x-4">
+            <div class="flex items-center gap-x-2 md:gap-x-4">
                         <div class="text-emerald-500"><i class="fa-solid fa-check-circle text-4xl"></i></div>
                         <div>
                             <div class="font-semibold text-zinc-800">نوبت شما ثبت شد</div>

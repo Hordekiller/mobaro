@@ -2,7 +2,7 @@
 
     <footer id="about" class="bg-zinc-950 text-zinc-400">
         <div class="max-w-screen-2xl mx-auto px-8 pt-20">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-y-12">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-y-8 md:gap-y-12">
                 <div>
                     <div class="flex items-center gap-x-3 text-white mb-6">
                         <div class="w-8 h-8 bg-rose-500 rounded-2xl flex items-center justify-center">
@@ -12,7 +12,7 @@
                             <?= e($settings['brand_name'] ?? 'موبارو') ?>
                         </span>
                     </div>
-                    <p class="text-xs leading-relaxed max-w-[190px]">
+                    <p class="text-xs leading-relaxed max-w-xs">
                         سالن زیبایی و مرکز آرایشی حرفه‌ای با ۱۲ سال سابقه در تهران
                     </p>
                     <div class="flex gap-x-5 mt-10">
@@ -81,7 +81,7 @@
                 </div>
             </div>
 
-            <div class="pt-8 mt-12 border-t border-white/10 flex flex-row justify-center items-center gap-8">
+            <div class="pt-8 mt-12 border-t border-white/10 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
                 <div class="trust-badge-placeholder flex flex-col items-center gap-1 text-zinc-500">
                     <div class="w-20 h-20 bg-zinc-800 rounded-xl flex items-center justify-center">
                         <i class="fa-solid fa-certificate text-3xl text-zinc-600"></i>
@@ -96,9 +96,9 @@
                 </div>
             </div>
 
-            <div class="pt-10 mt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-[10px]">
+            <div class="pt-10 mt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs md:text-[10px]">
                 <div>© ۱۴۰۴ <?= e($settings['brand_name'] ?? 'موبارو') ?>. تمامی حقوق محفوظ است.</div>
-                <div class="flex items-center gap-x-6 text-[10px] mt-6 md:mt-0">
+                <div class="flex items-center gap-x-6 text-xs md:text-[10px] mt-6 md:mt-0">
                     <?php if (Auth::check()): ?>
                         <a href="/dashboard" class="cursor-pointer hover:text-white">پنل کاربری</a>
                     <?php else: ?>
@@ -115,6 +115,39 @@
     </footer>
 
     <div id="toast-container" class="hidden fixed bottom-6 right-6 z-[999999]"></div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div id="bottom-nav" class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-lg border-t border-zinc-200 z-50 safe-bottom">
+        <div class="flex items-center justify-around py-2">
+            <a href="/" class="bottom-nav-item active flex flex-col items-center gap-0.5 px-3 py-1">
+                <i class="fa-solid fa-house text-xl"></i>
+                <span class="text-[10px] font-medium">خانه</span>
+            </a>
+            <a href="/shop" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
+                <i class="fa-solid fa-store text-xl"></i>
+                <span class="text-[10px] font-medium">فروشگاه</span>
+            </a>
+            <a href="/#booking" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
+                <i class="fa-solid fa-calendar-check text-xl"></i>
+                <span class="text-[10px] font-medium">رزرو</span>
+            </a>
+            <a href="/#education" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
+                <i class="fa-solid fa-graduation-cap text-xl"></i>
+                <span class="text-[10px] font-medium">آکادمی</span>
+            </a>
+            <?php if (Auth::check()): ?>
+                <a href="/dashboard" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
+                    <i class="fa-solid fa-user text-xl"></i>
+                    <span class="text-[10px] font-medium">پروفایل</span>
+                </a>
+            <?php else: ?>
+                <a href="/login" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
+                    <i class="fa-solid fa-user text-xl"></i>
+                    <span class="text-[10px] font-medium">ورود</span>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
 
     <script src="/assets/js/frontend.js?v=2.2"></script>
     <script>

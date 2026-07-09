@@ -14,7 +14,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <?php foreach ($services as $index => $service): ?>
             <div onclick="selectService(<?= $service['id'] ?>)" class="service-card bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer">
-                <div class="h-64 bg-cover bg-center relative"
+                <div class="h-48 md:h-64 bg-cover bg-center relative"
                      style="background-image: url('/assets/images/<?= e($service['image'] ?? '') ?>')">
                     <div class="absolute top-4 right-4 bg-white text-xs font-bold px-4 py-2 rounded-3xl shadow"><?= e($service['category']) ?></div>
                 </div>

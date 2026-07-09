@@ -52,25 +52,36 @@ function hideLoading(el) {
     if (el) { el.classList.remove('loading'); el.disabled = false; }
 }
 
-// ========== MOBILE MENU ==========
-function toggleMobileMenu() {
-    const menu = document.getElementById('mobile-menu');
-    if (menu) menu.classList.toggle('hidden');
-}
-function navigateToSection(section) {
-    const menu = document.getElementById('mobile-menu');
-    if (menu) menu.classList.add('hidden');
-    if (section === 'booking') {
-        const el = document.getElementById('booking');
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth' });
-            setTimeout(function() { if (typeof renderBookingStep === 'function') renderBookingStep(); }, 800);
-        }
-        return;
+// ========== MOBILE BOTTOM NAV ==========
+(function() {
+    var navItems = document.querySelectorAll('.bottom-nav-item');
+    var currentPath = window.location.pathname;
+    var currentHash = window.location.hash;
+
+    function updateActiveNav() {
+        navItems.forEach(function(item) {
+            var href = item.getAttribute('href') || '';
+            var isActive = false;
+            if (href === currentPath || (currentPath === '/' && href === '/')) {
+                isActive = true;
+            } else if (currentHash && href.indexOf(currentHash) !== -1) {
+                isActive = true;
+            } else if (href === '/shop' && currentPath.indexOf('/shop') === 0) {
+                isActive = true;
+            } else if (href === '/dashboard' && currentPath.indexOf('/dashboard') === 0) {
+                isActive = true;
+            }
+            item.classList.toggle('active', isActive);
+        });
     }
-    const el = document.getElementById(section);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-}
+
+    updateActiveNav();
+
+    window.addEventListener('hashchange', function() {
+        currentHash = window.location.hash;
+        updateActiveNav();
+    });
+})();
 
 // ========== SCROLL PROGRESS ==========
 (function() {
