@@ -40,6 +40,19 @@ Router::post('/admin/{section}/save', ['AdminController', 'save']);
 Router::post('/admin/{section}/delete/{id}', ['AdminController', 'delete']);
 Router::post('/admin/settings/update', ['AdminController', 'updateSettings']);
 
+Router::get('/cart/summary', function () {
+    $count = array_sum(array_column($_SESSION['cart'] ?? [], 'qty'));
+    header('Content-Type: application/json');
+    echo json_encode(['count' => $count]);
+    exit;
+});
+
+Router::post('/api/like-model', function () {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true, 'message' => 'لایک ثبت شد ❤️'], JSON_UNESCAPED_UNICODE);
+    exit;
+});
+
 Router::get('/api/services', ['ApiController', 'services']);
 Router::get('/api/artists', ['ApiController', 'artists']);
 Router::get('/api/products', ['ApiController', 'products']);

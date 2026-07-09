@@ -93,6 +93,24 @@
                 </div>
             </div>
 
+        <?php elseif ($section === 'settings'): ?>
+            <?php $table = 'settings'; ?>
+            <div class="mb-6">
+                <h2 class="text-2xl font-extrabold">تنظیمات سایت</h2>
+            </div>
+            <form action="/admin/settings/update" method="POST" class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(183,110,121,0.06)]">
+                <?= csrf() ?>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <?php foreach ($settings as $key => $value): ?>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1.5"><?= e($key) ?></label>
+                        <input type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <button type="submit" class="mt-5 px-8 py-3 bg-[#B76E79] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات</button>
+            </form>
+
         <?php else: ?>
             <?php $table = $section; if (in_array($section, ['hair-models'])) $table = 'hair_models'; ?>
             <div class="mb-6 flex justify-between items-center">
@@ -137,10 +155,8 @@
                                 <td class="py-3 px-4 text-center">
                                     <div class="flex gap-1.5 justify-center">
                                         <button onclick="showEditModal(<?= htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8') ?>)" class="px-3 py-1.5 bg-[#FDF6F0] text-[#B76E79] rounded-lg text-xs font-semibold hover:bg-[#B76E79] hover:text-white transition-all">ویرایش</button>
-                                        <form action="/admin/delete" method="POST" class="inline" onsubmit="return confirm('آیتم حذف شود؟')">
+                                        <form action="/admin/<?= e($section) ?>/delete/<?= $item['id'] ?>" method="POST" class="inline" onsubmit="return confirm('آیتم حذف شود؟')">
                                             <?= csrf() ?>
-                                            <input type="hidden" name="table" value="<?= $table ?>">
-                                            <input type="hidden" name="id" value="<?= $item['id'] ?>">
                                             <button type="submit" class="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-500 hover:text-white transition-all">حذف</button>
                                         </form>
                                     </div>
@@ -160,9 +176,8 @@
                         <h3 class="text-xl font-bold" id="modalTitle">افزودن جدید</h3>
                         <button onclick="closeItemModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <form action="/admin/save" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    <form action="/admin/<?= e($section) ?>/save" method="POST" enctype="multipart/form-data" class="space-y-4">
                         <?= csrf() ?>
-                        <input type="hidden" name="table" value="<?= $table ?>">
                         <input type="hidden" name="id" id="item-id" value="">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="modal-fields">
                             <?php foreach ($columns as $col):

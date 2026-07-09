@@ -48,11 +48,12 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-        <form action="/dashboard/addresses/add" method="POST" class="space-y-4">
+        <form action="/dashboard/address/add" method="POST" class="space-y-4">
             <?= csrf() ?>
+            <input type="hidden" name="is_default" value="0">
             <div>
                 <label class="block text-sm font-semibold mb-1.5">عنوان آدرس</label>
-                <input type="text" name="label" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="مثلاً: منزل، محل کار">
+                <input type="text" name="title" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="مثلاً: منزل، محل کار" value="خانه">
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-1.5">آدرس کامل</label>
@@ -60,16 +61,12 @@
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">تلفن</label>
-                    <input type="text" name="phone" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
-                </div>
-                <div>
                     <label class="block text-sm font-semibold mb-1.5">کد پستی</label>
-                    <input type="text" name="postal_code" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
+                    <input type="text" name="zip_code" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
                 </div>
             </div>
             <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="is_default" class="w-5 h-5 accent-[#B76E79] rounded">
+                <input type="checkbox" name="is_default" value="1">
                 <span class="text-sm font-medium">آدرس پیش‌فرض</span>
             </label>
             <button type="submit" class="w-full py-3.5 bg-gradient-to-l from-[#B76E79] to-[#9c5761] text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">ذخیره آدرس</button>
@@ -82,13 +79,13 @@ function showAddressModal() { document.getElementById('addressModal').classList.
 function closeAddressModal(e) { if (!e || e.target === document.getElementById('addressModal')) document.getElementById('addressModal').classList.add('hidden'); }
 function deleteAddress(id) {
     if (!confirm('آدرس حذف شود؟')) return;
-    fetch('/dashboard/addresses/delete', {
+    fetch('/dashboard/address/delete/' + id, {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'address_id=' + id
+        body: csrfParam()
     }).then(r => r.json()).then(d => {
-        showToast(d.message, d.success ? 'success' : 'error');
+        showToast(d.message || d.error, d.success ? 'success' : 'error');
         if (d.success) setTimeout(() => location.reload(), 800);
-    });
+    }).catch(() => showToast('خطا در ارتباط با سرور', 'error'));
 }
 </script>

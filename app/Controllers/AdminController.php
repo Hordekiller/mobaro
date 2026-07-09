@@ -12,9 +12,7 @@ class AdminController extends BaseController
         $this->requireAdmin();
         $stats = [
             'users' => Database::fetch("SELECT COUNT(*) as cnt FROM users")['cnt'],
-            'services' => Database::fetch("SELECT COUNT(*) as cnt FROM services")['cnt'],
-            'appointments_today' => Database::fetch("SELECT COUNT(*) as cnt FROM appointments WHERE appointment_date = CURDATE()")['cnt'],
-            'products' => Database::fetch("SELECT COUNT(*) as cnt FROM products")['cnt'],
+            'appointments' => Database::fetch("SELECT COUNT(*) as cnt FROM appointments")['cnt'],
             'orders' => Database::fetch("SELECT COUNT(*) as cnt FROM orders")['cnt'],
             'revenue' => Database::fetch("SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE status != 'cancelled'")['total'],
         ];
@@ -29,7 +27,7 @@ class AdminController extends BaseController
 
         $recentOrders = Database::fetchAll("SELECT * FROM orders ORDER BY created_at DESC LIMIT 5");
 
-        $this->view('admin/index', compact('stats', 'recentAppointments', 'recentOrders'));
+        $this->view('admin/index', compact('stats', 'recentAppointments', 'recentOrders') + ['section' => 'dashboard']);
     }
 
     public function section(string $section): void
@@ -65,18 +63,89 @@ class AdminController extends BaseController
             'tutorials' => 'tutorials',
         ];
 
+        $columnsMap = $this->getColumns($section);
+        $data['columns'] = $columnsMap;
+
         $table = $tableMap[$section] ?? null;
         if ($table) {
             $data['items'] = Database::fetchAll("SELECT * FROM {$table} ORDER BY id DESC");
         }
 
-        $data['section_label'] = $this->sectionLabel($section);
-        $this->view('admin/section', $data);
+        $this->view('admin/index', $data);
+    }
+
+    private function getColumns(string $section): array
+    {
+        $all = [
+            'services' => [
+                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'price', 'label' => 'قیمت', 'type' => 'price', 'required' => true],
+                ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
+                ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
+            ],
+            'artists' => [
+                ['key' => 'avatar', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'name', 'label' => 'نام', 'type' => 'text', 'required' => true],
+                ['key' => 'specialty', 'label' => 'تخصص', 'type' => 'text'],
+            ],
+            'appointments' => [
+                ['key' => 'user_name', 'label' => 'کاربر', 'type' => 'text'],
+                ['key' => 'service_title', 'label' => 'خدمت', 'type' => 'text'],
+                ['key' => 'appointment_date', 'label' => 'تاریخ', 'type' => 'text'],
+                ['key' => 'appointment_time', 'label' => 'ساعت', 'type' => 'text'],
+                ['key' => 'status', 'label' => 'وضعیت', 'type' => 'status'],
+            ],
+            'products' => [
+                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'name', 'label' => 'نام', 'type' => 'text', 'required' => true],
+                ['key' => 'price', 'label' => 'قیمت', 'type' => 'price', 'required' => true],
+                ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
+                ['key' => 'stock', 'label' => 'موجودی', 'type' => 'text'],
+            ],
+            'users' => [
+                ['key' => 'name', 'label' => 'نام', 'type' => 'text'],
+                ['key' => 'family', 'label' => 'نام خانوادگی', 'type' => 'text'],
+                ['key' => 'phone', 'label' => 'تلفن', 'type' => 'text'],
+                ['key' => 'role', 'label' => 'نقش', 'type' => 'status'],
+                ['key' => 'level', 'label' => 'سطح', 'type' => 'text'],
+                ['key' => 'points', 'label' => 'امتیاز', 'type' => 'text'],
+            ],
+            'courses' => [
+                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'teacher', 'label' => 'مدرس', 'type' => 'text'],
+                ['key' => 'type', 'label' => 'نوع', 'type' => 'text'],
+                ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
+            ],
+            'testimonials' => [
+                ['key' => 'name', 'label' => 'نام', 'type' => 'text', 'required' => true],
+                ['key' => 'role', 'label' => 'نقش', 'type' => 'text'],
+                ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
+            ],
+            'hair-models' => [
+                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
+            ],
+            'tutorials' => [
+                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
+                ['key' => 'views', 'label' => 'بازدید', 'type' => 'text'],
+            ],
+            'settings' => [
+                ['key' => 'setting_key', 'label' => 'کلید', 'type' => 'text'],
+                ['key' => 'setting_value', 'label' => 'مقدار', 'type' => 'textarea'],
+            ],
+        ];
+        return $all[$section] ?? [['key' => 'id', 'label' => 'شناسه', 'type' => 'text']];
     }
 
     public function save(string $section): void
     {
         $this->requireAdmin();
+        $this->verifyCsrf();
 
         $id = (int) ($_POST['id'] ?? 0);
         $table = $this->sectionToTable($section);
@@ -85,8 +154,21 @@ class AdminController extends BaseController
             redirect('/admin');
         }
 
-        $data = $_POST;
-        unset($data['id'], $data['_csrf']);
+        $allowedFields = array_column($this->getColumns($section), 'key');
+        $allowedFields[] = 'description';
+        $allowedFields[] = 'bio';
+
+        $data = [];
+        foreach ($allowedFields as $field) {
+            if (isset($_POST[$field])) {
+                $data[$field] = sanitize($_POST[$field]);
+            }
+        }
+
+        if ($section === 'settings') {
+            $this->updateSettings();
+            return;
+        }
 
         if (!empty($_FILES['image']['name'])) {
             $uploaded = $this->uploadFile($_FILES['image']);
@@ -114,6 +196,7 @@ class AdminController extends BaseController
     public function delete(string $section, int $id): void
     {
         $this->requireAdmin();
+        $this->verifyCsrf();
         $table = $this->sectionToTable($section);
 
         if ($table) {
@@ -127,10 +210,12 @@ class AdminController extends BaseController
     public function updateSettings(): void
     {
         $this->requireAdmin();
+        $this->verifyCsrf();
 
         foreach ($_POST as $key => $value) {
             if (str_starts_with($key, 'setting_')) {
                 $settingKey = substr($key, 8);
+                $value = sanitize($value);
                 $existing = Database::fetch("SELECT id FROM settings WHERE setting_key = ?", [$settingKey]);
                 if ($existing) {
                     Database::update('settings', ['setting_value' => $value], 'setting_key = :k', ['k' => $settingKey]);
@@ -155,15 +240,15 @@ class AdminController extends BaseController
              LEFT JOIN artists ar ON a.artist_id = ar.id
              ORDER BY a.appointment_date DESC"
         );
-        $data['section_label'] = 'مدیریت نوبت‌ها';
-        $this->view('admin/section', $data);
+        $data['columns'] = $this->getColumns('appointments');
+        $this->view('admin/index', $data);
     }
 
     private function sectionUsers(array &$data): void
     {
         $data['items'] = Database::fetchAll("SELECT id, name, family, phone, email, role, level, points, wallet, created_at FROM users ORDER BY id DESC");
-        $data['section_label'] = 'مدیریت کاربران';
-        $this->view('admin/section', $data);
+        $data['columns'] = $this->getColumns('users');
+        $this->view('admin/index', $data);
     }
 
     private function sectionSettings(array &$data): void
@@ -173,8 +258,8 @@ class AdminController extends BaseController
         foreach ($rows as $row) {
             $data['settings'][$row['setting_key']] = $row['setting_value'];
         }
-        $data['section_label'] = 'تنظیمات سایت';
-        $this->view('admin/section', $data);
+        $data['columns'] = $this->getColumns('settings');
+        $this->view('admin/index', $data);
     }
 
     private function sectionToTable(string $section): ?string
@@ -191,37 +276,29 @@ class AdminController extends BaseController
         return $map[$section] ?? null;
     }
 
-    private function sectionLabel(string $section): string
-    {
-        $labels = [
-            'services' => 'مدیریت خدمات',
-            'artists' => 'مدیریت آرایشگران',
-            'appointments' => 'مدیریت نوبت‌ها',
-            'products' => 'مدیریت محصولات',
-            'users' => 'مدیریت کاربران',
-            'courses' => 'مدیریت دوره‌ها',
-            'testimonials' => 'مدیریت نظرات',
-            'settings' => 'تنظیمات سایت',
-            'hair-models' => 'مدل‌های مو',
-            'tutorials' => 'آموزش‌ها',
-        ];
-        return $labels[$section] ?? $section;
-    }
-
     private function uploadFile(array $file): ?string
     {
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-        if (!in_array($ext, $allowed) || $file['size'] > 5 * 1024 * 1024) {
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExt) || $file['size'] > 5 * 1024 * 1024) {
+            return null;
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mime, $allowedMime)) {
             return null;
         }
 
         $filename = time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-        $path = __DIR__ . '/../../public/uploads/' . $filename;
+        $path = __DIR__ . '/../../public/assets/images/' . $filename;
 
         if (move_uploaded_file($file['tmp_name'], $path)) {
-            return 'uploads/' . $filename;
+            return $filename;
         }
 
         return null;

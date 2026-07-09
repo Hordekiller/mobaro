@@ -3,7 +3,7 @@
     <p class="text-[#9e9e9e] text-sm">برای امنیت بیشتر رمز عبور خود را تغییر دهید</p>
 </div>
 
-<form action="/dashboard/change-password" method="POST" class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(183,110,121,0.06)] max-w-lg">
+<form action="/dashboard/password/change" method="POST" class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(183,110,121,0.06)] max-w-lg">
     <?= csrf() ?>
     <div class="mb-4">
         <label class="block text-sm font-semibold mb-1.5">رمز عبور فعلی</label>
@@ -22,7 +22,7 @@
     <div class="mb-5">
         <label class="block text-sm font-semibold mb-1.5">تکرار رمز عبور جدید</label>
         <div class="relative">
-            <input type="password" name="new_password_confirm" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all pl-10" required minlength="6">
+            <input type="password" name="confirm_password" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all pl-10" required minlength="6">
             <i class="fa-regular fa-eye absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9e9e9e] cursor-pointer"></i>
         </div>
     </div>

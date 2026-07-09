@@ -29,6 +29,7 @@ class ShopController extends BaseController
 
     public function addToCart(): void
     {
+        $this->verifyCsrf();
         $productId = (int) ($_POST['product_id'] ?? 0);
         if (!$productId) {
             $this->json(['error' => 'محصول نامعتبر'], 400);
@@ -75,6 +76,7 @@ class ShopController extends BaseController
 
     public function updateCart(): void
     {
+        $this->verifyCsrf();
         $productId = (int) ($_POST['product_id'] ?? 0);
         $qty = max(1, (int) ($_POST['qty'] ?? 1));
 
@@ -96,6 +98,7 @@ class ShopController extends BaseController
 
     public function removeFromCart(): void
     {
+        $this->verifyCsrf();
         $productId = (int) ($_POST['product_id'] ?? 0);
 
         if (isset($_SESSION['cart'])) {
@@ -111,6 +114,7 @@ class ShopController extends BaseController
     public function checkout(): void
     {
         Auth::requireAuth();
+        $this->verifyCsrf();
 
         $cart = $_SESSION['cart'] ?? [];
         if (empty($cart)) {

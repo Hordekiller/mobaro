@@ -44,6 +44,7 @@ class BookingController extends BaseController
     public function confirm(): void
     {
         Auth::requireAuth();
+        $this->verifyCsrf();
 
         $serviceId = (int) ($_POST['service_id'] ?? 0);
         $artistId = (int) ($_POST['artist_id'] ?? 0);

@@ -132,6 +132,7 @@ class DashboardController extends BaseController
     public function updateProfile(): void
     {
         Auth::requireAuth();
+        $this->verifyCsrf();
         $userId = Auth::id();
 
         $name = sanitize($_POST['name'] ?? '');
@@ -157,6 +158,7 @@ class DashboardController extends BaseController
     public function changePassword(): void
     {
         Auth::requireAuth();
+        $this->verifyCsrf();
         $userId = Auth::id();
 
         $current = $_POST['current_password'] ?? '';
@@ -192,6 +194,7 @@ class DashboardController extends BaseController
     public function addAddress(): void
     {
         Auth::requireAuth();
+        $this->verifyCsrf();
 
         $title = sanitize($_POST['title'] ?? 'خانه');
         $address = sanitize($_POST['address'] ?? '');
@@ -224,14 +227,15 @@ class DashboardController extends BaseController
     public function deleteAddress(int $id): void
     {
         Auth::requireAuth();
+        $this->verifyCsrf();
         Database::delete('addresses', 'id = ? AND user_id = ?', [$id, Auth::id()]);
-        flash('success', 'آدرس حذف شد.');
-        back();
+        $this->json(['success' => true, 'message' => 'آدرس حذف شد.']);
     }
 
     public function toggleWishlist(): void
     {
         Auth::requireAuth();
+        $this->verifyCsrf();
 
         $productId = (int) ($_POST['product_id'] ?? 0);
         if (!$productId) {
@@ -246,10 +250,10 @@ class DashboardController extends BaseController
 
         if ($existing) {
             Database::delete('wishlist', 'id = ?', [$existing['id']]);
-            $this->json(['action' => 'removed', 'message' => 'از علاقه‌مندی‌ها حذف شد']);
+            $this->json(['success' => true, 'action' => 'removed', 'message' => 'از علاقه‌مندی‌ها حذف شد']);
         } else {
             Database::insert('wishlist', ['user_id' => Auth::id(), 'product_id' => $productId]);
-            $this->json(['action' => 'added', 'message' => 'به علاقه‌مندی‌ها اضافه شد']);
+            $this->json(['success' => true, 'action' => 'added', 'message' => 'به علاقه‌مندی‌ها اضافه شد']);
         }
     }
 
@@ -263,10 +267,10 @@ class DashboardController extends BaseController
         }
 
         $filename = 'avatar_' . Auth::id() . '_' . time() . '.' . $ext;
-        $path = __DIR__ . '/../../public/uploads/' . $filename;
+        $path = __DIR__ . '/../../public/assets/images/' . $filename;
 
         if (move_uploaded_file($file['tmp_name'], $path)) {
-            return 'uploads/' . $filename;
+            return $filename;
         }
 
         return null;

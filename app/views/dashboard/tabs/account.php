@@ -3,7 +3,7 @@
     <p class="text-[#9e9e9e] text-sm">ویرایش اطلاعات شخصی</p>
 </div>
 
-<form action="/dashboard/update-profile" method="POST" enctype="multipart/form-data" class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(183,110,121,0.06)] mb-5">
+<form action="/dashboard/profile/update" method="POST" enctype="multipart/form-data" class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(183,110,121,0.06)] mb-5">
     <?= csrf() ?>
     <div class="flex flex-col items-center mb-8">
         <div class="relative w-[100px] h-[100px] rounded-full overflow-hidden mb-3 border-4 border-[#FDF6F0] shadow">

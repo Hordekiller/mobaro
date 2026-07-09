@@ -1,10 +1,11 @@
 <?php
 
-class NewsletterController
+class NewsletterController extends BaseController
 {
     public function subscribe(): void
     {
-        $email = sanitize($_POST['email'] ?? '');
+        $this->verifyCsrf();
+        $email = sanitize($_POST['contact'] ?? $_POST['email'] ?? '');
 
         if (empty($email)) {
             http_response_code(400);

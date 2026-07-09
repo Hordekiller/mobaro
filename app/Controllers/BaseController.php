@@ -56,4 +56,14 @@ class BaseController
         $_SESSION['_old'] = $_POST;
         redirect($url);
     }
+
+    protected function verifyCsrf(): void
+    {
+        $token = $_POST['_csrf'] ?? '';
+        if (!verifyCsrf($token)) {
+            http_response_code(419);
+            echo json_encode(['error' => 'درخواست نامعتبر (CSRF).'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
 }

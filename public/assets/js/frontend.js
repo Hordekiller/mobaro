@@ -2,6 +2,16 @@
  * Mobaro Frontend JS
  */
 
+function getCsrf() {
+    const meta = document.querySelector('meta[name="csrf"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+
+function csrfParam() {
+    const token = getCsrf();
+    return token ? '_csrf=' + encodeURIComponent(token) : '';
+}
+
 // ========== TOAST NOTIFICATION ==========
 function showToast(message, type) {
     type = type || 'success';
@@ -69,76 +79,43 @@ function subscribeNewsletter() {
     const val = input.value.trim();
     if (!val) { showToast('لطفا ایمیل یا شماره تماس را وارد کنید', 'error'); return; }
 
+    const body = 'contact=' + encodeURIComponent(val) + '&' + csrfParam();
     fetch('/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'contact=' + encodeURIComponent(val)
+        body: body
     })
     .then(r => r.json())
     .then(d => {
-        showToast(d.message, d.success ? 'success' : 'error');
+        showToast(d.message || d.error, d.success ? 'success' : 'error');
         if (d.success) input.value = '';
     })
     .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
 }
 
 // ========== CART FUNCTIONS ==========
-function addToCart(productId, name, price, image, category) {
-    fetch('/cart/add', {
+function addToCart(productId) {
+    const body = 'product_id=' + productId + '&' + csrfParam();
+    fetch('/shop/cart/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'product_id=' + productId
+        body: body
     })
     .then(r => r.json())
     .then(d => {
         if (d.success) {
-            document.getElementById('cart-count').innerText = d.count;
-            showToast(d.message || name + ' به سبد خرید اضافه شد');
+            const el = document.getElementById('cart-count');
+            if (el) el.innerText = d.cart_count || d.count;
+            showToast(d.message || 'به سبد خرید اضافه شد');
         } else {
-            showToast(d.message || 'خطا در افزودن به سبد خرید', 'error');
+            showToast(d.error || d.message || 'خطا در افزودن به سبد خرید', 'error');
         }
     })
     .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
 }
 
-function quickAddToCart(productId, name, price, image, category) {
-    addToCart(productId, name, price, image, category);
-}
-
-function addToCartFromShop(productId, name, price, image, category) {
-    addToCart(productId, name, price, image, category);
-}
-
-// ========== WISHLIST ==========
-function toggleWishlist(productId, btn) {
-    fetch('/dashboard/wishlist/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'product_id=' + productId
-    })
-    .then(r => r.json())
-    .then(d => {
-        showToast(d.message, d.success ? 'success' : 'error');
-        if (d.success && btn) {
-            btn.classList.toggle('text-red-500');
-            btn.classList.toggle('text-gray-300');
-        }
-    })
-    .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
-}
-
-// ========== LIKE HAIR MODEL ==========
-function likeModel(id) {
-    event && event.stopImmediatePropagation();
-    fetch('/api/like-model', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'model_id=' + id
-    })
-    .then(r => r.json())
-    .then(d => showToast(d.message, d.success ? 'success' : 'error'))
-    .catch(() => showToast('لایک ثبت شد ❤️'));
-}
+function quickAddToCart(productId) { addToCart(productId); }
+function addToCartFromShop(productId) { addToCart(productId); }
 
 // ========== BOOKING ==========
 let currentBookingStep = 0;
@@ -159,7 +136,6 @@ function renderBookingStep() {
     if (!container) return;
 
     if (currentBookingStep === 0) {
-        // Step 1: Select service
         container.innerHTML = `
             <div class="text-xs font-medium text-zinc-400 mb-4">انتخاب خدمت</div>
             <div class="grid grid-cols-2 gap-3 text-sm" id="service-select-grid"></div>
@@ -175,7 +151,7 @@ function renderBookingStep() {
                 el.innerHTML = `
                     <div class="font-medium">${service.title}</div>
                     <div class="text-xs text-zinc-400">${service.duration}</div>
-                    <div class="text-rose-400 font-semibold text-xl mt-5">${service.price.toLocaleString('fa-IR')}</div>
+                    <div class="text-rose-400 font-semibold text-xl mt-5">${(service.price || 0).toLocaleString('fa-IR')}</div>
                 `;
                 el.onclick = function() {
                     selectedServiceId = service.id;
@@ -185,7 +161,6 @@ function renderBookingStep() {
             });
         }
     } else if (currentBookingStep === 1) {
-        // Step 2: Date & time - fetch available slots via AJAX
         container.innerHTML = `
             <div>
                 <div class="text-xs font-medium text-zinc-400 mb-3">تاریخ و ساعت</div>
@@ -200,15 +175,10 @@ function renderBookingStep() {
             </div>
         `;
 
-        // Render date options
         const datePicker = document.getElementById('date-picker');
         const days = ['امروز', 'فردا', 'پس‌فردا', 'شنبه', 'یکشنبه'];
         const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
         const now = new Date();
-        const jYear = now.getFullYear() - 621;
-        const jMonth = now.getMonth();
-        const jDay = now.getDate();
-
         for (let i = 0; i < 5; i++) {
             const d = new Date();
             d.setDate(d.getDate() + i);
@@ -222,36 +192,42 @@ function renderBookingStep() {
             };
             dayEl.innerHTML = `
                 <div class="text-xs text-white/60">${days[i]}</div>
-                <div class="font-semibold text-xl text-white">${jDay + i}</div>
-                <div class="text-rose-400 text-xs">${persianMonths[jMonth]}</div>
+                <div class="font-semibold text-xl text-white">${now.getDate() + i}</div>
+                <div class="text-rose-400 text-xs">${persianMonths[now.getMonth()]}</div>
             `;
             datePicker.appendChild(dayEl);
         }
     }
 }
 
+let selectedSlot = null;
+
 function loadTimeSlots(date) {
     const container = document.getElementById('time-slots');
     if (!container) return;
     container.innerHTML = '<div class="col-span-3 text-center py-8 text-zinc-500">در حال بارگذاری...</div>';
 
-    fetch('/booking/slots?date=' + encodeURIComponent(date))
-        .then(r => r.json())
-        .then(data => {
-            if (data.slots && data.slots.length) {
-                container.innerHTML = data.slots.map(slot =>
-                    `<div onclick="selectTimeSlot(this, '${slot}')" class="bg-white/5 border border-white/10 hover:border-emerald-400 transition-all text-center py-5 rounded-3xl cursor-pointer">${slot}</div>`
-                ).join('');
-            } else {
-                container.innerHTML = '<div class="col-span-3 text-center py-8 text-zinc-500">هیچ ساعتی خالی نیست</div>';
-            }
-        })
-        .catch(() => {
-            container.innerHTML = '<div class="col-span-3 text-center py-8 text-zinc-500">خطا در بارگذاری</div>';
-        });
+    const body = 'date=' + encodeURIComponent(date) + '&' + csrfParam();
+    fetch('/booking/slots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
+    })
+    .then(r => r.json())
+    .then(data => {
+        const slots = data.available_slots || data.slots || [];
+        if (slots.length) {
+            container.innerHTML = slots.map(slot =>
+                `<div onclick="selectTimeSlot(this, '${slot}')" class="bg-white/5 border border-white/10 hover:border-emerald-400 transition-all text-center py-5 rounded-3xl cursor-pointer">${slot}</div>`
+            ).join('');
+        } else {
+            container.innerHTML = '<div class="col-span-3 text-center py-8 text-zinc-500">هیچ ساعتی خالی نیست</div>';
+        }
+    })
+    .catch(() => {
+        container.innerHTML = '<div class="col-span-3 text-center py-8 text-zinc-500">خطا در بارگذاری</div>';
+    });
 }
-
-let selectedSlot = null;
 
 function selectTimeSlot(el, slot) {
     document.querySelectorAll('#time-slots > div').forEach(d => {
@@ -282,14 +258,19 @@ function confirmBooking() {
     const dateEl = document.querySelector('#date-picker > div.ring-2');
     const date = dateEl ? dateEl.dataset.date : new Date().toISOString().split('T')[0];
 
+    const body = 'service_id=' + selectedServiceId
+        + '&date=' + encodeURIComponent(date)
+        + '&time=' + encodeURIComponent(selectedSlot)
+        + '&' + csrfParam();
+
     fetch('/booking/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'service_id=' + selectedServiceId + '&date=' + encodeURIComponent(date) + '&time=' + encodeURIComponent(selectedSlot)
+        body: body
     })
     .then(r => r.json())
     .then(d => {
-        showToast(d.message, d.success ? 'success' : 'error');
+        showToast(d.message || d.error, d.success ? 'success' : 'error');
         if (d.success) {
             currentBookingStep = 0;
             selectedServiceId = null;
@@ -305,15 +286,6 @@ function finishBooking() {
     currentBookingStep = 0;
 }
 
-// ========== KEYBOARD SHORTCUTS ==========
-document.addEventListener('keydown', function(e) {
-    if (e.metaKey && e.key === 'k') {
-        e.preventDefault();
-        const link = document.querySelector('a[href="/login"]');
-        if (link) link.click();
-    }
-});
-
 // ========== TESTIMONIAL CAROUSEL ==========
 function prevTestimonial() {
     const container = document.getElementById('testimonial-carousel');
@@ -325,24 +297,22 @@ function nextTestimonial() {
     if (container) container.scrollBy({ left: container.offsetWidth, behavior: 'smooth' });
 }
 
+// ========== KEYBOARD SHORTCUTS ==========
+document.addEventListener('keydown', function(e) {
+    if (e.metaKey && e.key === 'k') {
+        e.preventDefault();
+        const link = document.querySelector('a[href="/login"]');
+        if (link) link.click();
+    }
+});
+
 // ========== INIT ==========
 (function init() {
-    // Load services data for booking
     fetch('/api/services')
         .then(r => r.json())
         .then(data => { window._mobaroServices = data.services || data; })
         .catch(() => {});
 
-    // Update cart count on page load
-    fetch('/cart/summary')
-        .then(r => r.json())
-        .then(data => {
-            const countEl = document.getElementById('cart-count');
-            if (countEl && data.count !== undefined) countEl.innerText = data.count;
-        })
-        .catch(() => {});
-
-    // Phone input formatting
     const phoneInput = document.querySelector('input[name="phone"]');
     if (phoneInput) {
         phoneInput.addEventListener('keyup', function() {

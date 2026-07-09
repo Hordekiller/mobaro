@@ -20,6 +20,7 @@ class AuthController extends BaseController
 
     public function login(): void
     {
+        $this->verifyCsrf();
         $phone = sanitize($_POST['phone'] ?? '');
         $password = $_POST['password'] ?? '';
 
@@ -44,6 +45,7 @@ class AuthController extends BaseController
 
     public function register(): void
     {
+        $this->verifyCsrf();
         $name = sanitize($_POST['name'] ?? '');
         $family = sanitize($_POST['family'] ?? '');
         $phone = sanitize($_POST['phone'] ?? '');
@@ -97,6 +99,7 @@ class AuthController extends BaseController
 
     public function forgot(): void
     {
+        $this->verifyCsrf();
         $phone = sanitize($_POST['phone'] ?? '');
 
         if (empty($phone)) {

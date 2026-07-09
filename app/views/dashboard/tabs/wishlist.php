@@ -36,10 +36,10 @@ function removeWishlist(productId) {
     fetch('/dashboard/wishlist/toggle', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'product_id=' + productId
+        body: 'product_id=' + productId + '&' + csrfParam()
     }).then(r => r.json()).then(d => {
-        showToast(d.message, 'success');
-        setTimeout(() => location.reload(), 1000);
-    });
+        showToast(d.message || d.error, d.success ? 'success' : 'error');
+        if (d.success) setTimeout(() => location.reload(), 1000);
+    }).catch(() => showToast('خطا در ارتباط با سرور', 'error'));
 }
 </script>
