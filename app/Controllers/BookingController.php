@@ -11,7 +11,7 @@ class BookingController extends BaseController
         foreach ($rows as $row) {
             $settings[$row['setting_key']] = $row['setting_value'];
         }
-        $this->view('booking/index', compact('services', 'artists', 'settings'));
+        $this->view('booking/index', compact('services', 'artists', 'settings') + ['artistsJson' => json_encode(array_map(fn($a) => ['id' => $a['id'], 'name' => $a['name'], 'specialty' => $a['specialty'], 'avatar' => $a['avatar'] ?? ''], $artists), JSON_UNESCAPED_UNICODE)]);
     }
 
     public function getServices(): void
@@ -31,12 +31,12 @@ class BookingController extends BaseController
         $serviceId = (int) ($_POST['service_id'] ?? 0);
 
         $existingAppointments = Database::fetchAll(
-            "SELECT appointment_time FROM appointments WHERE appointment_date = ? AND status != 'cancelled'",
+            "SELECT appointment_time, service_id FROM appointments WHERE appointment_date = ? AND status != 'cancelled'",
             [$date]
         );
         $bookedTimes = array_column($existingAppointments, 'appointment_time');
 
-        $allSlots = ['۱۱:۰۰', '۱۲:۳۰', '۱۴:۰۰', '۱۴:۴۵', '۱۶:۰۰', '۱۷:۳۰', '۱۸:۰۰', '۱۹:۰۰'];
+        $allSlots = ['۱۰:۰۰', '۱۱:۰۰', '۱۲:۳۰', '۱۴:۰۰', '۱۴:۴۵', '۱۶:۰۰', '۱۷:۳۰', '۱۸:۰۰', '۱۹:۰۰', '۲۰:۰۰'];
         $availableSlots = array_values(array_diff($allSlots, $bookedTimes));
 
         $this->json([
@@ -48,7 +48,11 @@ class BookingController extends BaseController
 
     public function confirm(): void
     {
-        Auth::requireAuth();
+        if (!Auth::check()) {
+            $this->json(['require_login' => true, 'error' => 'لطفاً ابتدا وارد شوید.'], 401);
+            return;
+        }
+
         $this->verifyCsrf();
 
         $serviceId = (int) ($_POST['service_id'] ?? 0);

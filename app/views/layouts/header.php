@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($title ?? 'موبارو | سالن زیبایی حرفه‌ای') ?></title>
     <meta name="description" content="سالن زیبایی موبارو با بهترین آرایشگران و محصولات حرفه‌ای">
-    <meta name="csrf" content="<?= e($_SESSION['_csrf'] ?? '') ?>">
+    <?php $_csrf_token = $_SESSION['_csrf'] ?? ''; ?>
+    <meta name="csrf" content="<?= e($_csrf_token) ?>">
     <script>function csrfParam(){var t=document.querySelector('meta[name="csrf"]');return'_csrf='+encodeURIComponent(t?t.getAttribute('content'):'')}</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">

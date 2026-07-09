@@ -9,6 +9,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 ini_set('display_errors', env('APP_DEBUG', 'true') === 'true' ? '1' : '0');
 
 Auth::start();
+csrf();
 
 date_default_timezone_set('Asia/Tehran');
 mb_internal_encoding('UTF-8');
