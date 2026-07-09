@@ -1,9 +1,11 @@
 <?php
 
 error_reporting(E_ALL);
-ini_set('display_errors', Config::get('app.debug') ? '1' : '0');
 
 require_once __DIR__ . '/Config.php';
+
+ini_set('display_errors', Config::get('app.debug') ? '1' : '0');
+
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Auth.php';
 require_once __DIR__ . '/Router.php';

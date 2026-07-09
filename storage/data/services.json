@@ -1,0 +1,8 @@
+[
+    {"id":1,"title":"کوتاهی مو","description":"کوتاهی مو با جدیدترین متدهای روز دنیا","price":"250000","image":"service-haircut.jpg","artist_id":1,"is_active":"1"},
+    {"id":2,"title":"رنگ مو","description":"رنگ مو با برندهای معتبر و مواد باکیفیت","price":"550000","image":"service-color.jpg","artist_id":1,"is_active":"1"},
+    {"id":3,"title":"کراتینه مو","description":"کراتینه مو برای صافی و درخشندگی","price":"800000","image":"service-keratin.jpg","artist_id":2,"is_active":"1"},
+    {"id":4,"title":"میکاپ","description":"آرایش صورت با بهترین متدها","price":"450000","image":"service-makeup.jpg","artist_id":2,"is_active":"1"},
+    {"id":5,"title":"پدیکور","description":"مراقبت از پاها و ناخن","price":"350000","image":"service-pedicure.jpg","artist_id":3,"is_active":"1"},
+    {"id":6,"title":"مانیکور","description":"مراقبت از ناخن‌ها و طراحی","price":"250000","image":"service-manicure.jpg","artist_id":3,"is_active":"1"}
+]

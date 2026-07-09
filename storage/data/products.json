@@ -1,0 +1,8 @@
+[
+    {"id":1,"name":"شامپو گیاهی","description":"شامپوی طبیعی و بدون سولفات","price":"185000","image":"product-shampoo.jpg","category":"مراقبت مو","is_active":"1"},
+    {"id":2,"name":"نرم‌کننده حرفه‌ای","description":"نرم‌کننده فوق‌العاده برای موهای خشک","price":"220000","image":"product-conditioner.jpg","category":"مراقبت مو","is_active":"1"},
+    {"id":3,"name":"روغن آرگان","description":"روغن آرگان خالص برای درخشندگی مو","price":"350000","image":"product-argan.jpg","category":"روغن‌ها","is_active":"1"},
+    {"id":4,"name":"سرم مو","description":"سرم ترمیم‌کننده مو","price":"280000","image":"product-serum.jpg","category":"مراقبت مو","is_active":"1"},
+    {"id":5,"name":"ماسک مو","description":"ماسک ترمیم‌کننده و پروتئینه","price":"195000","image":"product-mask.jpg","category":"مراقبت مو","is_active":"1"},
+    {"id":6,"name":"برس حرفه‌ای","description":"برس چوبی با موی طبیعی","price":"95000","image":"product-brush.jpg","category":"ابزار","is_active":"1"}
+]

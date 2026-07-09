@@ -1,0 +1,8 @@
+[
+    {"id":1,"title":"مدل موی بلند","image":"model-1.jpg","category":"classic","is_active":"1"},
+    {"id":2,"title":"مدل موی کوتاه","image":"model-2.jpg","category":"modern","is_active":"1"},
+    {"id":3,"title":"مدل موی فر","image":"model-3.jpg","category":"classic","is_active":"1"},
+    {"id":4,"title":"مدل موی رنگ شده","image":"model-4.jpg","category":"color","is_active":"1"},
+    {"id":5,"title":"مدل موی خاص","image":"model-5.jpg","category":"modern","is_active":"1"},
+    {"id":6,"title":"مدل موی کلاسیک","image":"model-6.jpg","category":"classic","is_active":"1"}
+]
