@@ -54,7 +54,11 @@ function flashErrors(array $errors): void
 
 function flashError(string $key): ?string
 {
-    $val = $_SESSION['_flash_errors'][$key] ?? null;
+    if (!isset($_SESSION['_flash_errors'][$key])) {
+        return null;
+    }
+    $val = $_SESSION['_flash_errors'][$key];
+    unset($_SESSION['_flash_errors'][$key]);
     return $val;
 }
 
@@ -83,6 +87,9 @@ function verifyCsrf(string $token): bool
 
 function sanitize(string $input): string
 {
+    $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    $english = ['0','1','2','3','4','5','6','7','8','9'];
+    $input = str_replace($persian, $english, $input);
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
@@ -103,6 +110,9 @@ function route(string $name): string
         'shop' => '/shop',
         'cart' => '/cart',
         'booking' => '/booking',
+        'about' => '/about',
+        'contact' => '/contact',
+        'blog' => '/blog',
     ];
     return url($routes[$name] ?? '/');
 }
@@ -192,4 +202,53 @@ function truncate(string $text, int $length = 100): string
 {
     if (mb_strlen($text) <= $length) return $text;
     return mb_substr($text, 0, $length) . '...';
+}
+
+function faNum(int $num): string
+{
+    $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return str_replace(range(0, 9), $persian, (string) $num);
+}
+
+function getYoutubeId(string $url): string
+{
+    preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $url, $matches);
+    return $matches[1] ?? '';
+}
+
+function getAparatHash(string $url): string
+{
+    preg_match('/aparat\.com\/v\/([a-zA-Z0-9_-]+)/', $url, $matches);
+    if (!empty($matches[1])) return $matches[1];
+    preg_match('/videohash\/([a-zA-Z0-9_-]+)/', $url, $matches);
+    return $matches[1] ?? '';
+}
+
+function getVideoEmbedHtml(string $url, string $type = 'upload'): string
+{
+    if ($type === 'youtube') {
+        $id = getYoutubeId($url);
+        if ($id) {
+            return '<iframe class="w-full h-full" src="https://www.youtube.com/embed/' . e($id) . '" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+        }
+    }
+    if ($type === 'aparat') {
+        $hash = getAparatHash($url);
+        if ($hash) {
+            return '<iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/' . e($hash) . '/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+        }
+    }
+    return '<video controls class="w-full h-full object-contain"><source src="' . e($url) . '" type="video/mp4">مرورگر شما پخش ویدیو را پشتیبانی نمی‌کند.</video>';
+}
+
+function slugify(string $text): string
+{
+    $text = strtolower(trim($text));
+    $text = preg_replace('/[^a-z0-9\s-]/', '', $text);
+    $text = preg_replace('/[\s-]+/', '-', $text);
+    $text = trim($text, '-');
+    if (empty($text)) {
+        $text = 'item-' . bin2hex(random_bytes(4));
+    }
+    return $text;
 }

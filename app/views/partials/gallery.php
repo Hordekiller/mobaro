@@ -13,7 +13,7 @@
                 <div class="relative">
                     <img src="/assets/images/<?= e($model['image']) ?>"
                          class="w-full h-48 sm:h-56 md:h-72 object-cover hair-model"
-                         onerror="this.src='https://picsum.photos/seed/<?= e($model['id']) ?>/400/520'">
+                         onerror="this.src='/media/400/520/<?= e($model['id']) ?>'">
                     <div class="absolute top-4 right-4 text-[10px] bg-white/90 backdrop-blur px-4 py-1 rounded-3xl font-medium"><?= e($model['category']) ?></div>
                 </div>
                 <div class="px-5 py-6 relative">

@@ -24,7 +24,7 @@
                 <p class="text-[#9e9e9e] text-sm leading-relaxed"><?= e($addr['address']) ?></p>
                 <div class="flex gap-4 text-xs text-[#9e9e9e] mt-2">
                     <?php if ($addr['phone']): ?><span><i class="fa-regular fa-phone text-[#B76E79] ml-1"></i><?= e($addr['phone']) ?></span><?php endif; ?>
-                    <?php if ($addr['postal_code']): ?><span><i class="fa-regular fa-envelope text-[#B76E79] ml-1"></i><?= e($addr['postal_code']) ?></span><?php endif; ?>
+                    <?php if (!empty($addr['zip_code'])): ?><span><i class="fa-regular fa-envelope text-[#B76E79] ml-1"></i><?= e($addr['zip_code']) ?></span><?php endif; ?>
                 </div>
             </div>
             <button onclick="deleteAddress(<?= $addr['id'] ?>)" class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-400 hover:text-white transition-all flex-shrink-0">
@@ -59,7 +59,7 @@
                 <label class="block text-sm font-semibold mb-1.5">آدرس کامل</label>
                 <textarea name="address" rows="3" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="استان، شهر، خیابان، کوچه، پلاک" required></textarea>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold mb-1.5">شهر</label>
                     <input type="text" name="city" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="تهران">
@@ -67,6 +67,10 @@
                 <div>
                     <label class="block text-sm font-semibold mb-1.5">کد پستی</label>
                     <input type="text" name="zip_code" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1.5">تلفن</label>
+                    <input type="text" name="phone" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="اختیاری">
                 </div>
             </div>
             <label class="flex items-center gap-2 cursor-pointer">

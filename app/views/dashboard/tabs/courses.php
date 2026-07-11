@@ -10,10 +10,15 @@
             <div class="relative">
                 <img src="/assets/images/<?= e($enrollment['image']) ?>"
                      class="w-full h-40 object-cover"
-                     onerror="this.src='https://picsum.photos/seed/c<?= e($enrollment['course_id']) ?>/400/200'">
-                <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white <?= $enrollment['type'] === 'online' ? 'bg-purple-500/90' : 'bg-rose-500/90' ?>">
-                    <?= $enrollment['type'] === 'online' ? 'آنلاین' : 'حضوری' ?>
+                     onerror="this.src='/media/400/200/<?= e($enrollment['course_id']) ?>'">
+                <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white <?= ($enrollment['type'] ?? '') === 'online' ? 'bg-purple-500/90' : 'bg-rose-500/90' ?>">
+                    <?= ($enrollment['type'] ?? '') === 'online' ? 'آنلاین' : 'حضوری' ?>
                 </span>
+                <?php if (($enrollment['progress'] ?? 0) >= 100): ?>
+                <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold text-white bg-emerald-500/90">
+                    <i class="fa-solid fa-check ml-1"></i>تکمیل شده
+                </span>
+                <?php endif; ?>
             </div>
             <div class="p-4">
                 <h4 class="font-bold text-lg"><?= e($enrollment['title']) ?></h4>
@@ -21,16 +26,19 @@
                 <div class="mt-3">
                     <div class="flex justify-between text-xs text-[#9e9e9e] mb-1.5">
                         <span>پیشرفت</span>
-                        <span><?= e($enrollment['progress']) ?>%</span>
+                        <span><?= $enrollment['progress'] ?? 0 ?>%</span>
                     </div>
                     <div class="h-2 bg-[#FDF6F0] rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-l from-[#B76E79] to-[#D4AF37] rounded-full transition-all duration-700" style="width: <?= e($enrollment['progress']) ?>%"></div>
+                        <div class="h-full bg-gradient-to-l from-[#B76E79] to-[#D4AF37] rounded-full transition-all duration-700" style="width: <?= $enrollment['progress'] ?? 0 ?>%"></div>
                     </div>
                 </div>
-                <div class="text-xs text-[#9e9e9e] mt-3">
-                    <i class="fa-regular fa-clock text-[#B76E79] ml-1"></i><?= e($enrollment['duration']) ?>
+                <div class="flex items-center justify-between mt-3 text-xs text-[#9e9e9e]">
+                    <span><i class="fa-regular fa-clock text-[#B76E79] ml-1"></i><?= e($enrollment['duration']) ?></span>
+                    <span><i class="fa-regular fa-calendar text-[#B76E79] ml-1"></i><?= jdate('Y/m/d', strtotime($enrollment['created_at'])) ?></span>
                 </div>
-                <button class="w-full mt-4 py-3 bg-[#B76E79] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ادامه دوره</button>
+                <a href="/course/<?= e($enrollment['slug'] ?? $enrollment['course_id']) ?>/watch" class="block w-full mt-4 py-3 bg-[#B76E79] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all text-center">
+                    <?= ($enrollment['progress'] ?? 0) >= 100 ? 'مشاهده دوره' : 'ادامه دوره' ?>
+                </a>
             </div>
         </div>
         <?php endforeach; ?>
@@ -38,6 +46,7 @@
         <div class="col-span-full text-center py-12 text-[#9e9e9e]">
             <i class="fa-solid fa-graduation-cap text-5xl mb-4"></i>
             <p>دوره‌ای ثبت‌نام نکرده‌اید</p>
+            <a href="/academy" class="inline-block mt-4 px-6 py-3 bg-[#B76E79] text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all">مشاهده دوره‌ها</a>
         </div>
     <?php endif; ?>
 </div>

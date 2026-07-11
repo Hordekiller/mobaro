@@ -5,6 +5,13 @@ class NewsletterController extends BaseController
     public function subscribe(): void
     {
         $this->verifyCsrf();
+
+        if (Captcha::isEnabled('newsletter') && !Captcha::verify($_POST['captcha'] ?? '')) {
+            http_response_code(400);
+            echo json_encode(['error' => 'کد امنیتی اشتباه است.', 'captcha_error' => true], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
         $email = sanitize($_POST['contact'] ?? $_POST['email'] ?? '');
 
         if (empty($email)) {

@@ -146,7 +146,7 @@
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300 product-card-shop">
                         <div class="relative product-image overflow-hidden">
                             <a href="/product/<?= $item['id'] ?>">
-                                <img src="/assets/images/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-full h-64 object-cover transition-transform duration-500" onerror="this.src='https://picsum.photos/seed/p<?= $item['id'] ?>/400/400'">
+                                <img src="/assets/images/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-full h-64 object-cover transition-transform duration-500" onerror="this.src='/media/400/400/<?= $item['id'] ?>'">
                             </a>
                             <div class="absolute top-4 right-4 flex flex-col gap-2">
                                 <?php if ($discount > 0): ?>
@@ -287,7 +287,7 @@ const shopProducts = <?= json_encode(array_map(function($p) {
                     <span class="text-zinc-600">جمع کل:</span>
                     <span id="cartTotal" class="text-xl font-bold text-rose-500">۰ تومان</span>
                 </div>
-                <button onclick="checkout()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-xl font-medium mb-3 transition-all">
+                <button onclick="window.location.href='/cart'" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-xl font-medium mb-3 transition-all">
                     تکمیل خرید
                 </button>
                 <button onclick="toggleCart()" class="w-full border border-zinc-200 text-zinc-600 py-3 rounded-xl font-medium hover:bg-zinc-50 transition">

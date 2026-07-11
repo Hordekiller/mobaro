@@ -23,7 +23,7 @@
                         <div class="font-semibold text-2xl"><?= e($service['title']) ?></div>
                         <div class="text-rose-500 font-bold"><?= number_format($service['price'] / 1000) ?></div>
                     </div>
-                    <div class="text-zinc-500 text-sm mt-1"><?= e($service['description']) ?></div>
+                    <div class="text-zinc-500 text-sm mt-1"><?= e($service['description'] ?? '') ?></div>
                     <div class="mt-8 flex items-center justify-between text-xs">
                         <div class="flex items-center gap-x-1">
                             <i class="fa-solid fa-clock text-zinc-400"></i>

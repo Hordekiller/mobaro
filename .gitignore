@@ -55,3 +55,15 @@ logo.png
 
 # Analysis output
 analysis-output/
+
+# Environment
+.env.production
+
+# Skills
+skills/
+
+# DB backups
+rozhin_db_backup.sql
+
+# Image cache
+public/assets/images/cache/

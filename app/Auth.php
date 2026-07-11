@@ -9,7 +9,7 @@ class Auth
                 'lifetime' => 0,
                 'path' => '/',
                 'domain' => '',
-                'secure' => false,
+                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
                 'httponly' => true,
                 'samesite' => 'Lax',
             ]);

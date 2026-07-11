@@ -7,7 +7,7 @@
     <?= csrf() ?>
     <div class="flex flex-col items-center mb-8">
         <div class="relative w-[100px] h-[100px] rounded-full overflow-hidden mb-3 border-4 border-[#FDF6F0] shadow">
-            <img src="<?= $user['avatar'] ? '/assets/images/'.e($user['avatar']) : 'https://ui-avatars.com/api/?name='.urlencode($user['name'].' '.$user['family']).'&background=B76E79&color=fff&size=128' ?>"
+            <img src="<?= $user['avatar'] ? '/assets/images/'.e($user['avatar']) : '/avatar/'.urlencode($user['name'].' '.$user['family']).'/256' ?>"
                  alt="avatar" class="w-full h-full object-cover" id="avatar-preview">
             <label for="avatar-upload" class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                 <i class="fa-solid fa-camera text-xl"></i>
@@ -43,7 +43,7 @@
 
     <div class="mt-6 text-sm text-[#9e9e9e] leading-relaxed bg-[#FDF6F0] rounded-xl p-4">
         <i class="fa-regular fa-circle-info text-[#B76E79] ml-1"></i>
-        عضویت شما از <strong><?= jdate('Y F Y', strtotime($user['created_at'])) ?></strong>
+        عضویت شما از <strong><?= jdate('d F Y', strtotime($user['created_at'])) ?></strong>
     </div>
 
     <button type="submit" class="w-full mt-5 py-3.5 bg-gradient-to-l from-[#B76E79] to-[#9c5761] text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">ذخیره تغییرات</button>

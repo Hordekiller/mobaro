@@ -4,9 +4,13 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-\Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->load();
+$envFile = __DIR__ . '/../.env';
+if (is_file($envFile)) {
+    \Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->load();
+}
 
-ini_set('display_errors', env('APP_DEBUG', 'true') === 'true' ? '1' : '0');
+$appDebug = ($_ENV['APP_DEBUG'] ?? $_SERVER['APP_DEBUG'] ?? 'true') === 'true';
+ini_set('display_errors', $appDebug ? '1' : '0');
 
 $sessPath = __DIR__ . '/../storage/sessions';
 if (!is_dir($sessPath)) {
@@ -18,6 +22,13 @@ csrf();
 
 date_default_timezone_set('Asia/Tehran');
 mb_internal_encoding('UTF-8');
+
+Cache::init();
+
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
 
 set_exception_handler(function (Throwable $e) {
     if (Config::get('app.debug')) {

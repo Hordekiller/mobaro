@@ -37,12 +37,15 @@
 </form>
 
 <script>
-document.querySelectorAll('.fa-eye').forEach(icon => {
+document.querySelectorAll('.fa-eye, .fa-eye-slash').forEach(icon => {
     icon.addEventListener('click', function() {
         const input = this.closest('.relative').querySelector('input');
-        input.type = input.type === 'password' ? 'text' : 'password';
-        this.classList.toggle('fa-eye');
-        this.classList.toggle('fa-eye-slash');
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        this.classList.remove('fa-regular');
+        this.classList.add(isPassword ? 'fa-solid' : 'fa-regular');
+        this.classList.toggle('fa-eye', !isPassword);
+        this.classList.toggle('fa-eye-slash', isPassword);
     });
 });
 

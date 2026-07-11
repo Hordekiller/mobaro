@@ -110,7 +110,14 @@ function subscribeNewsletter() {
     if (!input) return;
     const val = input.value.trim();
     if (!val) { showToast('لطفا ایمیل یا شماره تماس را وارد کنید', 'error'); return; }
-    const body = 'contact=' + encodeURIComponent(val) + '&' + csrfParam();
+    let body = 'contact=' + encodeURIComponent(val);
+    const captchaInput = document.getElementById('newsletter-captcha');
+    if (captchaInput) {
+        const captchaVal = captchaInput.value.trim();
+        if (!captchaVal) { showToast('لطفا کد امنیتی را وارد کنید', 'error'); return; }
+        body += '&captcha=' + encodeURIComponent(captchaVal);
+    }
+    body += '&' + csrfParam();
     fetch('/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -119,9 +126,28 @@ function subscribeNewsletter() {
     .then(function(r) { return r.json(); })
     .then(function(d) {
         showToast(d.message || d.error, d.success ? 'success' : 'error');
-        if (d.success) input.value = '';
+        if (d.success) {
+            input.value = '';
+            if (captchaInput) captchaInput.value = '';
+            refreshNewsletterCaptcha();
+        }
     })
     .catch(function() { showToast('خطا در ارتباط با سرور', 'error'); });
+}
+
+function refreshNewsletterCaptcha() {
+    var body = '_csrf=' + encodeURIComponent(getCsrf());
+    fetch('/booking/captcha/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        var el = document.getElementById('newsletter-captcha-q');
+        if (el && d.question) el.textContent = d.question + ' = ?';
+    })
+    .catch(function() {});
 }
 
 // ========== CART ==========
@@ -173,7 +199,7 @@ function renderCart() {
         }
         container.innerHTML = items.map(function(item) { return `
             <div class="flex items-center gap-4 mb-4 pb-4 border-b border-zinc-100">
-                <img src="/assets/images/${item.image}" alt="${item.name}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='https://picsum.photos/seed/i${item.id}/200/200'">
+                <img src="/assets/images/${item.image}" alt="${item.name}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='/media/200/200/${item.id}'">
                 <div class="flex-1">
                     <h4 class="font-medium text-zinc-800">${item.name}</h4>
                     <p class="text-sm text-zinc-500">${item.brand || ''}</p>
@@ -215,8 +241,8 @@ function updateShopQuantity(productId, delta, btn) {
     .catch(function() {});
 }
 
-function removeFromCartItem(productId) {
-    const body = 'product_id=' + productId + '&' + csrfParam();
+function removeFromCartItem(productId, type) {
+    const body = 'product_id=' + productId + '&type=' + (type || 'product') + '&' + csrfParam();
     fetch('/shop/cart/remove', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -232,25 +258,6 @@ function removeFromCartItem(productId) {
         }
     })
     .catch(function() {});
-}
-
-function checkout() {
-    const body = csrfParam();
-    fetch('/shop/cart/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-        if (d.require_login) { window.location.href = '/login?redirect=/shop'; return; }
-        showToast(d.message || d.error, d.success ? 'success' : 'error');
-        if (d.success) {
-            document.getElementById('cart-count').textContent = '0';
-            toggleCart();
-        }
-    })
-    .catch(function() { showToast('خطا در ثبت سفارش', 'error'); });
 }
 
 // ========== WISHLIST ==========
@@ -660,6 +667,7 @@ function renderBookingStep() {
                     '</div>' +
                 '</div>' +
             '</div>' +
+            (window._mobaroCaptchaEnabled !== false ? (
             '<div class="mt-6 p-5 ' + (isDark ? 'bg-white/5 border-white/10' : 'bg-zinc-50 border-zinc-200') + ' border rounded-3xl">' +
                 '<div class="text-xs font-medium ' + textMuted + ' mb-2">کد امنیتی</div>' +
                 '<div class="flex items-center gap-3">' +
@@ -671,7 +679,8 @@ function renderBookingStep() {
                         '<input type="text" id="captcha-input" placeholder="پاسخ را وارد کنید" class="mt-3 w-full px-4 py-3 ' + (isDark ? 'bg-zinc-800 text-white border-white/20' : 'bg-white text-zinc-800 border-zinc-200') + ' border-2 rounded-xl focus:border-rose-400 focus:ring-0 outline-none transition-all text-center text-lg font-bold" inputmode="numeric">' +
                     '</div>' +
                 '</div>' +
-            '</div>' +
+            '</div>'
+            ) : '') +
             '<button onclick="finishBooking()" class="mt-6 w-full py-7 bg-emerald-500 text-white font-bold rounded-3xl" id="bookingConfirmBtn">تأیید و ذخیره نوبت</button>' +
             '<div onclick="prevBookingStep()" class="text-center text-xs ' + (isDark ? 'text-white/60' : 'text-zinc-400') + ' mt-6 cursor-pointer">ویرایش نوبت</div>';
     }
@@ -763,15 +772,20 @@ function finishBooking() {
         showToast('لطفاً تاریخ و ساعت را انتخاب کنید', 'error');
         return;
     }
-    var captchaInput = document.getElementById('captcha-input');
-    var captchaVal = captchaInput ? captchaInput.value.trim() : '';
-    if (!captchaVal) {
-        showToast('لطفاً پاسخ کد امنیتی را وارد کنید', 'error');
-        return;
+    var captchaVal = '';
+    if (window._mobaroCaptchaEnabled !== false) {
+        var captchaInput = document.getElementById('captcha-input');
+        captchaVal = captchaInput ? captchaInput.value.trim() : '';
+        if (!captchaVal) {
+            showToast('لطفاً پاسخ کد امنیتی را وارد کنید', 'error');
+            return;
+        }
     }
     var btn = document.getElementById('bookingConfirmBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'در حال ثبت...'; }
-    var body = 'service_id=' + (svc.id || svc.service_id || 0) + '&date=' + encodeURIComponent(selectedDate) + '&time=' + encodeURIComponent(selectedTime) + '&artist_id=' + selectedArtistId + '&captcha=' + encodeURIComponent(captchaVal) + '&' + csrfParam();
+    var body = 'service_id=' + (svc.id || svc.service_id || 0) + '&date=' + encodeURIComponent(selectedDate) + '&time=' + encodeURIComponent(selectedTime) + '&artist_id=' + selectedArtistId;
+    if (captchaVal) body += '&captcha=' + encodeURIComponent(captchaVal);
+    body += '&' + csrfParam();
     fetch('/booking/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -787,13 +801,7 @@ function finishBooking() {
             return;
         }
         if (data.success) {
-            showToast(data.message || 'نوبت شما با موفقیت ثبت شد!', 'success');
-            currentBookingStep = 0;
-            selectedArtistId = 0;
-            selectedServiceIndex = null;
-            selectedDate = '';
-            selectedTime = '';
-            renderBookingStep();
+            showBookingConfirmation(data);
         } else {
             showToast(data.error || 'خطا در ثبت نوبت', 'error');
             if (data.captcha_error) {
@@ -805,6 +813,49 @@ function finishBooking() {
         if (btn) { btn.disabled = false; btn.textContent = 'تأیید و ذخیره نوبت'; }
         showToast('خطا در ارتباط با سرور', 'error');
     });
+}
+
+function showBookingConfirmation(data) {
+    var container = getBookingContainer();
+    if (!container) return;
+    var displayDate = '';
+    if (data.date) {
+        var dt = new Date(data.date);
+        displayDate = getPersianDateStr(dt);
+    }
+    container.innerHTML =
+        '<div class="text-center py-8">' +
+            '<div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">' +
+                '<i class="fa-solid fa-check text-4xl text-emerald-500"></i>' +
+            '</div>' +
+            '<h3 class="text-xl font-bold text-zinc-800 mb-2">نوبت شما ثبت شد!</h3>' +
+            '<p class="text-zinc-500 text-sm mb-6">' + (data.service || '') + ' — ' + displayDate + ' ساعت ' + (data.time || '') + '</p>' +
+            '<div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">' +
+                '<div class="flex items-center justify-center gap-2 mb-2">' +
+                    '<i class="fa-solid fa-phone text-amber-600"></i>' +
+                    '<span class="font-bold text-amber-800">تأیید نهایی</span>' +
+                '</div>' +
+                '<p class="text-amber-700 text-sm leading-relaxed">برای تأیید نهایی نوبت خود، لطفاً با شماره زیر تماس بگیرید:</p>' +
+                '<a href="tel:' + (data.booking_phone || '02122884267').replace(/[^0-9]/g, '') + '" class="inline-block mt-3 bg-amber-500 text-white px-8 py-3 rounded-2xl font-bold text-lg hover:bg-amber-600 transition-colors">' +
+                    '<i class="fa-solid fa-phone ml-2"></i>' + (data.booking_phone || '۰۲۱-۲۲۸۸۴۲۶۷') +
+                '</a>' +
+            '</div>' +
+            '<button onclick="resetBookingForm()" class="text-rose-500 text-sm hover:underline">رزرو نوبت جدید</button>' +
+        '</div>';
+    currentBookingStep = 0;
+    selectedArtistId = 0;
+    selectedServiceIndex = null;
+    selectedDate = '';
+    selectedTime = '';
+}
+
+function resetBookingForm() {
+    currentBookingStep = 0;
+    selectedArtistId = 0;
+    selectedServiceIndex = null;
+    selectedDate = '';
+    selectedTime = '';
+    renderBookingStep();
 }
 
 function completeBookingDemo() {
@@ -850,14 +901,10 @@ function likeModel(id) {
 
 // ========== EDUCATION HELPERS ==========
 function watchFeaturedVideo() {
-    showToast('در حال پخش ویدیو آموزشی...', 'success');
+    window.location.href = '/academy';
 }
 function openTutorial(n) {
-    var messages = [
-        'در حال پخش ویدیو «چگونه موهای خود را لایت کنیم»',
-        'در حال پخش ویدیو «آرایش روزانه در ۱۰ دقیقه»'
-    ];
-    showToast(messages[n] || 'در حال پخش ویدیو...');
+    window.location.href = '/academy';
 }
 
 // ========== PHONE VALIDATION ==========

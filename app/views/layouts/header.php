@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="/assets/fonts/google-fonts-woff2.css">
     <link rel="stylesheet" href="/assets/fonts/vazirmatn-font-face.css">
     <link rel="stylesheet" href="/assets/css/frontend.css?v=2.2">
-    <link rel="stylesheet" href="/assets/css/profile-styles.css?v=2.2">
     <style>
         :root {
             --primary: <?= e($settings['color_primary'] ?? '#e11d48') ?>;
@@ -43,9 +42,11 @@
                     <a href="/" class="nav-link text-zinc-700 hover:text-rose-600 <?= isActive('/') ?>">خانه</a>
                     <a href="/#services" class="nav-link text-zinc-700 hover:text-rose-600">خدمات</a>
                     <a href="/#models" class="nav-link text-zinc-700 hover:text-rose-600">مدل‌ها</a>
-                    <a href="/#education" class="nav-link text-zinc-700 hover:text-rose-600">آموزش</a>
+                    <a href="/academy" class="nav-link text-zinc-700 hover:text-rose-600 <?= isActive('/academy') ?>">آکادمی</a>
                     <a href="/shop" class="nav-link text-zinc-700 hover:text-rose-600 <?= isActive('/shop') ?>">فروشگاه</a>
-                    <a href="/#about" class="nav-link text-zinc-700 hover:text-rose-600">درباره ما</a>
+                    <a href="/blog" class="nav-link text-zinc-700 hover:text-rose-600 <?= isActive('/blog') ?>">وبلاگ</a>
+                    <a href="/contact" class="nav-link text-zinc-700 hover:text-rose-600 <?= isActive('/contact') ?>">تماس با ما</a>
+                    <a href="/about" class="nav-link text-zinc-700 hover:text-rose-600 <?= isActive('/about') ?>">درباره ما</a>
                 </div>
 
                 <div class="flex items-center gap-x-4">
@@ -53,14 +54,14 @@
                         <button onclick="toggleWishlistSidebar()" class="relative flex items-center gap-x-2 px-4 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
                             <i class="fa-regular fa-heart text-rose-500"></i>
                             <span id="wishlist-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
-                                <?= count($_SESSION['wishlist'] ?? []) ?>
+                                <?= e(count($_SESSION['wishlist'] ?? [])) ?>
                             </span>
                         </button>
 
                         <button onclick="toggleCart()" class="flex items-center gap-x-2 px-5 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
                             <i class="fa-solid fa-cart-shopping text-rose-500"></i>
                             <span id="cart-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
-                                <?= array_sum(array_column($_SESSION['cart'] ?? [], 'qty')) ?>
+                                <?= e(array_sum(array_column($_SESSION['cart'] ?? [], 'qty'))) ?>
                             </span>
                         </button>
 

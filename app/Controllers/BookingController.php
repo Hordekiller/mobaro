@@ -2,23 +2,26 @@
 
 class BookingController extends BaseController
 {
+    private function getFormData(): array
+    {
+        return Cache::remember('booking_form_data', 600, function () {
+            $services = Database::fetchAll("SELECT * FROM services WHERE is_active = 1");
+            $artists = Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
+            return compact('services', 'artists');
+        }, 'booking');
+    }
+
     public function index(): void
     {
-        $services = Database::fetchAll("SELECT * FROM services WHERE is_active = 1");
-        $artists = Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
-        $settings = [];
-        $rows = Database::fetchAll("SELECT setting_key, setting_value FROM settings");
-        foreach ($rows as $row) {
-            $settings[$row['setting_key']] = $row['setting_value'];
-        }
+        $formData = $this->getFormData();
+        $services = $formData['services'];
+        $artists = $formData['artists'];
+        $settings = Settings::all();
 
-        $captchaKey = 'captcha_' . rand(1, 10);
-        $expression = $settings[$captchaKey] ?? '5+3';
-        $parsed = self::parseCaptcha($expression);
-        $_SESSION['captcha_answer'] = $parsed['answer'];
-        $captchaQuestion = $parsed['question'];
+        $captchaEnabled = Captcha::isEnabled('booking');
+        $captchaQuestion = $captchaEnabled ? Captcha::store() : '';
 
-        $this->view('booking/index', compact('services', 'artists', 'settings', 'captchaQuestion') + [
+        $this->view('booking/index', compact('services', 'artists', 'settings', 'captchaQuestion', 'captchaEnabled') + [
             'artistsJson' => json_encode(array_map(fn($a) => [
                 'id' => $a['id'],
                 'name' => $a['name'],
@@ -33,13 +36,15 @@ class BookingController extends BaseController
     public function getServices(): void
     {
         $this->verifyCsrf();
-        $services = Database::fetchAll(
-            "SELECT s.*, a.id as artist_id, a.name as artist_name
-             FROM services s
-             INNER JOIN artist_services a_s ON s.id = a_s.service_id
-             INNER JOIN artists a ON a_s.artist_id = a.id
-             WHERE s.is_active = 1"
-        );
+        $services = Cache::remember('booking_services', 600, function () {
+            return Database::fetchAll(
+                "SELECT s.*, a.id as artist_id, a.name as artist_name
+                 FROM services s
+                 INNER JOIN artist_services a_s ON s.id = a_s.service_id
+                 INNER JOIN artists a ON a_s.artist_id = a.id
+                 WHERE s.is_active = 1"
+            );
+        }, 'booking');
         $this->json(['services' => $services]);
     }
 
@@ -96,13 +101,7 @@ class BookingController extends BaseController
 
         $this->verifyCsrf();
 
-        $input = $_POST['captcha'] ?? '';
-        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-        $input = str_replace($persian, range(0, 9), $input);
-        $captchaAnswer = (int) ($input === '' ? -1 : $input);
-        $expectedAnswer = (int) ($_SESSION['captcha_answer'] ?? -1);
-        unset($_SESSION['captcha_answer']);
-        if ($captchaAnswer !== $expectedAnswer || $expectedAnswer === -1) {
+        if (Captcha::isEnabled('booking') && !Captcha::verify($_POST['captcha'] ?? '')) {
             $this->json(['error' => 'پاسخ کپچا اشتباه است.', 'captcha_error' => true], 400);
             return;
         }
@@ -167,13 +166,16 @@ class BookingController extends BaseController
             'artist_id' => $artistId ?: null,
             'appointment_date' => $date,
             'appointment_time' => $time,
-            'status' => 'confirmed',
+            'status' => 'pending',
         ]);
+
+        $bookingPhone = Settings::get('booking_phone', '۰۲۱-۲۲۸۸۴۲۶۷');
 
         $this->json([
             'success' => true,
             'appointment_id' => $appointmentId,
-            'message' => 'نوبت شما با موفقیت ثبت شد.',
+            'message' => 'نوبت شما ثبت شد! برای تأیید نهایی با شماره ' . $bookingPhone . ' تماس بگیرید.',
+            'booking_phone' => $bookingPhone,
             'service' => $service['title'],
             'date' => $date,
             'time' => $time,
@@ -183,30 +185,7 @@ class BookingController extends BaseController
     public function refreshCaptcha(): void
     {
         $this->verifyCsrf();
-        $settings = [];
-        $rows = Database::fetchAll("SELECT setting_key, setting_value FROM settings");
-        foreach ($rows as $row) {
-            $settings[$row['setting_key']] = $row['setting_value'];
-        }
-        $captchaKey = 'captcha_' . rand(1, 10);
-        $expression = $settings[$captchaKey] ?? '5+3';
-        $parsed = self::parseCaptcha($expression);
-        $_SESSION['captcha_answer'] = $parsed['answer'];
-        $this->json(['question' => $parsed['question']]);
-    }
-
-    private static function parseCaptcha(string $expression): array
-    {
-        $expression = trim($expression);
-        if (preg_match('/^(\d+)\s*([\+-])\s*(\d+)$/', $expression, $m)) {
-            $a = (int) $m[1];
-            $op = $m[2];
-            $b = (int) $m[3];
-            $answer = $op === '+' ? $a + $b : $a - $b;
-            $persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $question = str_replace(range(0, 9), $persianDigits, $expression);
-            return ['question' => $question, 'answer' => $answer];
-        }
-        return ['question' => '۵ + ۳', 'answer' => 8];
+        $question = Captcha::store();
+        $this->json(['question' => $question]);
     }
 }

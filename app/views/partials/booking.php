@@ -34,20 +34,6 @@
 </section>
 
 <?php
-// Generate captcha for the booking partial
-$captchaKey = 'captcha_' . rand(1, 10);
-$expression = $settings[$captchaKey] ?? '5+3';
-$expression = trim($expression);
-if (preg_match('/^(\d+)\s*([\+-])\s*(\d+)$/', $expression, $m)) {
-    $a = (int)$m[1]; $op = $m[2]; $b = (int)$m[3];
-    $answer = $op === '+' ? $a + $b : $a - $b;
-    $persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    $captchaQuestion = str_replace(range(0,9), $persianDigits, $expression);
-    $_SESSION['captcha_answer'] = $answer;
-} else {
-    $captchaQuestion = '۵ + ۳';
-    $_SESSION['captcha_answer'] = 8;
-}
 $artistsJson = json_encode(array_map(fn($a) => [
     'id' => $a['id'],
     'name' => $a['name'],
@@ -56,8 +42,10 @@ $artistsJson = json_encode(array_map(fn($a) => [
     'working_hours' => $a['working_hours'] ?? '۹ صبح - ۸ شب',
     'bio' => $a['bio'] ?? '',
 ], $artists ?? []), JSON_UNESCAPED_UNICODE);
+$capQ = $captchaQuestion ?? Captcha::store();
 ?>
 <script>
 window._mobaroArtists = <?= $artistsJson ?>;
-window._mobaroCaptchaQuestion = '<?= $captchaQuestion ?>';
+window._mobaroCaptchaQuestion = '<?= $capQ ?>';
+window._mobaroCaptchaEnabled = <?= isset($captchaEnabled) ? ($captchaEnabled ? 'true' : 'false') : 'true' ?>;
 </script>

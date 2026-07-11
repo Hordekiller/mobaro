@@ -27,8 +27,11 @@
                     <div class="space-y-5 text-sm">
                         <a href="/#services" class="block cursor-pointer hover:text-white transition-colors">خدمات</a>
                         <a href="/#models" class="block cursor-pointer hover:text-white transition-colors">مدل‌ها</a>
-                        <a href="/#education" class="block cursor-pointer hover:text-white transition-colors">آموزش</a>
+                        <a href="/about" class="block cursor-pointer hover:text-white transition-colors">درباره ما</a>
+                        <a href="/academy" class="block cursor-pointer hover:text-white transition-colors">آکادمی</a>
                         <a href="/shop" class="block cursor-pointer hover:text-white transition-colors">فروشگاه</a>
+                        <a href="/blog" class="block cursor-pointer hover:text-white transition-colors">وبلاگ</a>
+                        <a href="/contact" class="block cursor-pointer hover:text-white transition-colors">تماس با ما</a>
                     </div>
                 </div>
 
@@ -38,7 +41,7 @@
                         <?php if (!empty($artists)): ?>
                             <?php $i = 0; foreach ($artists as $artist): if ($i >= 2) break; $i++; ?>
                             <div class="flex gap-x-4">
-                                <img src="<?= $artist['avatar'] ? '/assets/images/' . e($artist['avatar']) : 'https://ui-avatars.com/api/?name=' . urlencode($artist['name']) . '&background=e11d48&color=fff' ?>"
+                                <img src="<?= $artist['avatar'] ? '/assets/images/' . e($artist['avatar']) : '/avatar/' . urlencode($artist['name']) . '/72' ?>"
                                      class="w-9 h-9 object-cover rounded-2xl" alt="">
                                 <div class="text-xs">
                                     <div class="font-medium text-white"><?= e($artist['name']) ?></div>
@@ -74,8 +77,17 @@
                         <div class="relative">
                             <input id="newsletter-input" type="text" placeholder="ایمیل یا شماره تماس"
                                    class="w-full bg-zinc-800 border-none focus:ring-2 focus:ring-rose-400 rounded-3xl py-6 px-7 text-sm placeholder:text-zinc-500">
+                            <?php $newsletterCaptcha = Captcha::isEnabled('newsletter'); ?>
+                            <?php if ($newsletterCaptcha): ?>
+                            <div class="flex items-center gap-2 mt-3" id="newsletter-captcha-row">
+                                <input id="newsletter-captcha" type="text" inputmode="numeric" placeholder="کد امنیتی"
+                                       class="flex-1 bg-zinc-800 border-none focus:ring-2 focus:ring-rose-400 rounded-3xl py-4 px-5 text-sm placeholder:text-zinc-500 text-center">
+                                <span class="text-zinc-400 text-xs whitespace-nowrap" id="newsletter-captcha-q"><?= e($_SESSION['captcha_question'] ?? Captcha::store()) ?> = ?</span>
+                                <button type="button" onclick="refreshNewsletterCaptcha()" class="text-zinc-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-rotate"></i></button>
+                            </div>
+                            <?php endif; ?>
                             <button onclick="subscribeNewsletter()"
-                                    class="absolute left-2 top-1/2 -translate-y-1/2 bg-white text-zinc-900 px-8 py-4 text-xs font-bold rounded-3xl">ارسال</button>
+                                    class="mt-3 w-full bg-white text-zinc-900 py-5 text-xs font-bold rounded-3xl hover:bg-rose-50 transition-colors">عضویت در خبرنامه</button>
                         </div>
                     </div>
                 </div>
@@ -105,9 +117,9 @@
                         <a href="/login" class="cursor-pointer hover:text-white">ورود به پنل</a>
                     <?php endif; ?>
                     <div class="w-px h-3 bg-white/30"></div>
-                    <span class="cursor-pointer hover:text-white">حریم خصوصی</span>
+                    <a href="/privacy" class="cursor-pointer hover:text-white">حریم خصوصی</a>
                     <div class="w-px h-3 bg-white/30"></div>
-                    <span class="cursor-pointer hover:text-white">شرایط استفاده</span>
+                    <a href="/terms" class="cursor-pointer hover:text-white">شرایط استفاده</a>
                 </div>
                 <div class="text-emerald-300 mt-6 md:mt-0">ساخته شده با ❤️ برای زیبایی شما</div>
             </div>
@@ -127,11 +139,15 @@
                 <i class="fa-solid fa-store text-xl"></i>
                 <span class="text-[10px] font-medium">فروشگاه</span>
             </a>
+            <a href="/blog" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
+                <i class="fa-solid fa-pen text-xl"></i>
+                <span class="text-[10px] font-medium">وبلاگ</span>
+            </a>
             <a href="/#booking" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
                 <i class="fa-solid fa-calendar-check text-xl"></i>
                 <span class="text-[10px] font-medium">رزرو</span>
             </a>
-            <a href="/#education" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
+            <a href="/academy" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
                 <i class="fa-solid fa-graduation-cap text-xl"></i>
                 <span class="text-[10px] font-medium">آکادمی</span>
             </a>

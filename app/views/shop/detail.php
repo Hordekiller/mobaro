@@ -28,7 +28,7 @@ $inWishlist = in_array($product['id'], $_SESSION['wishlist'] ?? []);
                 <!-- Image Gallery -->
                 <div>
                     <div class="relative rounded-2xl overflow-hidden bg-zinc-50 mb-4 product-image">
-                        <img id="mainImage" src="/assets/images/<?= e($product['image']) ?>" alt="<?= e($product['name']) ?>" class="w-full h-96 md:h-[500px] object-cover" onerror="this.src='https://picsum.photos/seed/<?= e($product['id']) ?>/600/600'">
+                        <img id="mainImage" src="/assets/images/<?= e($product['image']) ?>" alt="<?= e($product['name']) ?>" class="w-full h-96 md:h-[500px] object-cover" onerror="this.src='/media/600/600/<?= e($product['id']) ?>'">
                         <?php if ($discount > 0): ?>
                         <span class="absolute top-4 right-4 bg-gradient-to-l from-red-500 to-red-600 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg"><?= $discount ?>% تخفیف</span>
                         <?php endif; ?>
@@ -37,7 +37,7 @@ $inWishlist = in_array($product['id'], $_SESSION['wishlist'] ?? []);
                         <?php endif; ?>
                     </div>
                     <div class="flex gap-3 overflow-x-auto" id="thumbnails">
-                        <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-rose-500 opacity-100 hover:opacity-80 transition-all thumb-img" onclick="changeImage(this)" onerror="this.src='https://picsum.photos/seed/<?= e($product['id']) ?>/200/200'">
+                        <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-rose-500 opacity-100 hover:opacity-80 transition-all thumb-img" onclick="changeImage(this)" onerror="this.src='/media/200/200/<?= e($product['id']) ?>'">
                         <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'">
                         <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'">
                     </div>
@@ -129,6 +129,71 @@ $inWishlist = in_array($product['id'], $_SESSION['wishlist'] ?? []);
             </div>
         </div>
 
+        <!-- Reviews -->
+        <div class="mt-12 bg-white rounded-3xl shadow-lg p-6 md:p-10">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-zinc-800">نظرات کاربران</h2>
+                    <p class="text-zinc-400 text-sm mt-1"><?= faNum($reviewCount) ?> نظر • میانگین امتیاز <?= number_format($avgRating, 1) ?></p>
+                </div>
+                <button onclick="document.getElementById('review-form').scrollIntoView({behavior:'smooth'})" class="px-5 py-2.5 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">
+                    <i class="fa-solid fa-plus ml-1"></i>ثبت نظر
+                </button>
+            </div>
+
+            <div id="reviews-list" class="space-y-4">
+                <?php if (!empty($reviews)): ?>
+                    <?php foreach ($reviews as $rev): ?>
+                    <div class="border border-zinc-100 rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-xs font-bold"><?= e(mb_substr($rev['user_name'], 0, 1)) ?></div>
+                                <div>
+                                    <div class="font-medium text-sm text-zinc-800"><?= e($rev['user_name']) ?></div>
+                                    <div class="text-amber-400 text-xs">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <i class="fa-<?= $i <= $rev['rating'] ? 'solid' : 'regular' ?> fa-star"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-zinc-400"><?= jdate('Y/m/d', strtotime($rev['created_at'])) ?></span>
+                        </div>
+                        <p class="text-sm text-zinc-600 leading-relaxed"><?= e($rev['text']) ?></p>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="text-center py-10 text-zinc-400 text-sm">هنوز نظری ثبت نشده است. اولین نفر باشید!</div>
+                <?php endif; ?>
+            </div>
+
+            <?php if (Auth::check()): ?>
+            <div id="review-form" class="mt-8 bg-zinc-50 rounded-2xl p-6">
+                <h3 class="font-bold text-zinc-800 mb-4">ثبت نظر شما</h3>
+                <form onsubmit="submitReview(event, <?= $product['id'] ?>)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-zinc-700 mb-2">امتیاز شما</label>
+                        <div class="flex gap-1 text-2xl text-zinc-300" id="star-rating">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="fa-regular fa-star cursor-pointer hover:text-amber-400 transition-colors star-select" data-value="<?= $i ?>" onclick="setRating(<?= $i ?>)"></i>
+                            <?php endfor; ?>
+                        </div>
+                        <input type="hidden" name="rating" id="rating-value" value="0">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-zinc-700 mb-2">متن نظر</label>
+                        <textarea name="text" id="review-text" rows="3" class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="نظر خود را بنویسید..." required></textarea>
+                    </div>
+                    <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ثبت نظر</button>
+                </form>
+            </div>
+            <?php else: ?>
+            <div class="mt-8 bg-zinc-50 rounded-2xl p-6 text-center">
+                <p class="text-zinc-500 text-sm">برای ثبت نظر <a href="/login" class="text-rose-500 font-semibold hover:underline">وارد شوید</a></p>
+            </div>
+            <?php endif; ?>
+        </div>
+
         <!-- Related Products -->
         <?php if (!empty($related)): ?>
         <div class="mt-12">
@@ -147,7 +212,7 @@ $inWishlist = in_array($product['id'], $_SESSION['wishlist'] ?? []);
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300">
                     <div class="relative product-image overflow-hidden">
                         <a href="/product/<?= $rel['id'] ?>">
-                            <img src="/assets/images/<?= e($rel['image']) ?>" class="w-full h-52 object-cover transition-transform duration-500" onerror="this.src='https://picsum.photos/seed/pr<?= $rel['id'] ?>/400/400'">
+                            <img src="/assets/images/<?= e($rel['image']) ?>" class="w-full h-52 object-cover transition-transform duration-500" onerror="this.src='/media/400/400/<?= $rel['id'] ?>'">
                         </a>
                         <?php if ($relDiscount > 0): ?>
                         <span class="absolute top-3 right-3 bg-gradient-to-l from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-full"><?= $relDiscount ?>%</span>
@@ -214,5 +279,36 @@ function shareProduct() {
             showToast('لینک محصول کپی شد');
         });
     }
+}
+function setRating(val) {
+    document.getElementById('rating-value').value = val;
+    document.querySelectorAll('.star-select').forEach(function(el) {
+        var starVal = parseInt(el.dataset.value);
+        el.className = (starVal <= val ? 'fa-solid' : 'fa-regular') + ' fa-star cursor-pointer hover:text-amber-400 transition-colors star-select' + (starVal <= val ? ' text-amber-400' : ' text-zinc-300');
+    });
+}
+function submitReview(e, productId) {
+    e.preventDefault();
+    var rating = document.getElementById('rating-value').value;
+    var text = document.getElementById('review-text').value;
+    if (rating === '0') { showToast('لطفاً امتیاز دهید', 'error'); return; }
+    if (text.trim() === '') { showToast('لطفاً متن نظر را وارد کنید', 'error'); return; }
+    var btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-2"></i>در حال ثبت...';
+    var body = 'rating=' + rating + '&text=' + encodeURIComponent(text.trim()) + '&' + csrfParam();
+    fetch('/product/' + productId + '/review', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.success) {
+            showToast(d.message || 'نظر شما ثبت شد!');
+            document.getElementById('review-text').value = '';
+            setRating(0);
+            setTimeout(function() { location.reload(); }, 1500);
+        } else {
+            showToast(d.error || 'خطا', 'error');
+        }
+    })
+    .catch(function() { showToast('خطا در ارتباط با سرور', 'error'); })
+    .finally(function() { btn.disabled = false; btn.textContent = 'ثبت نظر'; });
 }
 </script>

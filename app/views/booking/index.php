@@ -35,4 +35,5 @@
 <script>
 window._mobaroArtists = <?= $artistsJson ?? '[]' ?>;
 window._mobaroCaptchaQuestion = '<?= $captchaQuestion ?? '۵ + ۳' ?>';
+window._mobaroCaptchaEnabled = <?= ($captchaEnabled ?? true) ? 'true' : 'false' ?>;
 </script>

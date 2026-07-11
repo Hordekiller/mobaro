@@ -63,8 +63,8 @@
             </div>
         </div>
         <div class="flex gap-2 mt-3">
-            <button class="px-4 py-2 bg-[#B76E79] text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all">تغییر نوبت</button>
-            <button class="px-4 py-2 bg-red-50 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-500 hover:text-white transition-all">لغو نوبت</button>
+            <a href="/dashboard/appointments" class="px-4 py-2 bg-[#B76E79] text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all text-center">تغییر نوبت</a>
+            <button onclick="cancelAppointment(<?= $nextAppointment['id'] ?>)" class="px-4 py-2 bg-red-50 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-500 hover:text-white transition-all">لغو نوبت</button>
         </div>
         <?php else: ?>
         <div class="text-center py-8 text-[#9e9e9e]">
@@ -103,3 +103,17 @@
         <p class="text-[#9e9e9e] text-sm text-center py-6">هنوز فعالیتی ثبت نشده است</p>
     <?php endif; ?>
 </div>
+
+<script>
+function cancelAppointment(id) {
+    if (!confirm('آیا از لغو نوبت مطمئن هستید؟')) return;
+    fetch('/dashboard/appointment/cancel', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'appointment_id=' + id + '&' + csrfParam()
+    }).then(r => r.json()).then(d => {
+        showToast(d.message || d.error, d.success ? 'success' : 'error');
+        if (d.success) setTimeout(() => location.reload(), 1000);
+    }).catch(() => showToast('خطا در ارتباط با سرور', 'error'));
+}
+</script>

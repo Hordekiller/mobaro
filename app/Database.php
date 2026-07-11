@@ -71,4 +71,21 @@ class Database
         $stmt = self::query($sql, $params);
         return $stmt->rowCount();
     }
+
+    public static function beginTransaction(): void
+    {
+        self::connection()->beginTransaction();
+    }
+
+    public static function commit(): void
+    {
+        self::connection()->commit();
+    }
+
+    public static function rollback(): void
+    {
+        if (self::connection()->inTransaction()) {
+            self::connection()->rollBack();
+        }
+    }
 }

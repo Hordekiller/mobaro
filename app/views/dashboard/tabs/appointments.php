@@ -51,8 +51,8 @@
                 </div>
                 <?php if ($apt['status'] === 'confirmed' || $apt['status'] === 'pending'): ?>
                 <div class="flex flex-col gap-1.5">
-                    <button class="px-3 py-1.5 bg-[#e11d48] text-white rounded-lg text-xs font-semibold">تغییر</button>
-                    <button class="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-semibold">لغو</button>
+                    <button onclick="showReschedule(<?= $apt['id'] ?>)" class="px-3 py-1.5 bg-[#e11d48] text-white rounded-lg text-xs font-semibold">تغییر</button>
+                    <button onclick="cancelAppointment(<?= $apt['id'] ?>)" class="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-semibold">لغو</button>
                 </div>
                 <?php endif; ?>
             </div>
@@ -64,6 +64,29 @@
             <p>نوبتی ثبت نشده است</p>
         </div>
     <?php endif; ?>
+</div>
+
+<div id="rescheduleModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" onclick="closeRescheduleModal(event)">
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-xl font-bold">تغییر زمان نوبت</h3>
+            <button onclick="closeRescheduleModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <input type="hidden" id="reschedule-id">
+            <div>
+                <label class="block text-sm font-semibold mb-1.5">تاریخ جدید</label>
+                <input type="date" id="reschedule-date" min="<?= date('Y-m-d') ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#e11d48] focus:ring-0 outline-none transition-all" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1.5">ساعت جدید</label>
+                <input type="time" id="reschedule-time" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#e11d48] focus:ring-0 outline-none transition-all" required>
+            </div>
+            <button onclick="submitReschedule()" class="w-full py-3.5 bg-gradient-to-l from-[#e11d48] to-[#be123c] text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">ذخیره تغییر</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -93,4 +116,49 @@ setTimeout(() => {
     const firstBtn = document.querySelector('#appointment-tabs .tab-btn');
     if (firstBtn) filterApts(firstBtn, 'future');
 }, 100);
+
+function cancelAppointment(id) {
+    if (!confirm('آیا از لغو نوبت مطمئن هستید؟')) return;
+    fetch('/dashboard/appointment/cancel', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'appointment_id=' + id + '&' + csrfParam()
+    }).then(r => r.json()).then(d => {
+        showToast(d.message || d.error, d.success ? 'success' : 'error');
+        if (d.success) setTimeout(() => location.reload(), 1000);
+    }).catch(() => showToast('خطا در ارتباط با سرور', 'error'));
+}
+
+let rescheduleId = null;
+
+function showReschedule(id) {
+    rescheduleId = id;
+    document.getElementById('reschedule-id').value = id;
+    document.getElementById('reschedule-date').value = '';
+    document.getElementById('reschedule-time').value = '';
+    document.getElementById('rescheduleModal').classList.remove('hidden');
+}
+
+function closeRescheduleModal(e) {
+    if (!e || e.target === document.getElementById('rescheduleModal'))
+        document.getElementById('rescheduleModal').classList.add('hidden');
+}
+
+function submitReschedule() {
+    const id = document.getElementById('reschedule-id').value;
+    const newDate = document.getElementById('reschedule-date').value;
+    const newTime = document.getElementById('reschedule-time').value;
+    if (!newDate || !newTime) {
+        showToast('تاریخ و ساعت را وارد کنید', 'error');
+        return;
+    }
+    fetch('/dashboard/appointment/reschedule', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'appointment_id=' + id + '&new_date=' + encodeURIComponent(newDate) + '&new_time=' + encodeURIComponent(newTime) + '&' + csrfParam()
+    }).then(r => r.json()).then(d => {
+        showToast(d.message || d.error, d.success ? 'success' : 'error');
+        if (d.success) setTimeout(() => location.reload(), 1000);
+    }).catch(() => showToast('خطا در ارتباط با سرور', 'error'));
+}
 </script>

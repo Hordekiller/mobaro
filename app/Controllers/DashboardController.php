@@ -53,7 +53,7 @@ class DashboardController extends BaseController
         Auth::requireAuth();
         $user = Auth::user();
 
-        $validTabs = ['appointments', 'courses', 'orders', 'wishlist', 'wallet', 'addresses', 'account', 'password'];
+        $validTabs = ['appointments', 'courses', 'orders', 'wishlist', 'wallet', 'addresses', 'account', 'password', 'order_detail', 'reviews', 'blog-comments'];
         if (!in_array($tab, $validTabs)) {
             redirect('/dashboard');
         }
@@ -75,7 +75,7 @@ class DashboardController extends BaseController
 
             case 'courses':
                 $data['enrollments'] = Database::fetchAll(
-                    "SELECT ce.*, c.title, c.teacher, c.type, c.image, c.category, c.duration
+                    "SELECT ce.*, c.title, c.teacher, c.type, c.image, c.category, c.duration, c.slug
                      FROM course_enrollments ce
                      JOIN courses c ON ce.course_id = c.id
                      WHERE ce.user_id = ?",
@@ -84,19 +84,34 @@ class DashboardController extends BaseController
                 break;
 
             case 'orders':
+                $orderPage = max(1, (int) ($_GET['page'] ?? 1));
+                $orderPerPage = 10;
+                $totalOrders = (int) Database::fetch(
+                    "SELECT COUNT(*) as cnt FROM orders WHERE user_id = ?",
+                    [$user['id']]
+                )['cnt'];
+                $orderTotalPages = max(1, (int) ceil($totalOrders / $orderPerPage));
+                $orderPage = min($orderPage, $orderTotalPages);
+                $orderOffset = ($orderPage - 1) * $orderPerPage;
+
                 $data['orders'] = Database::fetchAll(
                     "SELECT o.*,
-                            GROUP_CONCAT(CONCAT(oi.product_name, ' (x', oi.quantity, ')') SEPARATOR ', ') as items_list,
-                            GROUP_CONCAT(COALESCE(p.image, '') SEPARATOR '||') as items_images,
-                            GROUP_CONCAT(oi.product_id SEPARATOR '||') as items_ids
+                            GROUP_CONCAT(CONCAT(oi.product_name, ' (x', oi.quantity, ')') ORDER BY oi.id ASC SEPARATOR ', ') as items_list,
+                            GROUP_CONCAT(COALESCE(p.image, '') ORDER BY oi.id ASC SEPARATOR '||') as items_images,
+                            GROUP_CONCAT(oi.product_id ORDER BY oi.id ASC SEPARATOR '||') as items_ids,
+                            COALESCE(SUM(oi.quantity), 0) as item_count
                      FROM orders o
                      LEFT JOIN order_items oi ON o.id = oi.order_id
                      LEFT JOIN products p ON oi.product_id = p.id
                      WHERE o.user_id = ?
                      GROUP BY o.id
-                     ORDER BY o.created_at DESC",
+                     ORDER BY o.created_at DESC
+                     LIMIT {$orderPerPage} OFFSET {$orderOffset}",
                     [$user['id']]
                 );
+                $data['orderPage'] = $orderPage;
+                $data['orderTotalPages'] = $orderTotalPages;
+                $data['orderTotal'] = $totalOrders;
                 break;
 
             case 'wishlist':
@@ -128,9 +143,81 @@ class DashboardController extends BaseController
 
             case 'password':
                 break;
+
+            case 'order_detail':
+                $id = (int) ($_GET['id'] ?? 0);
+                $data['order'] = $id ? Database::fetch(
+                    "SELECT o.* FROM orders o WHERE o.id = ? AND o.user_id = ?",
+                    [$id, $user['id']]
+                ) : null;
+                $data['items'] = $data['order'] ? Database::fetchAll(
+                    "SELECT oi.*, p.image FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
+                    [$id]
+                ) : [];
+                break;
+
+            case 'reviews':
+                if ($this->columnExists('reviews', 'user_id')) {
+                    $data['reviews'] = Database::fetchAll(
+                        "SELECT r.*, p.name as product_name, p.image as product_image
+                         FROM reviews r
+                         JOIN products p ON r.product_id = p.id
+                         WHERE r.user_id = ?
+                         ORDER BY r.created_at DESC",
+                        [$user['id']]
+                    );
+                } else {
+                    $userName = trim(($user['name'] ?? '') . ' ' . ($user['family'] ?? ''));
+                    $data['reviews'] = Database::fetchAll(
+                        "SELECT r.*, p.name as product_name, p.image as product_image
+                         FROM reviews r
+                         JOIN products p ON r.product_id = p.id
+                         WHERE r.user_name = ?
+                         ORDER BY r.created_at DESC",
+                        [$userName]
+                    );
+                }
+                break;
+
+            case 'blog-comments':
+                $data['blogComments'] = $this->tableExists('blog_comments')
+                    ? Database::fetchAll(
+                        "SELECT bc.*, bp.title as post_title, bp.slug as post_slug
+                         FROM blog_comments bc
+                         JOIN blog_posts bp ON bc.post_id = bp.id
+                         WHERE bc.user_id = ?
+                         ORDER BY bc.created_at DESC",
+                        [$user['id']]
+                    )
+                    : [];
+                break;
         }
 
         $this->view('dashboard/index', $data);
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $result = Database::fetch(
+            "SELECT COUNT(*) AS cnt
+             FROM information_schema.tables
+             WHERE table_schema = DATABASE() AND table_name = ?",
+            [$table]
+        );
+
+        return (int) ($result['cnt'] ?? 0) > 0;
+    }
+
+    private function columnExists(string $table, string $column): bool
+    {
+        $result = Database::fetch(
+            "SELECT COUNT(*) AS cnt
+             FROM information_schema.columns
+             WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?",
+            [$table, $column]
+        );
+
+        return (int) ($result['cnt'] ?? 0) > 0;
     }
 
     public function updateProfile(): void
@@ -204,6 +291,7 @@ class DashboardController extends BaseController
         $address = sanitize($_POST['address'] ?? '');
         $city = sanitize($_POST['city'] ?? 'تهران');
         $zipCode = sanitize($_POST['zip_code'] ?? '');
+        $phone = sanitize($_POST['phone'] ?? '');
 
         if (empty($address)) {
             $this->redirectWithErrors('/dashboard/addresses', ['address' => 'آدرس را وارد کنید.']);
@@ -221,6 +309,7 @@ class DashboardController extends BaseController
             'address' => $address,
             'city' => $city,
             'zip_code' => $zipCode,
+            'phone' => $phone,
             'is_default' => $isDefault,
         ]);
 
@@ -234,6 +323,208 @@ class DashboardController extends BaseController
         $this->verifyCsrf();
         Database::delete('addresses', 'id = ? AND user_id = ?', [$id, Auth::id()]);
         $this->json(['success' => true, 'message' => 'آدرس حذف شد.']);
+    }
+
+    public function cancelAppointment(): void
+    {
+        Auth::requireAuth();
+        $this->verifyCsrf();
+
+        $id = (int) ($_POST['appointment_id'] ?? 0);
+        if (!$id) {
+            $this->json(['error' => 'نوبت نامعتبر'], 400);
+            return;
+        }
+
+        $apt = Database::fetch(
+            "SELECT id, user_id, status FROM appointments WHERE id = ? AND user_id = ?",
+            [$id, Auth::id()]
+        );
+        if (!$apt) {
+            $this->json(['error' => 'نوبت یافت نشد'], 404);
+            return;
+        }
+        if (!in_array($apt['status'], ['pending', 'confirmed'])) {
+            $this->json(['error' => 'امکان لغو این نوبت وجود ندارد'], 400);
+            return;
+        }
+
+        Database::update('appointments', ['status' => 'cancelled'], 'id = :id', ['id' => $id]);
+        $this->json(['success' => true, 'message' => 'نوبت با موفقیت لغو شد.']);
+    }
+
+    public function cancelOrder(): void
+    {
+        Auth::requireAuth();
+        $this->verifyCsrf();
+
+        $id = (int) ($_POST['order_id'] ?? 0);
+        if (!$id) {
+            $this->json(['error' => 'سفارش نامعتبر'], 400);
+            return;
+        }
+
+        $order = Database::fetch(
+            "SELECT id, user_id, status FROM orders WHERE id = ? AND user_id = ?",
+            [$id, Auth::id()]
+        );
+        if (!$order) {
+            $this->json(['error' => 'سفارش یافت نشد'], 404);
+            return;
+        }
+        if ($order['status'] !== 'pending') {
+            $this->json(['error' => 'فقط سفارش‌های در انتظار پرداخت قابل لغو هستند'], 400);
+            return;
+        }
+
+        Database::update('orders', ['status' => 'cancelled'], 'id = :id', ['id' => $id]);
+        $this->json(['success' => true, 'message' => 'سفارش با موفقیت لغو شد.']);
+    }
+
+    public function rescheduleAppointment(): void
+    {
+        Auth::requireAuth();
+        $this->verifyCsrf();
+
+        $id = (int) ($_POST['appointment_id'] ?? 0);
+        $date = sanitize($_POST['new_date'] ?? '');
+        $time = sanitize($_POST['new_time'] ?? '');
+
+        if (!$id || !$date || !$time) {
+            $this->json(['error' => 'اطلاعات ناقص است'], 400);
+            return;
+        }
+
+        $apt = Database::fetch(
+            "SELECT id, user_id, status FROM appointments WHERE id = ? AND user_id = ?",
+            [$id, Auth::id()]
+        );
+        if (!$apt) {
+            $this->json(['error' => 'نوبت یافت نشد'], 404);
+            return;
+        }
+        if (!in_array($apt['status'], ['pending', 'confirmed'])) {
+            $this->json(['error' => 'امکان تغییر این نوبت وجود ندارد'], 400);
+            return;
+        }
+
+        Database::update('appointments', [
+            'appointment_date' => $date,
+            'appointment_time' => $time,
+        ], 'id = :id', ['id' => $id]);
+
+        $this->json(['success' => true, 'message' => 'نوبت با موفقیت تغییر یافت.']);
+    }
+
+    public function orderDetail(): void
+    {
+        Auth::requireAuth();
+
+        $id = (int) ($_GET['id'] ?? 0);
+        if (!$id) {
+            back();
+            return;
+        }
+
+        $order = Database::fetch(
+            "SELECT o.*,
+                    GROUP_CONCAT(CONCAT(oi.product_name, ' × ', oi.quantity, ' — ', FORMAT(oi.price, 0), ' تومان') SEPARATOR '\n') as items_text
+             FROM orders o
+             LEFT JOIN order_items oi ON o.id = oi.order_id
+             WHERE o.id = ? AND o.user_id = ?
+             GROUP BY o.id",
+            [$id, Auth::id()]
+        );
+
+        if (!$order) {
+            back();
+            return;
+        }
+
+        $items = Database::fetchAll(
+            "SELECT oi.*, p.image FROM order_items oi
+             LEFT JOIN products p ON oi.product_id = p.id
+             WHERE oi.order_id = ?",
+            [$id]
+        );
+
+        $user = Auth::user();
+        $this->view('dashboard/index', compact('user', 'order', 'items') + ['tab' => 'order_detail']);
+    }
+
+    public function walletTopUp(): void
+    {
+        Auth::requireAuth();
+        $this->verifyCsrf();
+
+        $amount = (int) ($_POST['amount'] ?? 0);
+        if ($amount < 10000) {
+            $this->json(['error' => 'حداقل مبلغ افزایش ۱۰,۰۰۰ تومان است'], 400);
+            return;
+        }
+
+        $zpl = new ZarinPal();
+        $callbackUrl = Config::get('app.url') . '/dashboard/wallet/payment/callback';
+        $result = $zpl->requestPayment($amount, 'افزایش موجودی کیف پول', $callbackUrl, null, Auth::user()['phone'] ?? null);
+
+        if ($result['status']) {
+            $_SESSION['wallet_topup_amount'] = $amount;
+            $_SESSION['wallet_topup_authority'] = $result['authority'];
+            $this->json([
+                'success' => true,
+                'payment_required' => true,
+                'redirect' => $result['redirect_url'],
+                'message' => 'در حال انتقال به درگاه پرداخت...',
+            ]);
+        } else {
+            $this->json(['error' => $result['message']], 500);
+        }
+    }
+
+    public function walletPaymentCallback(): void
+    {
+        Auth::requireAuth();
+
+        $authority = $_GET['Authority'] ?? '';
+        $status = $_GET['Status'] ?? '';
+
+        if (!$authority || $status !== 'OK') {
+            flash('error', 'پرداخت لغو شد.');
+            redirect('/dashboard/wallet');
+            return;
+        }
+
+        $amount = (int) ($_SESSION['wallet_topup_amount'] ?? 0);
+        if (!$amount) {
+            flash('error', 'اطلاعات پرداخت نامعتبر است.');
+            redirect('/dashboard/wallet');
+            return;
+        }
+
+        $zpl = new ZarinPal();
+        $result = $zpl->verifyPayment($amount, $authority);
+
+        if ($result['status']) {
+            Database::insert('transactions', [
+                'user_id' => Auth::id(),
+                'type' => 'wallet_deposit',
+                'amount' => $amount,
+                'description' => 'افزایش موجودی کیف پول',
+                'payment_id' => $result['ref_id'],
+                'payment_status' => 'paid',
+            ]);
+
+            $current = Database::fetch("SELECT wallet FROM users WHERE id = ?", [Auth::id()]);
+            $newBalance = $current['wallet'] + $amount;
+            Database::update('users', ['wallet' => $newBalance], 'id = :id', ['id' => Auth::id()]);
+
+            unset($_SESSION['wallet_topup_amount'], $_SESSION['wallet_topup_authority']);
+            flash('success', 'کیف پول شما به مبلغ ' . number_format($amount) . ' تومان افزایش یافت.');
+        } else {
+            flash('error', 'پرداخت ناموفق بود: ' . $result['message']);
+        }
+
+        redirect('/dashboard/wallet');
     }
 
     public function toggleWishlist(): void

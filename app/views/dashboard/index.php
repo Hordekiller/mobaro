@@ -2,6 +2,7 @@
 $title = 'پنل کاربری | موبارو';
 $currentTab = isset($tab) ? $tab : 'dashboard';
 ?>
+<link rel="stylesheet" href="/assets/css/profile-styles.css?v=2.2">
 <div class="min-h-screen bg-[#FDF6F0]" style="background-color: var(--cream, #FDF6F0)">
     <div class="max-w-[1400px] mx-auto px-8 py-8" style="padding: 30px auto;">
         <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
@@ -45,6 +46,8 @@ $currentTab = isset($tab) ? $tab : 'dashboard';
                         'courses' => ['fa-solid fa-graduation-cap', 'دوره‌های من'],
                         'orders' => ['fa-solid fa-truck', 'سفارش‌های من'],
                         'wishlist' => ['fa-solid fa-heart', 'علاقه‌مندی‌ها'],
+                        'reviews' => ['fa-solid fa-star', 'نظرات من'],
+                        'blog-comments' => ['fa-regular fa-comment', 'دیدگاه‌های وبلاگ'],
                         'wallet' => ['fa-solid fa-wallet', 'کیف پول'],
                         'addresses' => ['fa-solid fa-location-dot', 'آدرس‌ها'],
                         'account' => ['fa-solid fa-user-gear', 'اطلاعات حساب'],
@@ -90,6 +93,12 @@ $currentTab = isset($tab) ? $tab : 'dashboard';
                     <?php require __DIR__ . '/tabs/account.php'; ?>
                 <?php elseif ($currentTab === 'password'): ?>
                     <?php require __DIR__ . '/tabs/password.php'; ?>
+                <?php elseif ($currentTab === 'reviews'): ?>
+                    <?php require __DIR__ . '/tabs/reviews.php'; ?>
+                <?php elseif ($currentTab === 'blog-comments'): ?>
+                    <?php require __DIR__ . '/tabs/blog-comments.php'; ?>
+                <?php elseif ($currentTab === 'order_detail'): ?>
+                    <?php require __DIR__ . '/tabs/order_detail.php'; ?>
                 <?php endif; ?>
             </div>
         </div>

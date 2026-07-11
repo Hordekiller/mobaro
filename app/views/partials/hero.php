@@ -55,7 +55,7 @@
                 </div>
                 <img src="/assets/images/hero-model.jpg" alt="مدل مو"
                      class="w-80 h-[520px] object-cover rounded-[4rem] shadow-2xl ring-8 ring-white/60"
-                     onerror="this.src='https://picsum.photos/id/1005/520/620'">
+                     onerror="this.src='/media/520/620/1005'">
                 <div class="absolute -bottom-4 -right-4 bg-white rounded-3xl px-6 py-4 shadow-2xl flex items-center gap-x-3">
                     <div class="text-rose-500"><i class="fa-solid fa-heart text-3xl"></i></div>
                     <div class="text-xs leading-tight">
