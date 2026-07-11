@@ -5,11 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($title ?? 'موبارو | سالن زیبایی حرفه‌ای') ?></title>
     <meta name="description" content="سالن زیبایی موبارو با بهترین آرایشگران و محصولات حرفه‌ای">
+    <meta property="og:title" content="موبارو | سالن زیبایی حرفه‌ای">
+    <meta property="og:description" content="سالن زیبایی موبارو با بهترین آرایشگران و محصولات حرفه‌ای">
+    <meta property="og:image" content="/favicon/og-image.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     <?php $_csrf_token = $_SESSION['_csrf'] ?? ''; ?>
     <meta name="csrf" content="<?= e($_csrf_token) ?>">
     <script>function csrfParam(){var t=document.querySelector('meta[name="csrf"]');return'_csrf='+encodeURIComponent(t?t.getAttribute('content'):'')}</script>
     <script src="/assets/libs/tailwind/tailwind-full.js"></script>
     <link rel="stylesheet" href="/assets/libs/fontawesome/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon/icon-512.png">
     <link rel="stylesheet" href="/assets/fonts/google-fonts-woff2.css">
     <link rel="stylesheet" href="/assets/fonts/vazirmatn-font-face.css">
     <link rel="stylesheet" href="/assets/css/frontend.css?v=2.2">
