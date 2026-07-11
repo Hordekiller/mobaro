@@ -11,6 +11,8 @@
                 'appointments' => ['fa-calendar-check', 'نوبت‌ها'],
                 'artists' => ['fa-user-tie', 'آرایشگران'],
                 'products' => ['fa-box', 'محصولات'],
+                'product-categories' => ['fa-layer-group', 'دسته‌بندی محصولات'],
+                'product-brands' => ['fa-tag', 'برندها'],
                 'orders' => ['fa-truck', 'سفارش‌ها'],
                 'users' => ['fa-users', 'کاربران'],
                 'courses' => ['fa-graduation-cap', 'دوره‌ها'],
@@ -26,6 +28,7 @@
                 'tutorials' => ['fa-video', 'آموزش‌ها'],
                 'newsletter' => ['fa-envelope', 'خبرنامه'],
                 'captcha' => ['fa-shield-halved', 'کپچا'],
+                'gallery' => ['fa-photo-film', 'گالری رسانه'],
                 'settings' => ['fa-gear', 'تنظیمات'],
             ];
             foreach ($sections as $key => $sec):
@@ -274,6 +277,8 @@
                 <button type="submit" class="mt-6 px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات کپچا</button>
             </form>
 
+        <?php elseif ($section === 'gallery'): ?>
+            <?php require __DIR__ . '/gallery.php'; ?>
         <?php else: ?>
             <?php $table = $section; if (in_array($section, ['hair-models'])) $table = 'hair_models'; ?>
             <div class="mb-6 flex justify-between items-center flex-wrap gap-3">
@@ -451,6 +456,17 @@
                             </div>
                             <?php endforeach; ?>
 
+                            <?php if ($section === 'products'): ?>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold mb-1.5">گالری تصاویر</label>
+                                <div id="gallery-preview" class="flex flex-wrap gap-2 mb-2"></div>
+                                <input type="file" name="gallery_images[]" accept="image/*" multiple
+                                    class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
+                                <p class="text-xs text-zinc-400 mt-1">می‌توانید چند تصویر را هم‌زمان انتخاب کنید</p>
+                                <input type="hidden" name="delete_gallery_ids" id="delete-gallery-ids" value="">
+                            </div>
+                            <?php endif; ?>
+
                             <?php if ($section === 'artists' && !empty($allServices)): ?>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold mb-1.5">خدمات مرتبط</label>
@@ -512,6 +528,9 @@
 <?php if ($section === 'artists'): ?>
 <script>window._artistServices = <?= $artistServicesJson ?? '{}' ?>;</script>
 <?php endif; ?>
+<?php if ($section === 'products'): ?>
+<script>window._productGallery = <?= $productGalleryJson ?? '{}' ?>;</script>
+<?php endif; ?>
 <?php if ($section === 'orders'): ?>
 <?php
 $_orderDataMap = [];
@@ -568,6 +587,10 @@ function showAddModal() {
     document.getElementById('item-id').value = '';
     document.querySelectorAll('#modal-fields .form-input').forEach(el => el.value = '');
     document.querySelectorAll('.artist-service-cb').forEach(function(cb) { cb.checked = false; });
+    var gp = document.getElementById('gallery-preview');
+    if (gp) gp.innerHTML = '';
+    var dg = document.getElementById('delete-gallery-ids');
+    if (dg) dg.value = '';
     document.getElementById('itemModal').classList.remove('hidden');
 }
 function showEditModal(item) {
@@ -597,6 +620,36 @@ function showEditModal(item) {
         document.querySelectorAll('.artist-service-cb').forEach(function(cb) {
             cb.checked = assigned.indexOf(parseInt(cb.value)) !== -1;
         });
+    }
+    if (window._productGallery && item.id) {
+        var gallery = window._productGallery[item.id] || [];
+        var container = document.getElementById('gallery-preview');
+        var deleteInput = document.getElementById('delete-gallery-ids');
+        if (container) {
+            container.innerHTML = '';
+            gallery.forEach(function(img) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'relative group';
+                wrapper.dataset.id = img.id;
+                var imgEl = document.createElement('img');
+                imgEl.src = '/assets/images/' + img.image;
+                imgEl.className = 'w-16 h-16 rounded-lg object-cover border border-zinc-200';
+                imgEl.onerror = function() { this.remove(); };
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition';
+                delBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                delBtn.onclick = function() {
+                    wrapper.remove();
+                    var ids = deleteInput.value ? deleteInput.value.split(',') : [];
+                    ids.push(String(img.id));
+                    deleteInput.value = ids.join(',');
+                };
+                wrapper.appendChild(imgEl);
+                wrapper.appendChild(delBtn);
+                container.appendChild(wrapper);
+            });
+        }
     }
     document.getElementById('itemModal').classList.remove('hidden');
 }

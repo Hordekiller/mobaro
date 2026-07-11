@@ -67,3 +67,8 @@ rozhin_db_backup.sql
 
 # Image cache
 public/assets/images/cache/
+
+# PHPUnit cache
+.phpunit.cache/
+.phpunit.coverage/
+coverage.xml

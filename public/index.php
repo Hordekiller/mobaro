@@ -116,6 +116,7 @@ Router::get('/course/{slug}/watch', ['AcademyController', 'watch']);
 Router::post('/course/lesson/complete', ['AcademyController', 'completeLesson']);
 Router::get('/course/{slug}/certificate', ['AcademyController', 'certificate']);
 
+Router::get('/media/stream/{id}', ['MediaController', 'stream']);
 Router::get('/media/{width}/{height}', ['ImageController', 'random']);
 Router::get('/media/{width}/{height}/{seed}', ['ImageController', 'seeded']);
 Router::get('/avatar/{name}/{size}', ['AvatarController', 'generate']);

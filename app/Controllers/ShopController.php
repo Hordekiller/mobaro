@@ -69,9 +69,27 @@ class ShopController extends BaseController
             $params[] = $rating;
         }
 
+        $isSale = (int) ($_GET['is_sale'] ?? 0);
+        if ($isSale === 1) {
+            $where .= " AND p.is_sale = 1";
+        }
+
+        $isNew = (int) ($_GET['is_new'] ?? 0);
+        if ($isNew === 1) {
+            $where .= " AND p.is_new = 1";
+        }
+
+        $inStock = (int) ($_GET['in_stock'] ?? 0);
+        if ($inStock === 1) {
+            $where .= " AND p.stock > 0";
+        }
+
         $countRow = Database::fetch("SELECT COUNT(*) as cnt FROM products p {$where}", $params);
         $totalProducts = (int) ($countRow['cnt'] ?? 0);
         $totalPages = max(1, (int) ceil($totalProducts / $perPage));
+
+        $allTotalRow = Database::fetch("SELECT COUNT(*) as cnt FROM products WHERE is_active = 1");
+        $allTotal = (int) ($allTotalRow['cnt'] ?? 0);
 
         $products = Database::fetchAll(
             "SELECT p.* FROM products p {$where} ORDER BY {$orderClause} LIMIT ? OFFSET ?",
@@ -87,8 +105,10 @@ class ShopController extends BaseController
             'products' => $products, 'category' => $category, 'brand' => $brand,
             'search' => $search, 'sort' => $sort, 'page' => $page,
             'totalPages' => $totalPages, 'totalProducts' => $totalProducts,
+            'allTotal' => $allTotal,
             'cart' => $cart, 'wishlist' => $wishlist, 'settings' => $settings,
             'priceMin' => $priceMin, 'priceMax' => $priceMax, 'rating' => $rating,
+            'isSale' => $isSale, 'isNew' => $isNew, 'inStock' => $inStock,
         ] + $facets);
     }
 
@@ -121,10 +141,29 @@ class ShopController extends BaseController
         $avgRating = !empty($reviews) ? round(array_sum(array_column($reviews, 'rating')) / count($reviews), 1) : 0;
         $reviewCount = count($reviews);
 
+        $gallery = Cache::remember('product_gallery_' . $id, Config::get('cache.ttl.page', 600), function () use ($id) {
+            $rows = Database::fetchAll(
+                "SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order, id",
+                [$id]
+            );
+            Cache::tag('products', 'product_gallery_' . $id);
+            return $rows;
+        });
+
+        $productMedia = null;
+        if (!empty($product['video_url']) && $product['video_type'] === 'upload') {
+            $mediaCacheKey = 'product_media_' . $id;
+            $productMedia = Cache::remember($mediaCacheKey, Config::get('cache.ttl.page', 600), function () use ($product) {
+                $row = Database::fetch("SELECT id FROM media WHERE filepath = ?", [ltrim($product['video_url'], '/')]);
+                Cache::tag('products', 'product_media_' . $product['id']);
+                return $row;
+            });
+        }
+
         $settings = Settings::all();
         $cart = $_SESSION['cart'] ?? [];
 
-        $this->view('shop/detail', compact('product', 'related', 'settings', 'cart', 'reviews', 'avgRating', 'reviewCount'));
+        $this->view('shop/detail', compact('product', 'related', 'settings', 'cart', 'reviews', 'avgRating', 'reviewCount', 'gallery', 'productMedia'));
     }
 
     public function postReview(int $productId): void

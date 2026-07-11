@@ -45,7 +45,7 @@ class DashboardController extends BaseController
             [$user['id'], $user['id'], $user['id']]
         );
 
-        $this->view('dashboard/index', compact('user', 'stats', 'nextAppointment', 'recentActivities'));
+        $this->view('dashboard/index', compact('user', 'stats', 'nextAppointment', 'recentActivities') + ['hideFooter' => true]);
     }
 
     public function tab(string $tab): void
@@ -193,6 +193,7 @@ class DashboardController extends BaseController
                 break;
         }
 
+        $data['hideFooter'] = true;
         $this->view('dashboard/index', $data);
     }
 
@@ -496,7 +497,7 @@ class DashboardController extends BaseController
         );
 
         $user = Auth::user();
-        $this->view('dashboard/index', compact('user', 'order', 'items') + ['tab' => 'order_detail']);
+        $this->view('dashboard/index', compact('user', 'order', 'items') + ['tab' => 'order_detail', 'hideFooter' => true]);
     }
 
     public function walletTopUp(): void

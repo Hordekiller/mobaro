@@ -99,7 +99,19 @@ CREATE TABLE IF NOT EXISTS products (
     is_sale TINYINT(1) DEFAULT 0,
     rating DECIMAL(2,1) DEFAULT 4.5,
     is_active TINYINT(1) DEFAULT 1,
+    video_url VARCHAR(500) DEFAULT NULL,
+    video_type ENUM('upload', 'youtube', 'aparat') DEFAULT 'upload',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Product Gallery
+CREATE TABLE IF NOT EXISTS product_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    image VARCHAR(255) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    INDEX idx_product (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Orders
@@ -311,6 +323,20 @@ CREATE TABLE IF NOT EXISTS reviews (
     INDEX idx_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Product Categories
+CREATE TABLE IF NOT EXISTS product_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    is_active TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Product Brands
+CREATE TABLE IF NOT EXISTS product_brands (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    is_active TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Hair Models Gallery
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
@@ -330,4 +356,22 @@ CREATE TABLE IF NOT EXISTS tutorials (
     video_url VARCHAR(255) DEFAULT '',
     video_type ENUM('upload', 'youtube', 'aparat') DEFAULT 'upload',
     is_active TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Media Gallery (centralized media management)
+CREATE TABLE IF NOT EXISTS media (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    filepath VARCHAR(500) NOT NULL,
+    original_name VARCHAR(255) NOT NULL DEFAULT '',
+    type ENUM('image', 'video') NOT NULL DEFAULT 'image',
+    mime_type VARCHAR(100) DEFAULT '',
+    size INT DEFAULT 0,
+    alt_text VARCHAR(500) DEFAULT '',
+    source_type VARCHAR(50) DEFAULT '',
+    source_id INT DEFAULT NULL,
+    uploaded_by INT DEFAULT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_source (source_type, source_id),
+    INDEX idx_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

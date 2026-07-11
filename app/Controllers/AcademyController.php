@@ -183,7 +183,16 @@ class AcademyController extends BaseController
 
         $settings = Settings::all();
 
-        $this->view('academy/watch', compact('course', 'enrollment', 'curriculum', 'completedIndexes', 'totalLessons', 'activeModule', 'activeLesson', 'settings'));
+        $courseMedia = null;
+        if (!empty($course['video_url']) && $course['video_type'] === 'upload') {
+            $courseMedia = Cache::remember('course_media_' . $course['id'], Config::get('cache.ttl.page', 600), function () use ($course) {
+                $row = Database::fetch("SELECT id FROM media WHERE filepath = ?", [ltrim($course['video_url'], '/')]);
+                Cache::tag('academy', 'course_media_' . $course['id']);
+                return $row;
+            });
+        }
+
+        $this->view('academy/watch', compact('course', 'enrollment', 'curriculum', 'completedIndexes', 'totalLessons', 'activeModule', 'activeLesson', 'settings', 'courseMedia'));
     }
 
     public function completeLesson(): void

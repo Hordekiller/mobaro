@@ -41,16 +41,24 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                     <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>?autoplay=1" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video"></iframe>
                     <?php elseif ($videoType === 'aparat'): ?>
                     <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video"></iframe>
-                    <?php else: ?>
+                    <?php elseif (!empty($courseMedia)): ?>
                     <video controls autoplay id="course-video" class="w-full h-full object-contain"
                            data-course-id="<?= $course['id'] ?>"
                            data-module="<?= $activeModule ?>"
                            data-lesson="<?= $activeLesson ?>"
                            data-index="<?= $activeIdx ?>"
                            ontimeupdate="onVideoTimeUpdate(this)">
-                        <source src="<?= e($course['video_url']) ?>" type="video/mp4">
+                        <source src="/media/stream/<?= $courseMedia['id'] ?>" type="video/mp4">
                         مرورگر شما پخش ویدیو را پشتیبانی نمی‌کند.
                     </video>
+                    <?php else: ?>
+                    <div class="aspect-video flex items-center justify-center text-white/60">
+                        <div class="text-center">
+                            <i class="fa-solid fa-play-circle text-6xl mb-4"></i>
+                            <p class="text-lg">ویدیوی این درس هنوز بارگذاری نشده است</p>
+                            <p class="text-sm text-white/40 mt-2">می‌توانید محتوای متنی زیر را مطالعه کنید</p>
+                        </div>
+                    </div>
                     <?php endif; ?>
                 </div>
                 <?php else: ?>

@@ -7,6 +7,12 @@ class AdminController extends BaseController
         Auth::requireAdmin();
     }
 
+    protected function view(string $view, array $data = []): void
+    {
+        $data['hideFooter'] = true;
+        parent::view($view, $data);
+    }
+
     public function loginForm(): void
     {
         if (Auth::check() && Auth::isAdmin()) {
@@ -107,7 +113,7 @@ class AdminController extends BaseController
     public function section(string $section): void
     {
         $this->requireAdmin();
-        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments'];
+        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery'];
 
         if (!in_array($section, $validSections)) {
             redirect('/admin');
@@ -139,11 +145,29 @@ class AdminController extends BaseController
             'tutorials' => 'tutorials',
             'orders' => 'orders',
             'newsletter' => 'newsletter',
+            'product-categories' => 'product_categories',
+            'product-brands' => 'product_brands',
         ];
 
         $columnsMap = $this->getColumns($section);
         array_walk($columnsMap, fn(&$col) => $col['required'] = $col['required'] ?? false);
         $data['columns'] = $columnsMap;
+
+        if ($section === 'products') {
+            $catOptions = Database::fetchAll("SELECT name FROM product_categories WHERE is_active = 1 ORDER BY name");
+            $brandOptions = Database::fetchAll("SELECT name FROM product_brands WHERE is_active = 1 ORDER BY name");
+            foreach ($data['columns'] as &$col) {
+                if ($col['key'] === 'category') {
+                    $col['type'] = 'select';
+                    $col['options'] = array_column($catOptions, 'name');
+                }
+                if ($col['key'] === 'brand') {
+                    $col['type'] = 'select';
+                    $col['options'] = array_column($brandOptions, 'name');
+                }
+            }
+            unset($col);
+        }
 
         $table = $tableMap[$section] ?? null;
         if ($table) {
@@ -173,6 +197,22 @@ class AdminController extends BaseController
             $data['totalPages'] = $paged['totalPages'];
             $data['total'] = $paged['total'];
             $data['search'] = $search;
+        }
+
+        if ($section === 'products') {
+            $productIds = array_column($data['items'] ?? [], 'id');
+            $galleryData = [];
+            if (!empty($productIds)) {
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                $galleryRows = Database::fetchAll(
+                    "SELECT * FROM product_images WHERE product_id IN ($placeholders) ORDER BY sort_order, id",
+                    $productIds
+                );
+                foreach ($galleryRows as $gr) {
+                    $galleryData[$gr['product_id']][] = $gr;
+                }
+            }
+            $data['productGalleryJson'] = json_encode($galleryData);
         }
 
         if ($section === 'artists') {
@@ -231,6 +271,8 @@ class AdminController extends BaseController
                 ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
                 ['key' => 'is_new', 'label' => 'جدید', 'type' => 'boolean'],
                 ['key' => 'is_sale', 'label' => 'تخفیف خورده', 'type' => 'boolean'],
+                ['key' => 'video_type', 'label' => 'نوع ویدیو', 'type' => 'select', 'options' => ['upload', 'youtube', 'aparat']],
+                ['key' => 'video_url', 'label' => 'ویدیو (آپلود یا لینک)', 'type' => 'text'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'users' => [
@@ -369,6 +411,14 @@ class AdminController extends BaseController
                 ['key' => 'is_approved', 'label' => 'تأیید شده', 'type' => 'boolean'],
                 ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
             ],
+            'product-categories' => [
+                ['key' => 'name', 'label' => 'نام دسته', 'type' => 'text', 'required' => true],
+                ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
+            ],
+            'product-brands' => [
+                ['key' => 'name', 'label' => 'نام برند', 'type' => 'text', 'required' => true],
+                ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
+            ],
         ];
         return $all[$section] ?? [['key' => 'id', 'label' => 'شناسه', 'type' => 'text']];
     }
@@ -382,6 +432,31 @@ class AdminController extends BaseController
         $offset = ($page - 1) * $perPage;
         $items = Database::fetchAll($baseQuery . " LIMIT " . (int)$perPage . " OFFSET " . (int)$offset, $params);
         return ['items' => $items, 'page' => $page, 'totalPages' => $totalPages, 'total' => $total];
+    }
+
+    private function syncMedia(string $filepath, string $originalName, string $type, string $sourceType, ?int $sourceId): void
+    {
+        $filepath = ltrim($filepath, '/');
+        $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
+        if ($existing) {
+            Database::update('media', [
+                'source_id' => $sourceId,
+            ], 'id = :id', ['id' => $existing['id']]);
+        } else {
+            $fullPath = __DIR__ . '/../../public/' . $filepath;
+            $mime = file_exists($fullPath) ? mime_content_type($fullPath) : '';
+            $size = file_exists($fullPath) ? filesize($fullPath) : 0;
+            Database::insert('media', [
+                'filepath' => $filepath,
+                'original_name' => $originalName,
+                'type' => $type,
+                'mime_type' => $mime,
+                'size' => $size,
+                'source_type' => $sourceType,
+                'source_id' => $sourceId,
+                'uploaded_by' => Auth::id(),
+            ]);
+        }
     }
 
     private function clearCache(string $section): void
@@ -402,6 +477,7 @@ class AdminController extends BaseController
             'orders' => ['products', 'admin'],
             'users' => ['admin'],
             'appointments' => ['homepage', 'admin'],
+            'gallery' => ['gallery'],
             'enrollments' => ['academy'],
             'coupons' => ['products'],
             'newsletter' => ['admin'],
@@ -409,6 +485,8 @@ class AdminController extends BaseController
             'transactions' => ['admin'],
             'reviews' => ['products'],
             'blog-comments' => ['blog'],
+            'product-categories' => ['products'],
+            'product-brands' => ['products'],
         ];
 
         $tags = $sectionToTags[$section] ?? [$section];
@@ -424,7 +502,7 @@ class AdminController extends BaseController
             Cache::forget($key);
         }
 
-        if (in_array($section, ['products', 'services', 'blog', 'courses', 'settings', 'captcha'])) {
+        if (in_array($section, ['products', 'services', 'blog', 'courses', 'settings', 'captcha', 'gallery'])) {
             Cache::bumpVersion();
         }
     }
@@ -444,6 +522,63 @@ class AdminController extends BaseController
             return;
         }
 
+        if ($section === 'gallery') {
+            if (!empty($_FILES['file']['name'])) {
+                $uploadDir = __DIR__ . '/../../public/assets/uploads/gallery';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                $allowedImageMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                $allowedVideoMime = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mimeType = $finfo->file($_FILES['file']['tmp_name']);
+                $isImage = in_array($mimeType, $allowedImageMime);
+                $isVideo = in_array($mimeType, $allowedVideoMime);
+                if (!$isImage && !$isVideo) {
+                    flash('error', 'نوع فایل مجاز نیست. فقط تصاویر (jpg, png, gif, webp) و ویدیو (mp4, webm, ogg, mov)');
+                    redirect('/admin/gallery');
+                    return;
+                }
+                $ext = match ($mimeType) {
+                    'image/jpeg' => '.jpg',
+                    'image/png' => '.png',
+                    'image/gif' => '.gif',
+                    'image/webp' => '.webp',
+                    'video/mp4' => '.mp4',
+                    'video/webm' => '.webm',
+                    'video/ogg' => '.ogv',
+                    'video/quicktime' => '.mov',
+                    default => '.bin',
+                };
+                $originalName = $_FILES['file']['name'];
+                $filename = 'gallery_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
+                $dest = $uploadDir . '/' . $filename;
+                if (move_uploaded_file($_FILES['file']['tmp_name'], $dest)) {
+                    $size = filesize($dest);
+                    $filepath = 'assets/uploads/gallery/' . $filename;
+                    $altText = sanitize($_POST['alt_text'] ?? $originalName);
+                    Database::insert('media', [
+                        'filepath' => $filepath,
+                        'original_name' => $originalName,
+                        'type' => $isImage ? 'image' : 'video',
+                        'mime_type' => $mimeType,
+                        'size' => $size,
+                        'alt_text' => $altText,
+                        'source_type' => 'direct',
+                        'uploaded_by' => Auth::id(),
+                    ]);
+                    $this->clearCache($section);
+                    flash('success', 'فایل با موفقیت آپلود شد.');
+                } else {
+                    flash('error', 'خطا در آپلود فایل.');
+                }
+            } else {
+                flash('error', 'فایلی انتخاب نشده است.');
+            }
+            redirect('/admin/gallery');
+            return;
+        }
+
         $id = (int) ($_POST['id'] ?? 0);
         $table = $this->sectionToTable($section);
 
@@ -458,10 +593,12 @@ class AdminController extends BaseController
         $allowedFields[] = 'notes';
         $allowedFields[] = 'instagram';
 
+        $rawFields = ['description', 'bio', 'text', 'notes', 'content'];
+
         $data = [];
         foreach ($allowedFields as $field) {
             if (isset($_POST[$field])) {
-                $data[$field] = sanitize($_POST[$field]);
+                $data[$field] = in_array($field, $rawFields) ? $_POST[$field] : sanitize($_POST[$field]);
             }
         }
 
@@ -594,6 +731,39 @@ class AdminController extends BaseController
             }
         }
 
+        if ($section === 'products') {
+            $videoType = $_POST['video_type'] ?? 'upload';
+            if (!empty($_FILES['video_url']['name'])) {
+                $videoAllowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mimeType = $finfo->file($_FILES['video_url']['tmp_name']);
+                if (in_array($mimeType, $videoAllowed)) {
+                    $ext = match ($mimeType) {
+                        'video/mp4' => '.mp4',
+                        'video/webm' => '.webm',
+                        'video/ogg' => '.ogv',
+                        'video/quicktime' => '.mov',
+                        default => '.mp4',
+                    };
+                    $name = 'product_video_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
+                    $uploadDir = __DIR__ . '/../../public/assets/uploads/videos';
+                    $dest = $uploadDir . '/' . $name;
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+                    if (move_uploaded_file($_FILES['video_url']['tmp_name'], $dest)) {
+                        $data['video_url'] = '/assets/uploads/videos/' . $name;
+                        $data['video_type'] = 'upload';
+                    }
+                }
+            } elseif ($videoType !== 'upload') {
+                $data['video_url'] = sanitize($_POST['video_url'] ?? '');
+                $data['video_type'] = $videoType;
+            } elseif ($id) {
+                unset($data['video_url'], $data['video_type']);
+            }
+        }
+
         if ($section === 'courses') {
             $videoType = $_POST['video_type'] ?? 'upload';
             if (!empty($_FILES['video_url']['name'])) {
@@ -656,7 +826,58 @@ class AdminController extends BaseController
         if ($id) {
             Database::update($table, $data, 'id = :id', ['id' => $id]);
         } else {
-            Database::insert($table, $data);
+            $id = Database::insert($table, $data);
+        }
+
+        if ($section === 'courses') {
+            if (!empty($data['video_url']) && $data['video_type'] === 'upload') {
+                $this->syncMedia($data['video_url'], $_FILES['video_url']['name'] ?? basename($data['video_url']), 'video', 'course_video', $id);
+            }
+        }
+
+        if ($section === 'products') {
+            if (!empty($data['image'])) {
+                $this->syncMedia('assets/images/' . $data['image'], $data['image'], 'image', 'product_image', $id);
+            }
+            if (!empty($data['video_url']) && $data['video_type'] === 'upload') {
+                $this->syncMedia($data['video_url'], $_FILES['video_url']['name'] ?? basename($data['video_url']), 'video', 'product_video', $id);
+            }
+            $deleteIds = trim($_POST['delete_gallery_ids'] ?? '');
+            if ($deleteIds !== '') {
+                foreach (array_map('intval', explode(',', $deleteIds)) as $did) {
+                    $gi = Database::fetch("SELECT * FROM product_images WHERE id = ?", [$did]);
+                    if ($gi) {
+                        $filePath = __DIR__ . '/../../public/assets/images/' . $gi['image'];
+                        if (file_exists($filePath)) {
+                            @unlink($filePath);
+                        }
+                        Database::delete('product_images', 'id = ?', [$did]);
+                    }
+                }
+            }
+            if (!empty($_FILES['gallery_images']['name'][0])) {
+                foreach ($_FILES['gallery_images']['name'] as $i => $name) {
+                    if ($name === '' || $_FILES['gallery_images']['error'][$i] !== UPLOAD_ERR_OK) {
+                        continue;
+                    }
+                    $file = [
+                        'name' => $_FILES['gallery_images']['name'][$i],
+                        'type' => $_FILES['gallery_images']['type'][$i],
+                        'tmp_name' => $_FILES['gallery_images']['tmp_name'][$i],
+                        'error' => $_FILES['gallery_images']['error'][$i],
+                        'size' => $_FILES['gallery_images']['size'][$i],
+                    ];
+                    $uploaded = FileUploader::upload($file, 'product_gallery');
+                    if ($uploaded) {
+                        Database::insert('product_images', [
+                            'product_id' => $id,
+                            'image' => $uploaded,
+                            'sort_order' => $i,
+                        ]);
+                        $this->syncMedia('assets/images/' . $uploaded, $file['name'], 'image', 'product_gallery', $id);
+                    }
+                }
+            }
         }
 
         $this->clearCache($section);
@@ -669,6 +890,34 @@ class AdminController extends BaseController
         $this->requireAdmin();
         $this->verifyCsrf();
         $table = $this->sectionToTable($section);
+
+        if ($section === 'products') {
+            $galleryImages = Database::fetchAll("SELECT * FROM product_images WHERE product_id = ?", [$id]);
+            foreach ($galleryImages as $gi) {
+                $filePath = __DIR__ . '/../../public/assets/images/' . $gi['image'];
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
+            }
+            Database::delete('product_images', 'product_id = ?', [$id]);
+        }
+
+        if ($section === 'gallery') {
+            $media = Database::fetch("SELECT * FROM media WHERE id = ?", [$id]);
+            if ($media) {
+                $filePath = __DIR__ . '/../../public/' . $media['filepath'];
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
+                Database::delete('media', 'id = ?', [$id]);
+                if (in_array($media['source_type'], ['product_image', 'product_gallery', 'product_video'])) {
+                    Cache::flushByTag('products');
+                }
+                if (in_array($media['source_type'], ['course_video'])) {
+                    Cache::flushByTag('academy');
+                }
+            }
+        }
 
         if ($table) {
             Database::delete($table, 'id = ?', [$id]);
@@ -1074,6 +1323,43 @@ class AdminController extends BaseController
         $this->view('admin/index', $data);
     }
 
+    private function sectionGallery(array &$data): void
+    {
+        $search = trim($_GET['s'] ?? '');
+        $filter = trim($_GET['filter'] ?? '');
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $cacheKey = 'gallery_page_' . $page . '_' . $filter . '_' . md5($search);
+
+        $paged = Cache::remember($cacheKey, Config::get('cache.ttl.admin', 300), function () use ($search, $filter) {
+            $where = 'WHERE 1=1';
+            $params = [];
+
+            if ($search !== '') {
+                $where .= ' AND (original_name LIKE ? OR alt_text LIKE ?)';
+                $params[] = "%{$search}%";
+                $params[] = "%{$search}%";
+            }
+            if ($filter === 'image') {
+                $where .= " AND type = 'image'";
+            } elseif ($filter === 'video') {
+                $where .= " AND type = 'video'";
+            }
+
+            return $this->paginate(
+                "SELECT * FROM media {$where} ORDER BY id DESC",
+                "SELECT COUNT(*) as cnt FROM media {$where}",
+                $params
+            );
+        }, ['gallery']);
+        $data['items'] = $paged['items'];
+        $data['page'] = $paged['page'];
+        $data['totalPages'] = $paged['totalPages'];
+        $data['total'] = $paged['total'];
+        $data['search'] = $search;
+        $data['filter'] = $filter;
+        $this->view('admin/index', $data);
+    }
+
     public function changePassword(): void
     {
         $this->requireAdmin();
@@ -1134,6 +1420,8 @@ class AdminController extends BaseController
             'contact-messages' => 'contact_messages',
             'reviews' => 'reviews',
             'blog-comments' => 'blog_comments',
+            'product-categories' => 'product_categories',
+            'product-brands' => 'product_brands',
         ];
         return $map[$section] ?? null;
     }

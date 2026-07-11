@@ -1,4 +1,26 @@
 <?php $title = 'فروشگاه | موبارو'; ?>
+<?php
+function filterUrl(array $overrides = []): string
+{
+    $params = [];
+    $current = [
+        'category', 'brand', 'search', 'sort',
+        'price_min', 'price_max', 'rating',
+        'is_sale', 'is_new', 'in_stock',
+    ];
+    foreach ($current as $key) {
+        $val = $_GET[$key] ?? null;
+        if ($val !== null && $val !== '' && $val !== 'all') {
+            if ($key === 'sort' && $val === 'newest') continue;
+            $params[$key] = $val;
+        }
+    }
+    $params = array_merge($params, $overrides);
+    $params = array_filter($params, fn($v) => $v !== null && $v !== '');
+    if (empty($params)) return '/shop';
+    return '/shop?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+}
+?>
 
 <div class="min-h-screen bg-zinc-50">
     <!-- Breadcrumb -->
@@ -31,12 +53,12 @@
                             دسته‌بندی‌ها
                         </h4>
                         <div class="space-y-3">
-                            <a href="/shop" class="flex items-center justify-between group <?= $category === 'all' ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['category' => null]) ?>" class="flex items-center justify-between group <?= $category === 'all' ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition">همه محصولات</span>
-                                <span class="text-xs text-zinc-400"><?= $totalProducts ?></span>
+                                <span class="text-xs text-zinc-400"><?= $allTotal ?></span>
                             </a>
                             <?php foreach ($categoryRows as $cat): ?>
-                            <a href="/shop?category=<?= urlencode($cat['category']) ?>" class="flex items-center justify-between group <?= $category === $cat['category'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['category' => $cat['category']]) ?>" class="flex items-center justify-between group <?= $category === $cat['category'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition"><?= e($cat['category']) ?></span>
                                 <span class="text-xs text-zinc-400"><?= $cat['cnt'] ?></span>
                             </a>
@@ -52,11 +74,12 @@
                             <i class="fa-solid fa-tag text-rose-400"></i>
                             محدوده قیمت
                         </h4>
-                        <input type="range" min="0" max="5000000" value="2500000" class="range-slider mb-4" id="priceRange">
+                        <input type="range" min="0" max="5000000" value="<?= min($priceMax ?: 2500000, 5000000) ?>" class="range-slider mb-4" id="priceRange">
                         <div class="flex justify-between text-sm text-zinc-600">
                             <span>۰ تومان</span>
-                            <span id="priceValue" class="font-medium text-rose-500">۲,۵۰۰,۰۰۰ تومان</span>
+                            <span id="priceValue" class="font-medium text-rose-500"><?= $priceMax ? number_format($priceMax) : '۲,۵۰۰,۰۰۰' ?> تومان</span>
                         </div>
+                        <button onclick="applyPriceFilter()" class="mt-3 w-full py-2 bg-rose-100 text-rose-600 rounded-xl text-sm font-semibold hover:bg-rose-200 transition">اعمال فیلتر قیمت</button>
                     </div>
 
                     <hr class="border-zinc-100 my-6">
@@ -69,7 +92,7 @@
                         </h4>
                         <div class="space-y-3">
                             <?php foreach ($brandRows as $br): ?>
-                            <a href="/shop?brand=<?= urlencode($br['brand']) ?>" class="flex items-center justify-between group <?= $brand === $br['brand'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['brand' => $br['brand']]) ?>" class="flex items-center justify-between group <?= $brand === $br['brand'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition"><?= e($br['brand']) ?></span>
                                 <span class="text-xs text-zinc-400"><?= $br['cnt'] ?></span>
                             </a>
@@ -87,7 +110,7 @@
                         </h4>
                         <div class="space-y-3">
                             <?php foreach ([5,4,3] as $r): ?>
-                            <a href="/shop?rating=<?= $r ?>" class="flex items-center gap-3 group <?= ($_GET['rating'] ?? '') == $r ? 'text-rose-500' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['rating' => $r]) ?>" class="flex items-center gap-3 group <?= ($rating ?? 0) == $r ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <div class="star-rating text-amber-400 text-sm">
                                     <?php for ($i = 1; $i <= 5; $i++): ?>
                                         <i class="<?= $i <= $r ? 'fa-solid' : 'fa-regular text-zinc-300' ?> fa-star"></i>
@@ -96,6 +119,36 @@
                                 <span class="text-xs group-hover:text-rose-500 transition">و بالاتر</span>
                             </a>
                             <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <hr class="border-zinc-100 my-6">
+
+                    <!-- Extra Filters -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-zinc-700 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-filter text-rose-400"></i>
+                            فیلترهای بیشتر
+                        </h4>
+                        <div class="space-y-3">
+                            <a href="<?= filterUrl(['is_sale' => $isSale ? null : 1]) ?>" class="flex items-center gap-3 group <?= $isSale ? 'text-rose-500' : 'text-zinc-600' ?>">
+                                <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $isSale ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
+                                    <?php if ($isSale): ?><i class="fa-solid fa-check"></i><?php endif; ?>
+                                </span>
+                                <span class="group-hover:text-rose-500 transition">حراج و تخفیف‌دار</span>
+                            </a>
+                            <a href="<?= filterUrl(['is_new' => $isNew ? null : 1]) ?>" class="flex items-center gap-3 group <?= $isNew ? 'text-rose-500' : 'text-zinc-600' ?>">
+                                <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $isNew ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
+                                    <?php if ($isNew): ?><i class="fa-solid fa-check"></i><?php endif; ?>
+                                </span>
+                                <span class="group-hover:text-rose-500 transition">جدیدترین محصولات</span>
+                            </a>
+                            <a href="<?= filterUrl(['in_stock' => $inStock ? null : 1]) ?>" class="flex items-center gap-3 group <?= $inStock ? 'text-rose-500' : 'text-zinc-600' ?>">
+                                <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $inStock ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
+                                    <?php if ($inStock): ?><i class="fa-solid fa-check"></i><?php endif; ?>
+                                </span>
+                                <span class="group-hover:text-rose-500 transition">فقط محصولات موجود</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -111,23 +164,25 @@
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
                             <span class="text-zinc-600 text-sm">مرتب‌سازی:</span>
-                            <a href="/shop?sort=newest" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'newest' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">جدیدترین</a>
-                            <a href="/shop?sort=popular" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'popular' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">پرفروش‌ترین</a>
-                            <a href="/shop?sort=price_asc" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_asc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">ارزان‌ترین</a>
-                            <a href="/shop?sort=price_desc" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_desc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">گران‌ترین</a>
+                            <a href="<?= filterUrl(['sort' => 'newest']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'newest' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">جدیدترین</a>
+                            <a href="<?= filterUrl(['sort' => 'popular']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'popular' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">پرفروش‌ترین</a>
+                            <a href="<?= filterUrl(['sort' => 'price_asc']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_asc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">ارزان‌ترین</a>
+                            <a href="<?= filterUrl(['sort' => 'price_desc']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_desc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">گران‌ترین</a>
                         </div>
                     </div>
                 </div>
 
                 <!-- Search Bar -->
-                <form method="GET" action="/shop" class="relative mb-6">
-                    <?php if ($category !== 'all'): ?>
+                <form method="GET" action="/shop" class="relative mb-6" id="searchForm">
                     <input type="hidden" name="category" value="<?= e($category) ?>">
-                    <?php endif; ?>
-                    <?php if ($brand !== 'all'): ?>
                     <input type="hidden" name="brand" value="<?= e($brand) ?>">
-                    <?php endif; ?>
                     <input type="hidden" name="sort" value="<?= e($sort) ?>">
+                    <?php if ($priceMin > 0): ?><input type="hidden" name="price_min" value="<?= $priceMin ?>"><?php endif; ?>
+                    <?php if ($priceMax > 0): ?><input type="hidden" name="price_max" value="<?= $priceMax ?>"><?php endif; ?>
+                    <?php if ($rating > 0): ?><input type="hidden" name="rating" value="<?= $rating ?>"><?php endif; ?>
+                    <?php if ($isSale): ?><input type="hidden" name="is_sale" value="1"><?php endif; ?>
+                    <?php if ($isNew): ?><input type="hidden" name="is_new" value="1"><?php endif; ?>
+                    <?php if ($inStock): ?><input type="hidden" name="in_stock" value="1"><?php endif; ?>
                     <input type="text" name="search" value="<?= e($search) ?>" placeholder="جستجوی محصولات..." 
                            class="w-full py-4 px-6 pr-14 rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:outline-none transition bg-white shadow-sm">
                     <i class="fa-solid fa-search absolute right-5 top-1/2 -translate-y-1/2 text-rose-400 text-lg"></i>
@@ -215,15 +270,15 @@
                 <?php if ($totalPages > 1): ?>
                 <div class="flex justify-center items-center gap-2 mt-10" id="pagination">
                     <?php if ($page > 1): ?>
-                    <a href="?page=<?= $page - 1 ?>&category=<?= e($category) ?>&brand=<?= e($brand) ?>&sort=<?= e($sort) ?>&search=<?= e($search) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
+                    <a href="<?= filterUrl(['page' => $page - 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
                         <i class="fa-solid fa-chevron-right"></i>
                     </a>
                     <?php endif; ?>
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="?page=<?= $i ?>&category=<?= e($category) ?>&brand=<?= e($brand) ?>&sort=<?= e($sort) ?>&search=<?= e($search) ?>" class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition <?= $i === $page ? 'bg-rose-600 text-white' : 'border border-zinc-200 text-zinc-600 hover:border-rose-400 hover:text-rose-500' ?>"><?= $i ?></a>
+                    <a href="<?= filterUrl(['page' => $i]) ?>" class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition <?= $i === $page ? 'bg-rose-600 text-white' : 'border border-zinc-200 text-zinc-600 hover:border-rose-400 hover:text-rose-500' ?>"><?= $i ?></a>
                     <?php endfor; ?>
                     <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= $page + 1 ?>&category=<?= e($category) ?>&brand=<?= e($brand) ?>&sort=<?= e($sort) ?>&search=<?= e($search) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
+                    <a href="<?= filterUrl(['page' => $page + 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
                         <i class="fa-solid fa-chevron-left"></i>
                     </a>
                     <?php endif; ?>
@@ -235,6 +290,29 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    var range = document.getElementById('priceRange');
+    var display = document.getElementById('priceValue');
+    if (range && display) {
+        function updateDisplay() {
+            var val = parseInt(range.value);
+            display.textContent = val.toLocaleString('fa-IR') + ' تومان';
+        }
+        range.addEventListener('input', updateDisplay);
+        updateDisplay();
+    }
+});
+function applyPriceFilter() {
+    var range = document.getElementById('priceRange');
+    if (range) {
+        var val = parseInt(range.value);
+        if (val > 0 && val < 5000000) {
+            window.location.href = '<?= filterUrl(['price_max' => '__VAL__', 'page' => null]) ?>'.replace('__VAL__', val);
+        } else if (val >= 5000000) {
+            window.location.href = '<?= filterUrl(['price_max' => null, 'page' => null]) ?>';
+        }
+    }
+}
 const shopProducts = <?= json_encode(array_map(function($p) {
     return [
         'id' => (int)$p['id'],

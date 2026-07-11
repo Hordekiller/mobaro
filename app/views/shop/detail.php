@@ -38,9 +38,30 @@ $inWishlist = in_array($product['id'], $_SESSION['wishlist'] ?? []);
                     </div>
                     <div class="flex gap-3 overflow-x-auto" id="thumbnails">
                         <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-rose-500 opacity-100 hover:opacity-80 transition-all thumb-img" onclick="changeImage(this)" onerror="this.src='/media/200/200/<?= e($product['id']) ?>'">
-                        <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'">
-                        <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'">
+                        <?php if (!empty($gallery)): ?>
+                        <?php foreach ($gallery as $gi): ?>
+                        <img src="/assets/images/<?= e($gi['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'">
+                        <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
+                    <?php if (!empty($product['video_url'])): ?>
+                    <div class="mt-4 rounded-2xl overflow-hidden bg-zinc-900">
+                        <?php if ($product['video_type'] === 'upload' && !empty($productMedia)): ?>
+                        <video controls class="w-full max-h-[400px]" poster="/assets/images/<?= e($product['image']) ?>">
+                            <source src="/media/stream/<?= $productMedia['id'] ?>" type="video/mp4">
+                            مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند
+                        </video>
+                        <?php elseif ($product['video_type'] !== 'upload'): ?>
+                        <div class="relative w-full" style="padding-bottom:56.25%">
+                            <?php if ($product['video_type'] === 'youtube'): ?>
+                            <iframe class="absolute inset-0 w-full h-full" src="<?= e($product['video_url']) ?>" frameborder="0" allowfullscreen></iframe>
+                            <?php elseif ($product['video_type'] === 'aparat'): ?>
+                            <iframe class="absolute inset-0 w-full h-full" src="<?= e($product['video_url']) ?>" frameborder="0" allowfullscreen></iframe>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Product Info -->
@@ -73,7 +94,10 @@ $inWishlist = in_array($product['id'], $_SESSION['wishlist'] ?? []);
                         <span class="text-4xl font-bold text-rose-500"><?= number_format($product['price']) ?> تومان</span>
                     </div>
 
-                    <p class="text-zinc-600 leading-relaxed mb-8"><?= e($product['description'] ?? '') ?></p>
+                    <?php $desc = $product['description'] ?? ''; ?>
+                    <?php if (!empty($desc)): ?>
+                    <p class="text-zinc-600 leading-relaxed mb-8 whitespace-pre-line"><?= e($desc) ?></p>
+                    <?php endif; ?>
 
                     <!-- Qty + Add to Cart -->
                     <div class="flex items-center gap-4 mb-8">
