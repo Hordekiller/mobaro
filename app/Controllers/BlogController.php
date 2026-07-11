@@ -4,7 +4,7 @@ class BlogController extends BaseController
 {
     private function getSidebar(): array
     {
-        return Cache::remember('blog_sidebar', 300, function () {
+        return Cache::remember('blog_sidebar', Config::get('cache.ttl.page', 600), function () {
             $featured = Database::fetch(
                 "SELECT * FROM blog_posts WHERE is_featured = 1 AND is_published = 1 ORDER BY published_at DESC LIMIT 1"
             );
@@ -160,7 +160,7 @@ class BlogController extends BaseController
 
     public function show(string $slug): void
     {
-        $post = Cache::remember('blog_post_' . $slug, 600, function () use ($slug) {
+        $post = Cache::remember('blog_post_' . $slug, Config::get('cache.ttl.page', 600), function () use ($slug) {
             $p = Database::fetch(
                 "SELECT * FROM blog_posts WHERE slug = ? AND is_published = 1",
                 [$slug]

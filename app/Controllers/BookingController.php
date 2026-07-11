@@ -4,7 +4,7 @@ class BookingController extends BaseController
 {
     private function getFormData(): array
     {
-        return Cache::remember('booking_form_data', 600, function () {
+        return Cache::remember('booking_form_data', Config::get('cache.ttl.page', 600), function () {
             $services = Database::fetchAll("SELECT * FROM services WHERE is_active = 1");
             $artists = Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
             return compact('services', 'artists');
@@ -36,7 +36,7 @@ class BookingController extends BaseController
     public function getServices(): void
     {
         $this->verifyCsrf();
-        $services = Cache::remember('booking_services', 600, function () {
+        $services = Cache::remember('booking_services', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll(
                 "SELECT s.*, a.id as artist_id, a.name as artist_name
                  FROM services s

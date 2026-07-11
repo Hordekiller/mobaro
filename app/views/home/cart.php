@@ -28,7 +28,8 @@
                 </a>
             </div>
         <?php else: ?>
-            <div class="space-y-4 mb-8">
+            <div class="cart-page-layout">
+                <div class="cart-page-items space-y-4">
                 <?php foreach ($cart as $idx => $item):
                     $isCourse = ($item['type'] ?? 'product') === 'course';
                 ?>
@@ -43,11 +44,7 @@
                             <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full">دوره</span>
                             <?php endif; ?>
                         </div>
-                        <?php if ($isCourse): ?>
                         <p class="text-sm text-zinc-400"><?= e($item['category'] ?? '') ?></p>
-                        <?php else: ?>
-                        <p class="text-sm text-zinc-400"><?= e($item['category'] ?? '') ?></p>
-                        <?php endif; ?>
                         <p class="text-rose-600 font-bold mt-1"><?= priceFormat($item['price'] * $item['qty']) ?></p>
                     </div>
                     <?php if ($isCourse): ?>
@@ -68,9 +65,9 @@
                     </button>
                 </div>
                 <?php endforeach; ?>
-            </div>
+                </div>
 
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-zinc-100">
+                <div class="bg-white rounded-2xl p-6 shadow-lg border border-zinc-100 cart-summary">
                 <div class="mb-4">
                     <label class="text-sm font-semibold text-zinc-600 mb-2 block">کد تخفیف</label>
                     <div class="flex gap-2">
@@ -95,9 +92,14 @@
 
                 <div class="mb-4">
                     <label class="text-sm font-semibold text-zinc-600 mb-2 block">آدرس تحویل</label>
-                    <select id="address-select" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
-                        <option value="">آدرس خود را انتخاب کنید</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <select id="address-select" class="flex-1 px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                            <option value="">آدرس خود را انتخاب کنید</option>
+                        </select>
+                        <button type="button" id="editAddressBtn" onclick="editSelectedAddress()" class="px-3 py-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-all hidden" title="ویرایش آدرس">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
                     <button type="button" onclick="showAddressModal()" class="text-xs text-rose-600 mt-1 hover:underline">
                         <i class="fa-solid fa-plus ml-1"></i>افزودن آدرس جدید
                     </button>
@@ -120,6 +122,7 @@
                     <i class="fa-solid fa-check ml-2"></i>
                     ثبت سفارش و پرداخت
                 </button>
+                </div>
             </div>
         <?php endif; ?>
     </div>
@@ -128,7 +131,7 @@
 <div id="addressModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" onclick="closeAddressModal(event)">
     <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-5">
-            <h3 class="text-xl font-bold">آدرس جدید</h3>
+            <h3 class="text-xl font-bold" id="addressModalTitle">آدرس جدید</h3>
             <button onclick="closeAddressModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -136,29 +139,34 @@
         <form id="addressForm" class="space-y-4">
             <input type="hidden" name="is_default" value="0">
             <input type="hidden" name="from_cart" value="1">
+            <input type="hidden" name="address_id" id="editAddressId" value="0">
             <div>
                 <label class="block text-sm font-semibold mb-1.5">عنوان آدرس</label>
-                <input type="text" name="title" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="مثلاً: منزل، محل کار" value="خانه">
+                <input type="text" name="title" id="editTitle" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="مثلاً: منزل، محل کار" value="خانه">
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-1.5">آدرس کامل</label>
-                <textarea name="address" rows="3" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="استان، شهر، خیابان، کوچه، پلاک" required></textarea>
+                <textarea name="address" id="editAddress" rows="3" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="استان، شهر، خیابان، کوچه، پلاک" required></textarea>
             </div>
             <div class="grid grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold mb-1.5">شهر</label>
-                    <input type="text" name="city" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="تهران">
+                    <input type="text" name="city" id="editCity" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="تهران">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold mb-1.5">کد پستی</label>
-                    <input type="text" name="zip_code" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                    <input type="text" name="zip_code" id="editZipCode" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold mb-1.5">تلفن</label>
-                    <input type="text" name="phone" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="اختیاری">
+                    <input type="text" name="phone" id="editPhone" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="اختیاری">
                 </div>
             </div>
-            <button type="submit" class="w-full py-3.5 bg-gradient-to-l from-rose-500 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">ذخیره آدرس</button>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="is_default" id="editIsDefault" value="1">
+                <span class="text-sm font-medium">آدرس پیش‌فرض</span>
+            </label>
+            <button type="submit" class="w-full py-3.5 bg-gradient-to-l from-rose-500 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all" id="addressSubmitBtn">ذخیره آدرس</button>
         </form>
     </div>
 </div>
@@ -191,7 +199,16 @@ document.addEventListener('DOMContentLoaded', loadAddresses);
 
 document.getElementById('address-select')?.addEventListener('change', function() {
     selectedAddressId = this.value;
+    const editBtn = document.getElementById('editAddressBtn');
+    if (editBtn) {
+        editBtn.classList.toggle('hidden', !this.value);
+    }
 });
+
+function editSelectedAddress() {
+    const id = document.getElementById('address-select')?.value;
+    if (id) editAddressFromCart(id);
+}
 
 function toggleWalletPayment() {
     const checked = document.getElementById('use-wallet').checked;
@@ -205,30 +222,67 @@ function toggleWalletPayment() {
 }
 
 function showAddressModal() {
+    document.getElementById('addressModalTitle').textContent = 'آدرس جدید';
+    document.getElementById('addressForm').reset();
+    document.getElementById('addressForm').querySelector('input[name="title"]').value = 'خانه';
+    document.getElementById('editAddressId').value = '0';
+    document.getElementById('addressSubmitBtn').textContent = 'ذخیره آدرس';
     document.getElementById('addressModal').classList.remove('hidden');
 }
 
-function closeAddressModal(e) {
-    if (!e || e.target === document.getElementById('addressModal'))
-        document.getElementById('addressModal').classList.add('hidden');
+function editAddressFromCart(id) {
+    const sel = document.getElementById('address-select');
+    document.getElementById('addressModalTitle').textContent = 'ویرایش آدرس';
+    document.getElementById('editAddressId').value = id;
+    document.getElementById('addressSubmitBtn').textContent = 'به‌روزرسانی آدرس';
+
+    fetch('/api/user/addresses')
+        .then(r => r.json())
+        .then(data => {
+            if (data.addresses) {
+                const addr = data.addresses.find(a => a.id == id);
+                if (addr) {
+                    document.getElementById('editTitle').value = addr.title || 'خانه';
+                    document.getElementById('editAddress').value = addr.address || '';
+                    document.getElementById('editCity').value = addr.city || 'تهران';
+                    document.getElementById('editZipCode').value = addr.zip_code || '';
+                    document.getElementById('editPhone').value = addr.phone || '';
+                    document.getElementById('editIsDefault').checked = !!addr.is_default;
+                }
+            }
+        })
+        .catch(() => {});
+
+    document.getElementById('addressModal').classList.remove('hidden');
+}
+
+function closeAddressModal() {
+    document.getElementById('addressModal').classList.add('hidden');
 }
 
 document.getElementById('addressForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
+    const id = document.getElementById('editAddressId').value;
     const formData = new FormData(this);
     const params = new URLSearchParams();
     formData.forEach((v, k) => params.append(k, v));
     const csrf = document.querySelector('meta[name="csrf"]');
     if (csrf) params.append('_csrf', csrf.getAttribute('content'));
 
-    fetch('/dashboard/address/add', {
+    const url = id && id != '0' ? '/dashboard/address/update/' + id : '/dashboard/address/add';
+
+    fetch(url, {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: params.toString()
-    }).then(r => {
-        closeAddressModal();
-        loadAddresses();
-        showToast('آدرس با موفقیت اضافه شد', 'success');
+    }).then(r => r.json()).then(d => {
+        if (d.success || (d.message && !d.error)) {
+            closeAddressModal();
+            loadAddresses();
+            showToast('آدرس با موفقیت ذخیره شد.', 'success');
+        } else {
+            showToast(d.error || 'خطا در ذخیره آدرس', 'error');
+        }
     }).catch(() => showToast('خطا در ارتباط با سرور', 'error'));
 });
 

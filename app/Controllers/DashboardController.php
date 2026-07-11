@@ -317,6 +317,53 @@ class DashboardController extends BaseController
         back();
     }
 
+    public function updateAddress(int $id): void
+    {
+        Auth::requireAuth();
+        $this->verifyCsrf();
+
+        $existing = Database::fetch(
+            "SELECT * FROM addresses WHERE id = ? AND user_id = ?",
+            [$id, Auth::id()]
+        );
+        if (!$existing) {
+            $this->json(['error' => 'آدرس یافت نشد'], 404);
+            return;
+        }
+
+        $title = sanitize($_POST['title'] ?? 'خانه');
+        $address = sanitize($_POST['address'] ?? '');
+        $city = sanitize($_POST['city'] ?? 'تهران');
+        $zipCode = sanitize($_POST['zip_code'] ?? '');
+        $phone = sanitize($_POST['phone'] ?? '');
+
+        if (empty($address)) {
+            $this->json(['error' => 'آدرس را وارد کنید.'], 400);
+            return;
+        }
+
+        $isDefault = (int) ($_POST['is_default'] ?? 0);
+        if ($isDefault) {
+            Database::update('addresses', ['is_default' => 0], 'user_id = :uid AND id != :aid', ['uid' => Auth::id(), 'aid' => $id]);
+        }
+
+        Database::update('addresses', [
+            'title' => $title,
+            'address' => $address,
+            'city' => $city,
+            'zip_code' => $zipCode,
+            'phone' => $phone,
+            'is_default' => $isDefault,
+        ], 'id = :id', ['id' => $id]);
+
+        if (isset($_POST['from_cart']) && $_POST['from_cart'] === '1') {
+            $this->json(['success' => true, 'message' => 'آدرس به‌روزرسانی شد.']);
+        } else {
+            flash('success', 'آدرس با موفقیت به‌روزرسانی شد.');
+            back();
+        }
+    }
+
     public function deleteAddress(int $id): void
     {
         Auth::requireAuth();

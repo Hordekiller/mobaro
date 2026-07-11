@@ -4,7 +4,7 @@ class HomeController extends BaseController
 {
     public function index(): void
     {
-        $homeData = Cache::remember('home_data', 600, function () {
+        $homeData = Cache::remember('home_data', Config::get('cache.ttl.page', 600), function () {
             return [
                 'services' => Database::fetchAll(
                     "SELECT s.*,

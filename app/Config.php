@@ -61,6 +61,8 @@ class Config
             'cache.prefix' => env('CACHE_PREFIX') ?: 'mobaro',
             'cache.dir' => ($d = env('CACHE_DIR')) ? $d : __DIR__ . '/../storage/cache',
             'cache.ttl.default' => (int) (env('CACHE_TTL_DEFAULT') ?: 3600),
+            'cache.ttl.page' => (int) (env('CACHE_TTL_PAGE') ?: 600),
+            'cache.ttl.admin' => (int) (env('CACHE_TTL_ADMIN') ?: 300),
         ];
     }
 }

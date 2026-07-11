@@ -73,7 +73,7 @@ class AdminController extends BaseController
     public function dashboard(): void
     {
         $this->requireAdmin();
-        $stats = Cache::remember('admin_stats', 300, function () {
+        $stats = Cache::remember('admin_stats', Config::get('cache.ttl.admin', 300), function () {
             return [
                 'users' => Database::fetch("SELECT COUNT(*) as cnt FROM users")['cnt'],
                 'appointments' => Database::fetch("SELECT COUNT(*) as cnt FROM appointments")['cnt'],
@@ -82,7 +82,7 @@ class AdminController extends BaseController
             ];
         }, 'admin');
 
-        $recentAppointments = Cache::remember('admin_recent_appointments', 300, function () {
+        $recentAppointments = Cache::remember('admin_recent_appointments', Config::get('cache.ttl.admin', 300), function () {
             return Database::fetchAll(
                 "SELECT a.*, u.name as user_name, u.family as user_family, s.title as service_title
                  FROM appointments a
@@ -92,7 +92,7 @@ class AdminController extends BaseController
             );
         }, 'admin');
 
-        $recentOrders = Cache::remember('admin_recent_orders', 300, function () {
+        $recentOrders = Cache::remember('admin_recent_orders', Config::get('cache.ttl.admin', 300), function () {
             return Database::fetchAll(
                 "SELECT o.*, u.name as user_name, u.family as user_family
                  FROM orders o
@@ -312,6 +312,7 @@ class AdminController extends BaseController
                 ['key' => 'tracking_code', 'label' => 'کد پیگیری', 'type' => 'text'],
                 ['key' => 'user_name', 'label' => 'کاربر', 'type' => 'text'],
                 ['key' => 'total', 'label' => 'مبلغ', 'type' => 'price'],
+                ['key' => 'address', 'label' => 'آدرس', 'type' => 'text'],
                 ['key' => 'status', 'label' => 'وضعیت', 'type' => 'status', 'options' => ['pending', 'processing', 'shipped', 'delivered', 'cancelled']],
                 ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
             ],
@@ -421,6 +422,10 @@ class AdminController extends BaseController
         ];
         foreach ($extraKeys as $key) {
             Cache::forget($key);
+        }
+
+        if (in_array($section, ['products', 'services', 'blog', 'courses', 'settings', 'captcha'])) {
+            Cache::bumpVersion();
         }
     }
 

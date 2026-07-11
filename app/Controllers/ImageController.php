@@ -31,6 +31,11 @@ class ImageController
     private static function serve(int $width, int $height, int $seed): void
     {
         $cacheDir = __DIR__ . '/../../public/assets/images/cache';
+
+        if (random_int(1, 100) === 1) {
+            self::cleanupOldCache($cacheDir);
+        }
+
         $cacheKey = "{$width}x{$height}_{$seed}.svg";
         $cacheFile = $cacheDir . '/' . $cacheKey;
 
@@ -58,6 +63,24 @@ class ImageController
         header('Cache-Control: public, max-age=86400');
         echo $svg;
         exit;
+    }
+
+    private static function cleanupOldCache(string $dir): void
+    {
+        $cutoff = time() - 86400 * 7;
+        foreach (glob($dir . '/*.svg') as $f) {
+            if (is_file($f) && filemtime($f) < $cutoff) {
+                @unlink($f);
+            }
+        }
+        $avatarDir = $dir . '/avatars';
+        if (is_dir($avatarDir)) {
+            foreach (glob($avatarDir . '/*.svg') as $f) {
+                if (is_file($f) && filemtime($f) < $cutoff) {
+                    @unlink($f);
+                }
+            }
+        }
     }
 
     private static function generateSvg(int $w, int $h, array $palette, string $pattern, int $seed): string

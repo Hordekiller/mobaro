@@ -30,6 +30,16 @@ header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
 
+$uri = $_SERVER['REQUEST_URI'] ?? '';
+if (
+    ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' &&
+    !str_starts_with($uri, '/admin') &&
+    !str_starts_with($uri, '/dashboard') &&
+    !str_starts_with($uri, '/api')
+) {
+    header('Cache-Control: public, max-age=300, stale-while-revalidate=60');
+}
+
 set_exception_handler(function (Throwable $e) {
     if (Config::get('app.debug')) {
         echo "<pre>" . $e->getMessage() . "\n" . $e->getTraceAsString() . "</pre>";

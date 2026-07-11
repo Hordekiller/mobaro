@@ -4,7 +4,7 @@ class ApiController extends BaseController
 {
     public function services(): void
     {
-        $services = Cache::remember('api_services', 600, function () {
+        $services = Cache::remember('api_services', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll(
                 "SELECT s.*, a.id as artist_id, a.name as artist_name
                  FROM services s
@@ -18,7 +18,7 @@ class ApiController extends BaseController
 
     public function artists(): void
     {
-        $artists = Cache::remember('api_artists', 600, function () {
+        $artists = Cache::remember('api_artists', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
         }, 'homepage');
         $this->json(['artists' => $artists]);
@@ -26,7 +26,7 @@ class ApiController extends BaseController
 
     public function products(): void
     {
-        $products = Cache::remember('api_products', 600, function () {
+        $products = Cache::remember('api_products', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll("SELECT * FROM products WHERE is_active = 1");
         }, 'products');
         $this->json(['products' => $products]);

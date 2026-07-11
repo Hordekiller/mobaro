@@ -4,7 +4,7 @@ class AcademyController extends BaseController
 {
     private function getSidebar(): array
     {
-        return Cache::remember('academy_sidebar', 600, function () {
+        return Cache::remember('academy_sidebar', Config::get('cache.ttl.page', 600), function () {
             $categories = Database::fetchAll(
                 "SELECT category, COUNT(*) as cnt FROM courses WHERE is_active = 1 GROUP BY category ORDER BY cnt DESC"
             );
@@ -136,7 +136,7 @@ class AcademyController extends BaseController
             return;
         }
 
-        $course = Cache::remember('course_' . $slug, 600, function () use ($slug) {
+        $course = Cache::remember('course_' . $slug, Config::get('cache.ttl.page', 600), function () use ($slug) {
             $c = Database::fetch(
                 "SELECT c.* FROM courses c WHERE (c.slug = ? OR c.id = ?) AND c.is_active = 1",
                 [$slug, (int) $slug]

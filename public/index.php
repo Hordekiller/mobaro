@@ -20,6 +20,7 @@ Router::post('/dashboard/profile/update', ['DashboardController', 'updateProfile
 Router::post('/dashboard/password/change', ['DashboardController', 'changePassword']);
 Router::post('/dashboard/address/add', ['DashboardController', 'addAddress']);
 Router::post('/dashboard/address/delete/{id}', ['DashboardController', 'deleteAddress']);
+Router::post('/dashboard/address/update/{id}', ['DashboardController', 'updateAddress']);
 Router::post('/dashboard/wishlist/toggle', ['DashboardController', 'toggleWishlist']);
 Router::post('/dashboard/appointment/cancel', ['DashboardController', 'cancelAppointment']);
 Router::post('/dashboard/appointment/reschedule', ['DashboardController', 'rescheduleAppointment']);

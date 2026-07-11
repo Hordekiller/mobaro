@@ -43,6 +43,24 @@ class Database
         return self::query($sql, $params)->fetchAll();
     }
 
+    public static function cachedFetch(string $key, string $sql, array $params = [], int $ttl = 0, array|string $tags = []): ?array
+    {
+        $cacheKey = 'db:' . $key;
+        $defaultTtl = $ttl ?: Config::get('cache.ttl.default', 3600);
+        return Cache::remember($cacheKey, $defaultTtl, function () use ($sql, $params) {
+            return self::fetch($sql, $params);
+        }, $tags);
+    }
+
+    public static function cachedFetchAll(string $key, string $sql, array $params = [], int $ttl = 0, array|string $tags = []): array
+    {
+        $cacheKey = 'db:' . $key;
+        $defaultTtl = $ttl ?: Config::get('cache.ttl.default', 3600);
+        return Cache::remember($cacheKey, $defaultTtl, function () use ($sql, $params) {
+            return self::fetchAll($sql, $params);
+        }, $tags);
+    }
+
     public static function insert(string $table, array $data): int
     {
         $columns = implode(', ', array_keys($data));

@@ -4,7 +4,7 @@ class ShopController extends BaseController
 {
     private function getFacets(): array
     {
-        return Cache::remember('shop_facets', 600, function () {
+        return Cache::remember('shop_facets', Config::get('cache.ttl.page', 600), function () {
             $categoryRows = Database::fetchAll(
                 "SELECT category, COUNT(*) as cnt FROM products WHERE is_active = 1 GROUP BY category ORDER BY cnt DESC"
             );
@@ -94,7 +94,7 @@ class ShopController extends BaseController
 
     public function show(int $id): void
     {
-        $product = Cache::remember('product_' . $id, 600, function () use ($id) {
+        $product = Cache::remember('product_' . $id, Config::get('cache.ttl.page', 600), function () use ($id) {
             $p = Database::fetch("SELECT * FROM products WHERE id = ? AND is_active = 1", [$id]);
             if ($p) {
                 Cache::tag('products', 'product_' . $id);
