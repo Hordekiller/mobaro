@@ -28,8 +28,12 @@ class ZarinPal
             'CallbackURL' => $callbackUrl,
         ];
 
-        if ($email) $data['Email'] = $email;
-        if ($mobile) $data['Mobile'] = $mobile;
+        if ($email) {
+            $data['Email'] = $email;
+        }
+        if ($mobile) {
+            $data['Mobile'] = $mobile;
+        }
 
         $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
         $ch = curl_init($this->apiUrl . 'Request.json');

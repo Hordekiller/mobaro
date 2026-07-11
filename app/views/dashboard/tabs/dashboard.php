@@ -48,7 +48,7 @@
             <h3 class="font-bold text-lg">نوبت بعدی</h3>
             <span class="text-sm text-[#B76E79] font-medium">مشاهده همه</span>
         </div>
-        <?php if ($nextAppointment): ?>
+        <?php if ($nextAppointment) : ?>
         <div class="flex items-center gap-4 py-3">
             <div class="w-[60px] h-[60px] rounded-full bg-gradient-to-br from-[#ec9ba4] to-[#B76E79] flex items-center justify-center text-white text-xl flex-shrink-0">
                 <i class="fa-solid fa-calendar-day"></i>
@@ -66,7 +66,7 @@
             <a href="/dashboard/appointments" class="px-4 py-2 bg-[#B76E79] text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all text-center">تغییر نوبت</a>
             <button onclick="cancelAppointment(<?= $nextAppointment['id'] ?>)" class="px-4 py-2 bg-red-50 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-500 hover:text-white transition-all">لغو نوبت</button>
         </div>
-        <?php else: ?>
+        <?php else : ?>
         <div class="text-center py-8 text-[#9e9e9e]">
             <i class="fa-solid fa-calendar-xmark text-4xl mb-3"></i>
             <p>نوبتی ثبت نشده است</p>
@@ -87,8 +87,8 @@
     <div class="flex justify-between items-center mb-4">
         <h3 class="font-bold text-lg">آخرین فعالیت‌ها</h3>
     </div>
-    <?php if (!empty($recentActivities)): ?>
-        <?php foreach ($recentActivities as $activity): ?>
+    <?php if (!empty($recentActivities)) : ?>
+        <?php foreach ($recentActivities as $activity) : ?>
         <div class="flex gap-3 py-3 border-b border-[#efe5dc] last:border-b-0">
             <div class="w-[38px] h-[38px] rounded-xl bg-[#FDF6F0] text-[#B76E79] flex items-center justify-center flex-shrink-0">
                 <i class="fa-solid <?= $activity['type'] === 'appointment' ? 'fa-calendar-check' : ($activity['type'] === 'order' ? 'fa-truck' : 'fa-coins') ?>"></i>
@@ -99,7 +99,7 @@
             </div>
         </div>
         <?php endforeach; ?>
-    <?php else: ?>
+    <?php else : ?>
         <p class="text-[#9e9e9e] text-sm text-center py-6">هنوز فعالیتی ثبت نشده است</p>
     <?php endif; ?>
 </div>

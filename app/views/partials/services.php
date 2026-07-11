@@ -12,7 +12,7 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <?php foreach ($services as $index => $service): ?>
+            <?php foreach ($services as $index => $service) : ?>
             <div onclick="selectService(<?= $service['id'] ?>)" class="service-card bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer">
                 <div class="h-48 md:h-64 bg-cover bg-center relative"
                      style="background-image: url('/assets/images/<?= e($service['image'] ?? '') ?>')">

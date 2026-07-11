@@ -10,9 +10,9 @@ $currentTab = isset($tab) ? $tab : 'dashboard';
             <div class="bg-white rounded-[20px] p-6 shadow-[0_4px_30px_rgba(183,110,121,0.08)] h-fit lg:sticky lg:top-[100px]">
                 <div class="text-center pb-5 border-b border-[#efe5dc]">
                     <div class="relative w-[100px] h-[100px] mx-auto mb-3">
-                        <?php if ($user['avatar']): ?>
+                        <?php if ($user['avatar']) : ?>
                             <img src="/assets/images/<?= e($user['avatar']) ?>" class="w-full h-full rounded-full object-cover border-4 border-[#FDF6F0] shadow-[0_4px_20px_rgba(183,110,121,0.25)]">
-                        <?php else: ?>
+                        <?php else : ?>
                             <div class="w-full h-full rounded-full bg-gradient-to-br from-rose-300 to-rose-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-[#FDF6F0] shadow-[0_4px_20px_rgba(183,110,121,0.25)]">
                                 <?= e(mb_substr($user['name'], 0, 1)) ?>
                             </div>
@@ -54,7 +54,7 @@ $currentTab = isset($tab) ? $tab : 'dashboard';
                         'password' => ['fa-solid fa-lock', 'تغییر رمز'],
                     ];
                     ?>
-                    <?php foreach ($menuItems as $key => $item): ?>
+                    <?php foreach ($menuItems as $key => $item) : ?>
                     <li>
                         <a href="/dashboard/<?= $key ?>"
                            class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all duration-300 text-sm font-medium
@@ -75,29 +75,29 @@ $currentTab = isset($tab) ? $tab : 'dashboard';
 
             <!-- Content -->
             <div class="min-w-0">
-                <?php if ($currentTab === 'dashboard'): ?>
+                <?php if ($currentTab === 'dashboard') : ?>
                     <?php require __DIR__ . '/tabs/dashboard.php'; ?>
-                <?php elseif ($currentTab === 'appointments'): ?>
+                <?php elseif ($currentTab === 'appointments') : ?>
                     <?php require __DIR__ . '/tabs/appointments.php'; ?>
-                <?php elseif ($currentTab === 'courses'): ?>
+                <?php elseif ($currentTab === 'courses') : ?>
                     <?php require __DIR__ . '/tabs/courses.php'; ?>
-                <?php elseif ($currentTab === 'orders'): ?>
+                <?php elseif ($currentTab === 'orders') : ?>
                     <?php require __DIR__ . '/tabs/orders.php'; ?>
-                <?php elseif ($currentTab === 'wishlist'): ?>
+                <?php elseif ($currentTab === 'wishlist') : ?>
                     <?php require __DIR__ . '/tabs/wishlist.php'; ?>
-                <?php elseif ($currentTab === 'wallet'): ?>
+                <?php elseif ($currentTab === 'wallet') : ?>
                     <?php require __DIR__ . '/tabs/wallet.php'; ?>
-                <?php elseif ($currentTab === 'addresses'): ?>
+                <?php elseif ($currentTab === 'addresses') : ?>
                     <?php require __DIR__ . '/tabs/addresses.php'; ?>
-                <?php elseif ($currentTab === 'account'): ?>
+                <?php elseif ($currentTab === 'account') : ?>
                     <?php require __DIR__ . '/tabs/account.php'; ?>
-                <?php elseif ($currentTab === 'password'): ?>
+                <?php elseif ($currentTab === 'password') : ?>
                     <?php require __DIR__ . '/tabs/password.php'; ?>
-                <?php elseif ($currentTab === 'reviews'): ?>
+                <?php elseif ($currentTab === 'reviews') : ?>
                     <?php require __DIR__ . '/tabs/reviews.php'; ?>
-                <?php elseif ($currentTab === 'blog-comments'): ?>
+                <?php elseif ($currentTab === 'blog-comments') : ?>
                     <?php require __DIR__ . '/tabs/blog-comments.php'; ?>
-                <?php elseif ($currentTab === 'order_detail'): ?>
+                <?php elseif ($currentTab === 'order_detail') : ?>
                     <?php require __DIR__ . '/tabs/order_detail.php'; ?>
                 <?php endif; ?>
             </div>

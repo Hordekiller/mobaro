@@ -25,7 +25,9 @@ class BlogController extends BaseController
                 $parts = explode(',', $t['tags']);
                 foreach ($parts as $tag) {
                     $tag = trim($tag);
-                    if (!empty($tag)) $allTags[$tag] = true;
+                    if (!empty($tag)) {
+                        $allTags[$tag] = true;
+                    }
                 }
             }
             $allTags = array_keys($allTags);
@@ -45,7 +47,9 @@ class BlogController extends BaseController
         $page = max(1, (int) ($_GET['page'] ?? 1));
 
         $perPage = (int) Settings::get('blog_posts_per_page', 6);
-        if ($perPage < 1) $perPage = 6;
+        if ($perPage < 1) {
+            $perPage = 6;
+        }
         $offset = ($page - 1) * $perPage;
 
         $where = "AND is_published = 1";
@@ -119,8 +123,12 @@ class BlogController extends BaseController
             'is_approved' => 0,
         ];
 
-        if ($name) $data['name'] = $name;
-        if ($email) $data['email'] = $email;
+        if ($name) {
+            $data['name'] = $name;
+        }
+        if ($email) {
+            $data['email'] = $email;
+        }
 
         if ($userId) {
             $user = Database::fetch("SELECT name, email FROM users WHERE id = ?", [$userId]);

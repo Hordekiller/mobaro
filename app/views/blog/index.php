@@ -64,7 +64,7 @@
                     class="category-pill px-6 py-2 rounded-full text-sm font-medium shadow-sm <?= empty($category) ? 'bg-rose-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:shadow-md' ?>">
                     همه مطالب
                 </button>
-                <?php foreach ($categories as $cat): ?>
+                <?php foreach ($categories as $cat) : ?>
                 <button type="submit" name="category" value="<?= e($cat['category']) ?>"
                     class="category-pill px-6 py-2 rounded-full text-sm font-medium shadow-sm <?= $category === $cat['category'] ? 'bg-rose-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:shadow-md' ?>">
                     <?= e($cat['category']) ?>
@@ -75,7 +75,7 @@
     </div>
 </section>
 
-<?php if ($featured): ?>
+<?php if ($featured) : ?>
 <section class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <a href="/blog/<?= e($featured['slug']) ?>" class="bg-white rounded-3xl overflow-hidden shadow-xl card-hover cursor-pointer group block">
@@ -119,21 +119,21 @@
 
             <div class="lg:col-span-2 space-y-8">
 
-                <?php if (!empty($search)): ?>
+                <?php if (!empty($search)) : ?>
                 <div class="bg-rose-50 rounded-2xl p-4 text-center">
                     <p class="text-gray-700">نتایج جستجو برای: <span class="font-bold text-rose-600"><?= e($search) ?></span></p>
                 </div>
                 <?php endif; ?>
 
-                <?php if (empty($posts)): ?>
+                <?php if (empty($posts)) : ?>
                 <div class="text-center py-16">
                     <i class="fas fa-newspaper text-6xl text-gray-300 mb-4"></i>
                     <h3 class="text-xl font-bold text-gray-500">مطلبی یافت نشد</h3>
                     <p class="text-gray-400 mt-2">در حال حاضر مقاله‌ای در این دسته وجود ندارد.</p>
                 </div>
-                <?php else: ?>
+                <?php else : ?>
                 <div class="grid md:grid-cols-2 gap-6">
-                    <?php foreach ($posts as $post): ?>
+                    <?php foreach ($posts as $post) : ?>
                     <article class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover group">
                         <a href="/blog/<?= e($post['slug']) ?>">
                             <div class="image-zoom h-48 relative">
@@ -159,26 +159,26 @@
                     <?php endforeach; ?>
                 </div>
 
-                <?php if ($totalPages > 1): ?>
+                    <?php if ($totalPages > 1) : ?>
                 <div class="flex justify-center mt-12 gap-2">
-                    <?php if ($page > 1): ?>
+                        <?php if ($page > 1) : ?>
                     <a href="?page=<?= $page - 1 ?>&category=<?= e($category) ?>&s=<?= e($search) ?>" class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all">
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <?php endif; ?>
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <?php endif; ?>
+                        <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
                     <a href="?page=<?= $i ?>&category=<?= e($category) ?>&s=<?= e($search) ?>"
                        class="w-10 h-10 rounded-full flex items-center justify-center font-medium transition-all <?= $i === $page ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' : 'border border-gray-300 text-gray-600 hover:bg-rose-600 hover:text-white hover:border-rose-600' ?>">
-                        <?= faNum($i) ?>
+                            <?= faNum($i) ?>
                     </a>
-                    <?php endfor; ?>
-                    <?php if ($page < $totalPages): ?>
+                        <?php endfor; ?>
+                        <?php if ($page < $totalPages) : ?>
                     <a href="?page=<?= $page + 1 ?>&category=<?= e($category) ?>&s=<?= e($search) ?>" class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all">
                         <i class="fas fa-chevron-left"></i>
                     </a>
-                    <?php endif; ?>
+                        <?php endif; ?>
                 </div>
-                <?php endif; ?>
+                    <?php endif; ?>
                 <?php endif; ?>
 
             </div>
@@ -218,7 +218,7 @@
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-rose-50">
                         <h4 class="text-lg font-bold text-gray-900 mb-4" style="border-right:4px solid #e11d48;padding-right:12px;">دسته‌بندی‌ها</h4>
                         <ul class="space-y-3">
-                            <?php foreach ($categories as $cat): ?>
+                            <?php foreach ($categories as $cat) : ?>
                             <li>
                                 <a href="/blog?category=<?= e($cat['category']) ?>" class="flex justify-between items-center text-gray-700 hover:text-rose-600 transition-colors group">
                                     <span><?= e($cat['category']) ?></span>
@@ -232,7 +232,7 @@
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-rose-50">
                         <h4 class="text-lg font-bold text-gray-900 mb-4" style="border-right:4px solid #e11d48;padding-right:12px;">محبوب‌ترین مطالب</h4>
                         <div class="space-y-4">
-                            <?php foreach ($popularPosts as $pp): ?>
+                            <?php foreach ($popularPosts as $pp) : ?>
                             <a href="/blog/<?= e($pp['slug']) ?>" class="flex gap-3 group">
                                 <img src="/assets/images/<?= e($pp['image'] ?: 'placeholder.svg') ?>" class="w-20 h-20 rounded-lg object-cover flex-shrink-0" alt="<?= e($pp['title']) ?>">
                                 <div>
@@ -246,7 +246,7 @@
                         </div>
                     </div>
 
-                    <?php if (!empty($latestCourse)): ?>
+                    <?php if (!empty($latestCourse)) : ?>
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-rose-50">
                         <h4 class="text-lg font-bold text-gray-900 mb-4" style="border-right:4px solid #e11d48;padding-right:12px;">جدیدترین دوره آموزشی</h4>
                         <a href="/course/<?= e($latestCourse['slug'] ?? $latestCourse['id']) ?>" class="block group">
@@ -254,25 +254,25 @@
                             <h5 class="font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1"><?= e($latestCourse['title']) ?></h5>
                             <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                 <span><?= e($latestCourse['teacher']) ?></span>
-                                <?php if (!empty($latestCourse['rating'])): ?>
+                                <?php if (!empty($latestCourse['rating'])) : ?>
                                 <span>•</span>
                                 <span class="text-amber-500">★ <?= e($latestCourse['rating']) ?></span>
                                 <?php endif; ?>
                             </div>
-                            <?php if (!empty($latestCourse['is_free'])): ?>
+                            <?php if (!empty($latestCourse['is_free'])) : ?>
                             <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">رایگان</span>
-                            <?php else: ?>
+                            <?php else : ?>
                             <span class="text-rose-500 font-bold text-sm"><?= number_format($latestCourse['price']) ?> تومان</span>
                             <?php endif; ?>
                         </a>
                     </div>
                     <?php endif; ?>
 
-                    <?php if (!empty($allTags)): ?>
+                    <?php if (!empty($allTags)) : ?>
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-rose-50">
                         <h4 class="text-lg font-bold text-gray-900 mb-4" style="border-right:4px solid #e11d48;padding-right:12px;">برچسب‌ها</h4>
                         <div class="flex flex-wrap gap-2">
-                            <?php foreach ($allTags as $tag): ?>
+                            <?php foreach ($allTags as $tag) : ?>
                             <a href="/blog?s=<?= e($tag) ?>" class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs hover:bg-rose-600 hover:text-white transition-colors"><?= e($tag) ?></a>
                             <?php endforeach; ?>
                         </div>

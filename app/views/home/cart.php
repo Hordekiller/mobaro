@@ -11,14 +11,18 @@
                 $productCount = count(array_filter($cart, fn($i) => ($i['type'] ?? 'product') === 'product'));
                 $courseCount = count(array_filter($cart, fn($i) => ($i['type'] ?? 'product') === 'course'));
                 $parts = [];
-                if ($productCount) $parts[] = "{$productCount} محصول";
-                if ($courseCount) $parts[] = "{$courseCount} دوره";
+                if ($productCount) {
+                    $parts[] = "{$productCount} محصول";
+                }
+                if ($courseCount) {
+                    $parts[] = "{$courseCount} دوره";
+                }
                 ?>
                 <p class="text-sm text-zinc-500"><?= implode(' و ', $parts) ?> در سبد خرید شما</p>
             </div>
         </div>
 
-        <?php if (empty($cart)): ?>
+        <?php if (empty($cart)) : ?>
             <div class="bg-white rounded-2xl p-16 text-center shadow-lg border border-zinc-100">
                 <i class="fa-solid fa-bag-shopping text-6xl text-zinc-200 mb-4"></i>
                 <p class="text-zinc-400 text-lg mb-6">سبد خرید شما خالی است</p>
@@ -27,12 +31,12 @@
                     بازگشت به فروشگاه
                 </a>
             </div>
-        <?php else: ?>
+        <?php else : ?>
             <div class="cart-page-layout">
                 <div class="cart-page-items space-y-4">
-                <?php foreach ($cart as $idx => $item):
+                <?php foreach ($cart as $idx => $item) :
                     $isCourse = ($item['type'] ?? 'product') === 'course';
-                ?>
+                    ?>
                 <div class="bg-white rounded-2xl p-5 shadow-lg border border-zinc-100 flex items-center gap-5 cart-item" data-id="<?= $item['id'] ?>">
                     <div class="w-20 h-20 rounded-xl bg-zinc-50 flex-shrink-0 overflow-hidden">
                         <img src="/assets/images/<?= e($item['image'] ?? '') ?>" class="w-full h-full object-cover" onerror="this.src='/media/200/200/<?= $item['id'] ?>'">
@@ -40,16 +44,16 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
                             <h3 class="font-bold text-zinc-800"><?= e($item['name']) ?></h3>
-                            <?php if ($isCourse): ?>
+                            <?php if ($isCourse) : ?>
                             <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full">دوره</span>
                             <?php endif; ?>
                         </div>
                         <p class="text-sm text-zinc-400"><?= e($item['category'] ?? '') ?></p>
                         <p class="text-rose-600 font-bold mt-1"><?= priceFormat($item['price'] * $item['qty']) ?></p>
                     </div>
-                    <?php if ($isCourse): ?>
+                    <?php if ($isCourse) : ?>
                     <div class="text-sm text-zinc-400 flex-shrink-0">۱×</div>
-                    <?php else: ?>
+                    <?php else : ?>
                     <div class="flex items-center gap-3">
                         <button onclick="updateCartQty(<?= $item['id'] ?>, <?= $item['qty'] - 1 ?>)" class="w-9 h-9 rounded-xl border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-all" <?= $item['qty'] <= 1 ? 'disabled' : '' ?>>
                             <i class="fa-solid fa-minus text-xs"></i>
@@ -78,7 +82,8 @@
                     <input type="hidden" id="coupon-code" value="">
                 </div>
 
-                <?php if (Auth::check()): $wallet = Auth::user()['wallet'] ?? 0; ?>
+                <?php if (Auth::check()) :
+                    $wallet = Auth::user()['wallet'] ?? 0; ?>
                 <div class="mb-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
                     <div class="flex items-center justify-between mb-3">
                         <span class="font-semibold text-sm text-amber-800">کیف پول شما</span>

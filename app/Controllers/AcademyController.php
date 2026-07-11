@@ -26,7 +26,7 @@ class AcademyController extends BaseController
             $params[] = $category;
         }
 
-        $orderBy = match($tab) {
+        $orderBy = match ($tab) {
             'popular' => 'c.students DESC',
             'free' => 'c.is_free DESC, c.price ASC',
             default => 'c.id DESC',

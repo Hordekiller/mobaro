@@ -16,9 +16,9 @@
             <div class="grid md:grid-cols-2 gap-10 items-start">
                 <div>
                     <?php $aboutImage = $settings['about_image'] ?? ''; ?>
-                    <?php if (!empty($aboutImage) && file_exists(__DIR__ . '/../../../public/assets/images/' . $aboutImage)): ?>
+                    <?php if (!empty($aboutImage) && file_exists(__DIR__ . '/../../../public/assets/images/' . $aboutImage)) : ?>
                     <img src="/assets/images/<?= e($aboutImage) ?>" alt="درباره موبارو" class="w-full rounded-2xl object-cover shadow-lg">
-                    <?php else: ?>
+                    <?php else : ?>
                     <div class="w-full aspect-video bg-gradient-to-br from-rose-100 to-amber-50 rounded-2xl flex items-center justify-center">
                         <i class="fa-solid fa-spa text-8xl text-rose-300"></i>
                     </div>
@@ -40,9 +40,9 @@
                 </div>
                 <div class="prose prose-zinc max-w-none">
                     <?php $aboutContent = $settings['about_content'] ?? ''; ?>
-                    <?php if (!empty($aboutContent)): ?>
+                    <?php if (!empty($aboutContent)) : ?>
                         <?= $aboutContent ?>
-                    <?php else: ?>
+                    <?php else : ?>
                     <h2 class="text-2xl font-bold text-zinc-800">سالن زیبایی موبارو</h2>
                     <p class="text-zinc-600 leading-relaxed">
                         سالن زیبایی موبارو با بیش از ۱۲ سال تجربه در زمینه ارائه خدمات آرایشی و زیبایی، یکی از معتبرترین سالن‌های زیبایی تهران می‌باشد. ما با بهره‌گیری از جدیدترین متدهای روز دنیا و بهترین مواد آرایشی، خدمات با کیفیتی را به شما عزیزان ارائه می‌دهیم.

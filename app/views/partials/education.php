@@ -17,7 +17,7 @@
             </div>
             <div class="md:col-span-7">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <?php foreach ($tutorials as $index => $tutorial): ?>
+                    <?php foreach ($tutorials as $index => $tutorial) : ?>
                     <div onclick="openTutorial(<?= $index ?>)" class="group bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden cursor-pointer">
                         <div class="relative">
                             <img src="/assets/images/<?= e($tutorial['image']) ?>"

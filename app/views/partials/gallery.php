@@ -8,7 +8,7 @@
             </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" id="models-grid">
-            <?php foreach ($hairModels as $model): ?>
+            <?php foreach ($hairModels as $model) : ?>
             <div class="model-card bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer">
                 <div class="relative">
                     <img src="/assets/images/<?= e($model['image']) ?>"

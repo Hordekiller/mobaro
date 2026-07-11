@@ -38,7 +38,7 @@
                 <h2 class="text-2xl font-bold mb-2">ارسال پیام</h2>
                 <p class="text-zinc-500 text-sm mb-6">پیام خود را برای ما ارسال کنید</p>
 
-                <?php if ($msg = flash('success')): ?>
+                <?php if ($msg = flash('success')) : ?>
                 <div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl mb-4 text-sm"><?= e($msg) ?></div>
                 <?php endif; ?>
 
@@ -48,12 +48,16 @@
                         <div>
                             <input type="text" name="name" placeholder="نام و نام خانوادگی" value="<?= e(old('name')) ?>"
                                    class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
-                            <?php if ($err = flashError('name')): ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php endif; ?>
+                            <?php if ($err = flashError('name')) :
+                                ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
+                            endif; ?>
                         </div>
                         <div>
                             <input type="email" name="email" placeholder="ایمیل" value="<?= e(old('email')) ?>"
                                    class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
-                            <?php if ($err = flashError('email')): ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php endif; ?>
+                            <?php if ($err = flashError('email')) :
+                                ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
+                            endif; ?>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -69,7 +73,9 @@
                     <div>
                         <textarea name="message" rows="5" placeholder="پیام شما..." 
                                   class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e(old('message')) ?></textarea>
-                        <?php if ($err = flashError('message')): ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php endif; ?>
+                        <?php if ($err = flashError('message')) :
+                            ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
+                        endif; ?>
                     </div>
                     <button type="submit" class="w-full py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:shadow-lg transition-all">
                         <i class="fa-solid fa-paper-plane ml-2"></i>ارسال پیام
@@ -135,7 +141,7 @@
             </div>
         </div>
 
-        <?php if (!empty($settings['contact_map_location'])): ?>
+        <?php if (!empty($settings['contact_map_location'])) : ?>
         <div class="mt-8 bg-white rounded-2xl p-4 shadow-lg overflow-hidden">
             <h3 class="text-lg font-bold mb-4 px-2">موقعیت ما روی نقشه</h3>
             <div class="rounded-xl overflow-hidden aspect-video">

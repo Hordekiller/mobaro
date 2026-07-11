@@ -21,14 +21,18 @@
                         <input name="name" type="text" placeholder="سارا"
                                class="w-full border rounded-3xl px-6 py-6 outline-none focus:border-rose-500 transition-colors"
                                value="<?= e(old('name')) ?>">
-                        <?php if ($err = flashError('name')): ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php endif; ?>
+                        <?php if ($err = flashError('name')) :
+                            ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
+                        endif; ?>
                     </div>
                     <div>
                         <label class="text-xs text-zinc-500 block mb-2">نام خانوادگی</label>
                         <input name="family" type="text" placeholder="احمدی"
                                class="w-full border rounded-3xl px-6 py-6 outline-none focus:border-rose-500 transition-colors"
                                value="<?= e(old('family')) ?>">
-                        <?php if ($err = flashError('family')): ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php endif; ?>
+                        <?php if ($err = flashError('family')) :
+                            ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
+                        endif; ?>
                     </div>
                 </div>
                 <div>
@@ -39,13 +43,17 @@
                                class="flex-1 py-6 outline-none text-lg px-4 bg-transparent"
                                value="<?= e(old('phone')) ?>">
                     </div>
-                    <?php if ($err = flashError('phone')): ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php endif; ?>
+                    <?php if ($err = flashError('phone')) :
+                        ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php
+                    endif; ?>
                 </div>
                 <div>
                     <label class="text-xs text-zinc-500 block mb-2">رمز عبور</label>
                     <input name="password" type="password" placeholder="حداقل ۶ کاراکتر"
                            class="w-full border rounded-3xl px-7 py-6 outline-none focus:border-rose-500 transition-colors">
-                    <?php if ($err = flashError('password')): ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php endif; ?>
+                    <?php if ($err = flashError('password')) :
+                        ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php
+                    endif; ?>
                 </div>
                 <div>
                     <label class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
@@ -56,12 +64,14 @@
                     <input name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
                            class="w-full border rounded-3xl px-7 py-5 outline-none focus:border-rose-500 transition-colors mt-2 text-center text-lg font-bold"
                            required>
-                    <?php if ($err = flashError('captcha')): ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php endif; ?>
+                    <?php if ($err = flashError('captcha')) :
+                        ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php
+                    endif; ?>
                 </div>
                 <button type="submit" class="w-full py-7 bg-zinc-900 hover:bg-black transition-all rounded-3xl text-white font-semibold text-lg">
                     ثبت‌نام رایگان
                 </button>
-                <?php if (GoogleAuth::isConfigured()): ?>
+                <?php if (GoogleAuth::isConfigured()) : ?>
                 <div class="flex items-center gap-3 my-2">
                     <div class="flex-1 h-px bg-zinc-200"></div>
                     <span class="text-xs text-zinc-400">یا</span>

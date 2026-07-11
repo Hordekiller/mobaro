@@ -44,7 +44,7 @@ class ShopController extends BaseController
             $params[] = $s;
         }
 
-        $orderClause = match($sort) {
+        $orderClause = match ($sort) {
             'price_asc' => 'p.price ASC',
             'price_desc' => 'p.price DESC',
             'rating' => 'p.rating DESC',
@@ -400,8 +400,7 @@ class ShopController extends BaseController
         if (isset($_SESSION['cart'])) {
             $_SESSION['cart'] = array_values(
                 array_filter($_SESSION['cart'], fn($item) =>
-                    !($item['id'] === $productId && ($item['type'] ?? 'product') === $itemType)
-                )
+                    !($item['id'] === $productId && ($item['type'] ?? 'product') === $itemType))
             );
         }
 
@@ -543,7 +542,9 @@ class ShopController extends BaseController
                 );
                 $existingIds = array_column($existingEnrollments, 'course_id');
                 foreach ($courseItems as $course) {
-                    if (in_array($course['id'], $existingIds)) continue;
+                    if (in_array($course['id'], $existingIds)) {
+                        continue;
+                    }
                     Database::insert('course_enrollments', [
                         'user_id' => $user['id'],
                         'course_id' => $course['id'],
@@ -659,7 +660,9 @@ class ShopController extends BaseController
                 );
                 $existingIds = array_column($existingEnrollments, 'course_id');
                 foreach ($courseItems as $course) {
-                    if (in_array($course['product_id'], $existingIds)) continue;
+                    if (in_array($course['product_id'], $existingIds)) {
+                        continue;
+                    }
                     Database::insert('course_enrollments', [
                         'user_id' => Auth::id(),
                         'course_id' => $course['product_id'],

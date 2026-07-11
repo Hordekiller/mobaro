@@ -149,9 +149,15 @@ class Cache
         self::$local = [];
         self::$localExpiry = [];
         $dir = self::dir();
-        foreach (glob($dir . '/*/*.json') as $f) @unlink($f);
-        foreach (glob($dir . '/tags/*.tag') as $f) @unlink($f);
-        foreach (glob($dir . '/' . self::VERSION_DIR . '/*.ver') as $f) @unlink($f);
+        foreach (glob($dir . '/*/*.json') as $f) {
+            @unlink($f);
+        }
+        foreach (glob($dir . '/tags/*.tag') as $f) {
+            @unlink($f);
+        }
+        foreach (glob($dir . '/' . self::VERSION_DIR . '/*.ver') as $f) {
+            @unlink($f);
+        }
     }
 
     public static function flushByTag(string $tag): void
@@ -213,9 +219,13 @@ class Cache
         $currentVer = self::version();
         foreach (glob($dir . '/*/*.json') as $path) {
             $data = @file_get_contents($path);
-            if ($data === false) continue;
+            if ($data === false) {
+                continue;
+            }
             $entry = json_decode($data, true);
-            if (!$entry) continue;
+            if (!$entry) {
+                continue;
+            }
             if ($entry['ver'] < $currentVer || ($entry['e'] !== 0 && $now > $entry['e'])) {
                 @unlink($path);
             }
@@ -225,7 +235,9 @@ class Cache
     private static function readEntry(string $key): ?array
     {
         $path = self::path($key);
-        if (!is_file($path)) return null;
+        if (!is_file($path)) {
+            return null;
+        }
 
         $data = @file_get_contents($path);
         if ($data === false) {

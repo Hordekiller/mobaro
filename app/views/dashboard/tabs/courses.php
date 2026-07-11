@@ -4,8 +4,8 @@
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <?php if (!empty($enrollments)): ?>
-        <?php foreach ($enrollments as $enrollment): ?>
+    <?php if (!empty($enrollments)) : ?>
+        <?php foreach ($enrollments as $enrollment) : ?>
         <div class="bg-white rounded-[18px] overflow-hidden shadow-[0_4px_20px_rgba(183,110,121,0.06)] hover:-translate-y-1 hover:shadow-lg transition-all">
             <div class="relative">
                 <img src="/assets/images/<?= e($enrollment['image']) ?>"
@@ -14,7 +14,7 @@
                 <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white <?= ($enrollment['type'] ?? '') === 'online' ? 'bg-purple-500/90' : 'bg-rose-500/90' ?>">
                     <?= ($enrollment['type'] ?? '') === 'online' ? 'آنلاین' : 'حضوری' ?>
                 </span>
-                <?php if (($enrollment['progress'] ?? 0) >= 100): ?>
+                <?php if (($enrollment['progress'] ?? 0) >= 100) : ?>
                 <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold text-white bg-emerald-500/90">
                     <i class="fa-solid fa-check ml-1"></i>تکمیل شده
                 </span>
@@ -42,7 +42,7 @@
             </div>
         </div>
         <?php endforeach; ?>
-    <?php else: ?>
+    <?php else : ?>
         <div class="col-span-full text-center py-12 text-[#9e9e9e]">
             <i class="fa-solid fa-graduation-cap text-5xl mb-4"></i>
             <p>دوره‌ای ثبت‌نام نکرده‌اید</p>

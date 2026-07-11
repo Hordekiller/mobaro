@@ -132,9 +132,15 @@ function timeAgo(string $datetime): string
 {
     $timestamp = strtotime($datetime);
     $diff = time() - $timestamp;
-    if ($diff < 60) return 'لحظاتی پیش';
-    if ($diff < 3600) return floor($diff / 60) . ' دقیقه پیش';
-    if ($diff < 86400) return floor($diff / 3600) . ' ساعت پیش';
+    if ($diff < 60) {
+        return 'لحظاتی پیش';
+    }
+    if ($diff < 3600) {
+        return floor($diff / 60) . ' دقیقه پیش';
+    }
+    if ($diff < 86400) {
+        return floor($diff / 3600) . ' ساعت پیش';
+    }
     return jdate('Y/m/d', $timestamp);
 }
 
@@ -200,7 +206,9 @@ function gregorianToJalali(int $gYear, int $gMonth, int $gDay): array
 
 function truncate(string $text, int $length = 100): string
 {
-    if (mb_strlen($text) <= $length) return $text;
+    if (mb_strlen($text) <= $length) {
+        return $text;
+    }
     return mb_substr($text, 0, $length) . '...';
 }
 
@@ -219,7 +227,9 @@ function getYoutubeId(string $url): string
 function getAparatHash(string $url): string
 {
     preg_match('/aparat\.com\/v\/([a-zA-Z0-9_-]+)/', $url, $matches);
-    if (!empty($matches[1])) return $matches[1];
+    if (!empty($matches[1])) {
+        return $matches[1];
+    }
     preg_match('/videohash\/([a-zA-Z0-9_-]+)/', $url, $matches);
     return $matches[1] ?? '';
 }

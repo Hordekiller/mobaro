@@ -14,23 +14,23 @@
 </div>
 
 <div id="appointments-list">
-    <?php if (!empty($appointments)): ?>
-        <?php foreach ($appointments as $apt):
-            $statusClass = match($apt['status']) {
+    <?php if (!empty($appointments)) : ?>
+        <?php foreach ($appointments as $apt) :
+            $statusClass = match ($apt['status']) {
                 'confirmed' => 'bg-green-50 text-green-700',
                 'pending' => 'bg-amber-50 text-amber-700',
                 'done' => 'bg-gray-100 text-gray-600',
                 'cancelled' => 'bg-red-50 text-red-600',
                 default => 'bg-gray-100 text-gray-600',
             };
-            $statusLabel = match($apt['status']) {
+            $statusLabel = match ($apt['status']) {
                 'confirmed' => 'تأیید شده',
                 'pending' => 'در انتظار',
                 'done' => 'انجام شده',
                 'cancelled' => 'لغو شده',
                 default => $apt['status'],
             };
-        ?>
+    ?>
         <div class="bg-white rounded-xl p-5 shadow-[0_4px_20px_rgba(225,29,72,0.06)] mb-3.5 hover:-translate-y-0.5 hover:shadow-lg transition-all"
              data-status="<?= e($apt['status']) ?>" data-date="<?= e($apt['appointment_date']) ?>">
             <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-center">
@@ -49,7 +49,7 @@
                     </div>
                     <div class="font-bold text-[#e11d48] mt-1.5"><?= priceFormat($apt['price']) ?></div>
                 </div>
-                <?php if ($apt['status'] === 'confirmed' || $apt['status'] === 'pending'): ?>
+                <?php if ($apt['status'] === 'confirmed' || $apt['status'] === 'pending') : ?>
                 <div class="flex flex-col gap-1.5">
                     <button onclick="showReschedule(<?= $apt['id'] ?>)" class="px-3 py-1.5 bg-[#e11d48] text-white rounded-lg text-xs font-semibold">تغییر</button>
                     <button onclick="cancelAppointment(<?= $apt['id'] ?>)" class="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-semibold">لغو</button>
@@ -58,7 +58,7 @@
             </div>
         </div>
         <?php endforeach; ?>
-    <?php else: ?>
+    <?php else : ?>
         <div class="text-center py-12 text-[#9e9e9e]">
             <i class="fa-solid fa-calendar-xmark text-5xl mb-4"></i>
             <p>نوبتی ثبت نشده است</p>

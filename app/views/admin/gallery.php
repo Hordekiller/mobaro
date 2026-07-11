@@ -28,7 +28,7 @@ $total = $total ?? 0;
 </div>
 
 <div class="bg-white rounded-3xl shadow-lg p-6">
-    <?php if (empty($items)): ?>
+    <?php if (empty($items)) : ?>
     <div class="text-center py-16 text-zinc-400">
         <i class="fa-solid fa-photo-film text-5xl mb-4 opacity-30"></i>
         <p class="text-lg">هیچ فایل رسانه‌ای یافت نشد</p>
@@ -36,29 +36,29 @@ $total = $total ?? 0;
             اولین فایل را آپلود کنید
         </button>
     </div>
-    <?php else: ?>
+    <?php else : ?>
     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <?php foreach ($items as $item): ?>
-        <?php
-        $isImage = $item['type'] === 'image';
-        $src = '/media/stream/' . $item['id'];
-        $icon = $isImage ? 'fa-image' : 'fa-video';
-        $iconColor = $isImage ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600';
-        $sourceLabels = [
+        <?php foreach ($items as $item) : ?>
+            <?php
+            $isImage = $item['type'] === 'image';
+            $src = '/media/stream/' . $item['id'];
+            $icon = $isImage ? 'fa-image' : 'fa-video';
+            $iconColor = $isImage ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600';
+            $sourceLabels = [
             'product_image' => 'محصول',
             'product_gallery' => 'گالری محصول',
             'product_video' => 'ویدیو محصول',
             'course_video' => 'ویدیو دوره',
             'tutorial_video' => 'ویدیو آموزش',
             'direct' => 'آپلود مستقیم',
-        ];
-        $sourceLabel = $sourceLabels[$item['source_type']] ?? $item['source_type'];
-        ?>
+            ];
+            $sourceLabel = $sourceLabels[$item['source_type']] ?? $item['source_type'];
+            ?>
         <div class="group relative bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100 hover:shadow-lg hover:border-rose-200 transition-all">
             <div class="aspect-square bg-zinc-100 flex items-center justify-center overflow-hidden">
-                <?php if ($isImage): ?>
+                <?php if ($isImage) : ?>
                 <img src="<?= e($src) ?>" alt="<?= e($item['alt_text'] ?: $item['original_name']) ?>" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-image text-3xl text-zinc-300\'></i>'">
-                <?php else: ?>
+                <?php else : ?>
                 <div class="flex flex-col items-center gap-2 text-zinc-400">
                     <i class="fa-solid fa-video text-4xl"></i>
                     <span class="text-xs">ویدیو</span>
@@ -85,19 +85,19 @@ $total = $total ?? 0;
         <?php endforeach; ?>
     </div>
 
-    <?php if ($totalPages > 1): ?>
+        <?php if ($totalPages > 1) : ?>
     <div class="flex justify-center gap-2 mt-8">
-        <?php if ($page > 1): ?>
+            <?php if ($page > 1) : ?>
         <a href="/admin/gallery?page=<?= $page - 1 ?>&filter=<?= e($filter) ?>&s=<?= e($search) ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">قبلی</a>
-        <?php endif; ?>
-        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <?php endif; ?>
+            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
         <a href="/admin/gallery?page=<?= $i ?>&filter=<?= e($filter) ?>&s=<?= e($search) ?>" class="px-4 py-2 rounded-xl text-sm transition-all <?= $i === $page ? 'bg-rose-600 text-white' : 'bg-zinc-100 hover:bg-rose-100 hover:text-rose-600' ?>"><?= faNum($i) ?></a>
-        <?php endfor; ?>
-        <?php if ($page < $totalPages): ?>
+            <?php endfor; ?>
+            <?php if ($page < $totalPages) : ?>
         <a href="/admin/gallery?page=<?= $page + 1 ?>&filter=<?= e($filter) ?>&s=<?= e($search) ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">بعدی</a>
-        <?php endif; ?>
+            <?php endif; ?>
     </div>
-    <?php endif; ?>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 

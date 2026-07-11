@@ -8,7 +8,7 @@
             </a>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10" id="shop-grid">
-            <?php foreach ($products as $product): ?>
+            <?php foreach ($products as $product) : ?>
             <div class="product-card bg-white rounded-3xl overflow-hidden border border-transparent hover:border-zinc-200">
                 <a href="/product/<?= $product['id'] ?>" class="relative block">
                     <img src="/assets/images/<?= e($product['image']) ?>"

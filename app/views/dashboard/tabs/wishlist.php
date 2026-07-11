@@ -4,8 +4,8 @@
 </div>
 
 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    <?php if (!empty($wishlist)): ?>
-        <?php foreach ($wishlist as $item): ?>
+    <?php if (!empty($wishlist)) : ?>
+        <?php foreach ($wishlist as $item) : ?>
         <div class="bg-white rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(183,110,121,0.06)] hover:-translate-y-1 hover:shadow-lg transition-all relative">
             <img src="/assets/images/<?= e($item['image']) ?>"
                  class="w-full h-44 object-cover"
@@ -23,7 +23,7 @@
             </div>
         </div>
         <?php endforeach; ?>
-    <?php else: ?>
+    <?php else : ?>
         <div class="col-span-full text-center py-12 text-[#9e9e9e]">
             <i class="fa-solid fa-heart text-5xl mb-4"></i>
             <p>محصولی در لیست علاقه‌مندی‌ها نیست</p>

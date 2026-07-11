@@ -4,7 +4,7 @@
             <span class="text-rose-400">نظرات مشتریان</span>
         </div>
         <div class="max-w-3xl mx-auto text-center">
-            <?php if (!empty($testimonials)): ?>
+            <?php if (!empty($testimonials)) : ?>
             <div id="testimonial-text" class="text-3xl leading-tight font-light text-zinc-200 italic">
                 “<?= e($testimonials[0]['text']) ?>”
             </div>

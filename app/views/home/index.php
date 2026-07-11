@@ -7,4 +7,4 @@
 <?php require __DIR__ . '/../partials/education.php'; ?>
 <?php require __DIR__ . '/../partials/shop-block.php'; ?>
 <?php require __DIR__ . '/../partials/testimonials.php'; ?>
-<?php require __DIR__ . '/../partials/newsletter-block.php'; ?>
+<?php require __DIR__ . '/../partials/newsletter-block.php';

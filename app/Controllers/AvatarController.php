@@ -46,7 +46,9 @@ class AvatarController
     private static function getInitials(string $name): string
     {
         $name = trim($name);
-        if (empty($name)) return '?';
+        if (empty($name)) {
+            return '?';
+        }
 
         $parts = preg_split('/\s+/', $name);
         if (count($parts) >= 2) {

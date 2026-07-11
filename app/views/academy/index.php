@@ -66,7 +66,7 @@
         <button onclick="filterByCategory('all')" class="category-chip px-5 py-2.5 rounded-full text-sm font-medium border transition-all <?= $category === 'all' ? 'bg-rose-600 text-white border-rose-600 scale-105' : 'bg-white text-zinc-600 border-zinc-200 hover:border-rose-300' ?>">
             <i class="fa-solid fa-layer-group ml-1.5 text-xs"></i>همه
         </button>
-        <?php foreach ($categories as $cat): ?>
+        <?php foreach ($categories as $cat) : ?>
         <button onclick="filterByCategory('<?= e($cat['category']) ?>')" class="category-chip px-5 py-2.5 rounded-full text-sm font-medium border transition-all <?= $category === $cat['category'] ? 'bg-rose-600 text-white border-rose-600 scale-105' : 'bg-white text-zinc-600 border-zinc-200 hover:border-rose-300' ?>">
             <?= e($cat['category']) ?>
             <span class="mr-1 text-xs opacity-60">(<?= $cat['cnt'] ?>)</span>
@@ -88,23 +88,23 @@
         </button>
     </div>
 
-    <?php if (empty($courses)): ?>
+    <?php if (empty($courses)) : ?>
     <div class="text-center py-20 text-zinc-400">
         <i class="fa-solid fa-graduation-cap text-6xl mb-4 opacity-30"></i>
         <p class="text-lg">هنوز دوره‌ای اضافه نشده است</p>
     </div>
-    <?php else: ?>
+    <?php else : ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <?php foreach ($courses as $course): ?>
+        <?php foreach ($courses as $course) : ?>
         <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>" class="course-card bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden group">
             <div class="relative">
                 <img src="/assets/images/<?= e($course['image']) ?>"
                      class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
                      onerror="this.src='/media/600/340/<?= e($course['id']) ?>'">
-                <?php if ($course['is_free']): ?>
+                <?php if ($course['is_free']) : ?>
                 <div class="absolute top-4 left-4 bg-emerald-500 text-white text-[11px] font-semibold px-3 py-1 rounded-full">رایگان</div>
                 <?php endif; ?>
-                <?php if (!$course['is_free'] && ($course['old_price'] ?? 0) > $course['price']): ?>
+                <?php if (!$course['is_free'] && ($course['old_price'] ?? 0) > $course['price']) : ?>
                 <div class="absolute top-4 left-4 bg-rose-500 text-white text-[11px] font-semibold px-3 py-1 rounded-full">
                     <?= round((1 - $course['price'] / ($course['old_price'] ?? 1)) * 100) ?>% تخفیف
                 </div>
@@ -122,11 +122,11 @@
                         <span class="text-zinc-400 mr-2"><?= number_format($course['rating'], 1) ?></span>
                     </div>
                     <div>
-                        <?php if ($course['is_free']): ?>
+                        <?php if ($course['is_free']) : ?>
                         <span class="text-emerald-600 text-sm font-semibold">رایگان</span>
-                        <?php else: ?>
+                        <?php else : ?>
                         <div class="text-right">
-                            <?php if (($course['old_price'] ?? 0) > $course['price']): ?>
+                            <?php if (($course['old_price'] ?? 0) > $course['price']) : ?>
                             <div class="text-[11px] text-zinc-400 line-through"><?= number_format($course['old_price'] ?? 0) ?></div>
                             <?php endif; ?>
                             <div class="font-semibold text-sm"><?= number_format($course['price']) ?> <span class="text-xs text-zinc-400">تومان</span></div>

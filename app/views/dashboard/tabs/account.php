@@ -7,7 +7,7 @@
     <?= csrf() ?>
     <div class="flex flex-col items-center mb-8">
         <div class="relative w-[100px] h-[100px] rounded-full overflow-hidden mb-3 border-4 border-[#FDF6F0] shadow">
-            <img src="<?= $user['avatar'] ? '/assets/images/'.e($user['avatar']) : '/avatar/'.urlencode($user['name'].' '.$user['family']).'/256' ?>"
+            <img src="<?= $user['avatar'] ? '/assets/images/' . e($user['avatar']) : '/avatar/' . urlencode($user['name'] . ' ' . $user['family']) . '/256' ?>"
                  alt="avatar" class="w-full h-full object-cover" id="avatar-preview">
             <label for="avatar-upload" class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                 <i class="fa-solid fa-camera text-xl"></i>

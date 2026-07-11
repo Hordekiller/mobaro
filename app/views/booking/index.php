@@ -1,4 +1,6 @@
-<?php $title = 'رزرو نوبت | موبارو'; ?>
+<?php
+
+$title = 'رزرو نوبت | موبارو'; ?>
 <div id="booking" class="min-h-screen bg-gradient-to-br from-rose-50 to-white pt-24">
     <div class="max-w-6xl mx-auto px-4 py-8">
         <div class="max-w-2xl mx-auto">

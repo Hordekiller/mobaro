@@ -625,8 +625,12 @@ class AdminController extends BaseController
         if ($section === 'appointments') {
             if ($id) {
                 $updateData = [];
-                if (isset($data['status'])) $updateData['status'] = $data['status'];
-                if (isset($data['notes'])) $updateData['notes'] = $data['notes'];
+                if (isset($data['status'])) {
+                    $updateData['status'] = $data['status'];
+                }
+                if (isset($data['notes'])) {
+                    $updateData['notes'] = $data['notes'];
+                }
                 if (!empty($updateData)) {
                     Database::update($table, $updateData, 'id = :id', ['id' => $id]);
                     flash('success', 'نوبت با موفقیت به‌روزرسانی شد.');
@@ -712,7 +716,9 @@ class AdminController extends BaseController
             $oldImage = null;
             if ($id) {
                 $row = Database::fetch("SELECT image FROM {$table} WHERE id = ?", [$id]);
-                if ($row) $oldImage = $row['image'];
+                if ($row) {
+                    $oldImage = $row['image'];
+                }
             }
             $uploaded = FileUploader::upload($_FILES['image'], 'product', $oldImage);
             if ($uploaded) {
@@ -723,7 +729,9 @@ class AdminController extends BaseController
             $oldAvatar = null;
             if ($id) {
                 $row = Database::fetch("SELECT avatar FROM {$table} WHERE id = ?", [$id]);
-                if ($row) $oldAvatar = $row['avatar'];
+                if ($row) {
+                    $oldAvatar = $row['avatar'];
+                }
             }
             $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar', $oldAvatar);
             if ($uploaded) {
@@ -771,7 +779,7 @@ class AdminController extends BaseController
                 $finfo = new \finfo(FILEINFO_MIME_TYPE);
                 $mimeType = $finfo->file($_FILES['video_url']['tmp_name']);
                 if (in_array($mimeType, $videoAllowed)) {
-                    $ext = match($mimeType) {
+                    $ext = match ($mimeType) {
                         'video/mp4' => '.mp4',
                         'video/webm' => '.webm',
                         'video/ogg' => '.ogv',

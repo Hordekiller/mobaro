@@ -38,8 +38,12 @@
                 <div>
                     <div class="text-xs font-semibold text-white mb-6 tracking-widest">آرایشگران ما</div>
                     <div class="space-y-6">
-                        <?php if (!empty($artists)): ?>
-                            <?php $i = 0; foreach ($artists as $artist): if ($i >= 2) break; $i++; ?>
+                        <?php if (!empty($artists)) : ?>
+                            <?php $i = 0;
+                            foreach ($artists as $artist) :
+                                if ($i >= 2) {
+                                    break;
+                                } $i++; ?>
                             <div class="flex gap-x-4">
                                 <img src="<?= $artist['avatar'] ? '/assets/images/' . e($artist['avatar']) : '/avatar/' . urlencode($artist['name']) . '/72' ?>"
                                      class="w-9 h-9 object-cover rounded-2xl" alt="">
@@ -78,7 +82,7 @@
                             <input id="newsletter-input" type="text" placeholder="ایمیل یا شماره تماس"
                                    class="w-full bg-zinc-800 border-none focus:ring-2 focus:ring-rose-400 rounded-3xl py-6 px-7 text-sm placeholder:text-zinc-500">
                             <?php $newsletterCaptcha = Captcha::isEnabled('newsletter'); ?>
-                            <?php if ($newsletterCaptcha): ?>
+                            <?php if ($newsletterCaptcha) : ?>
                             <div class="flex items-center gap-2 mt-3" id="newsletter-captcha-row">
                                 <input id="newsletter-captcha" type="text" inputmode="numeric" placeholder="کد امنیتی"
                                        class="flex-1 bg-zinc-800 border-none focus:ring-2 focus:ring-rose-400 rounded-3xl py-4 px-5 text-sm placeholder:text-zinc-500 text-center">
@@ -111,9 +115,9 @@
             <div class="pt-10 mt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs md:text-[10px]">
                 <div>© ۱۴۰۴ <?= e($settings['brand_name'] ?? 'موبارو') ?>. تمامی حقوق محفوظ است.</div>
                 <div class="flex items-center gap-x-6 text-xs md:text-[10px] mt-6 md:mt-0">
-                    <?php if (Auth::check()): ?>
+                    <?php if (Auth::check()) : ?>
                         <a href="/dashboard" class="cursor-pointer hover:text-white">پنل کاربری</a>
-                    <?php else: ?>
+                    <?php else : ?>
                         <a href="/login" class="cursor-pointer hover:text-white">ورود به پنل</a>
                     <?php endif; ?>
                     <div class="w-px h-3 bg-white/30"></div>
@@ -197,12 +201,12 @@
                 <i class="fa-solid fa-graduation-cap text-xl"></i>
                 <span class="text-[10px] font-medium">آکادمی</span>
             </a>
-            <?php if (Auth::check()): ?>
+            <?php if (Auth::check()) : ?>
                 <a href="/dashboard" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
                     <i class="fa-solid fa-user text-xl"></i>
                     <span class="text-[10px] font-medium">پروفایل</span>
                 </a>
-            <?php else: ?>
+            <?php else : ?>
                 <a href="/login" class="bottom-nav-item flex flex-col items-center gap-0.5 px-3 py-1">
                     <i class="fa-solid fa-user text-xl"></i>
                     <span class="text-[10px] font-medium">ورود</span>
@@ -213,10 +217,10 @@
 
     <script src="/assets/js/frontend.js?v=2.2"></script>
     <script>
-        <?php if ($msg = flash('success')): ?>
+        <?php if ($msg = flash('success')) : ?>
         setTimeout(() => showToast('<?= e($msg) ?>', 'success'), 500);
         <?php endif; ?>
-        <?php if ($msg = flash('error')): ?>
+        <?php if ($msg = flash('error')) : ?>
         setTimeout(() => showToast('<?= e($msg) ?>', 'error'), 500);
         <?php endif; ?>
     </script>

@@ -8,8 +8,8 @@
 </button>
 
 <div id="addresses-list" class="grid grid-cols-1 gap-3.5">
-    <?php if (!empty($addresses)): ?>
-        <?php foreach ($addresses as $addr): ?>
+    <?php if (!empty($addresses)) : ?>
+        <?php foreach ($addresses as $addr) : ?>
         <div class="bg-white rounded-xl p-5 shadow-[0_4px_20px_rgba(183,110,121,0.06)] flex items-start gap-4 <?= $addr['is_default'] ? 'border-2 border-[#D4AF37]' : '' ?>">
             <div class="w-[44px] h-[44px] rounded-xl bg-[#FDF6F0] text-[#B76E79] flex items-center justify-center text-lg flex-shrink-0 mt-1">
                 <i class="fa-solid fa-location-dot"></i>
@@ -17,14 +17,18 @@
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1 flex-wrap">
                     <h4 class="font-bold text-sm"><?= e($addr['title'] ?: 'آدرس') ?></h4>
-                    <?php if ($addr['is_default']): ?>
+                    <?php if ($addr['is_default']) : ?>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/10 text-[#D4AF37]">پیش‌فرض</span>
                     <?php endif; ?>
                 </div>
                 <p class="text-[#9e9e9e] text-sm leading-relaxed"><?= e($addr['address']) ?></p>
                 <div class="flex gap-4 text-xs text-[#9e9e9e] mt-2">
-                    <?php if ($addr['phone']): ?><span><i class="fa-regular fa-phone text-[#B76E79] ml-1"></i><?= e($addr['phone']) ?></span><?php endif; ?>
-                    <?php if (!empty($addr['zip_code'])): ?><span><i class="fa-regular fa-envelope text-[#B76E79] ml-1"></i><?= e($addr['zip_code']) ?></span><?php endif; ?>
+                    <?php if ($addr['phone']) :
+                        ?><span><i class="fa-regular fa-phone text-[#B76E79] ml-1"></i><?= e($addr['phone']) ?></span><?php
+                    endif; ?>
+                    <?php if (!empty($addr['zip_code'])) :
+                        ?><span><i class="fa-regular fa-envelope text-[#B76E79] ml-1"></i><?= e($addr['zip_code']) ?></span><?php
+                    endif; ?>
                 </div>
             </div>
             <div class="flex gap-1.5 flex-shrink-0">
@@ -37,7 +41,7 @@
             </div>
         </div>
         <?php endforeach; ?>
-    <?php else: ?>
+    <?php else : ?>
         <div class="text-center py-12 text-[#9e9e9e]">
             <i class="fa-solid fa-map-location-dot text-5xl mb-4"></i>
             <p>آدرسی ثبت نشده است</p>

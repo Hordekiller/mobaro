@@ -11,13 +11,17 @@ function filterUrl(array $overrides = []): string
     foreach ($current as $key) {
         $val = $_GET[$key] ?? null;
         if ($val !== null && $val !== '' && $val !== 'all') {
-            if ($key === 'sort' && $val === 'newest') continue;
+            if ($key === 'sort' && $val === 'newest') {
+                continue;
+            }
             $params[$key] = $val;
         }
     }
     $params = array_merge($params, $overrides);
     $params = array_filter($params, fn($v) => $v !== null && $v !== '');
-    if (empty($params)) return '/shop';
+    if (empty($params)) {
+        return '/shop';
+    }
     return '/shop?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
 }
 ?>
@@ -57,7 +61,7 @@ function filterUrl(array $overrides = []): string
                                 <span class="group-hover:text-rose-500 transition">همه محصولات</span>
                                 <span class="text-xs text-zinc-400"><?= $allTotal ?></span>
                             </a>
-                            <?php foreach ($categoryRows as $cat): ?>
+                            <?php foreach ($categoryRows as $cat) : ?>
                             <a href="<?= filterUrl(['category' => $cat['category']]) ?>" class="flex items-center justify-between group <?= $category === $cat['category'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition"><?= e($cat['category']) ?></span>
                                 <span class="text-xs text-zinc-400"><?= $cat['cnt'] ?></span>
@@ -91,7 +95,7 @@ function filterUrl(array $overrides = []): string
                             برندها
                         </h4>
                         <div class="space-y-3">
-                            <?php foreach ($brandRows as $br): ?>
+                            <?php foreach ($brandRows as $br) : ?>
                             <a href="<?= filterUrl(['brand' => $br['brand']]) ?>" class="flex items-center justify-between group <?= $brand === $br['brand'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition"><?= e($br['brand']) ?></span>
                                 <span class="text-xs text-zinc-400"><?= $br['cnt'] ?></span>
@@ -109,10 +113,10 @@ function filterUrl(array $overrides = []): string
                             امتیاز
                         </h4>
                         <div class="space-y-3">
-                            <?php foreach ([5,4,3] as $r): ?>
+                            <?php foreach ([5,4,3] as $r) : ?>
                             <a href="<?= filterUrl(['rating' => $r]) ?>" class="flex items-center gap-3 group <?= ($rating ?? 0) == $r ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <div class="star-rating text-amber-400 text-sm">
-                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <?php for ($i = 1; $i <= 5; $i++) : ?>
                                         <i class="<?= $i <= $r ? 'fa-solid' : 'fa-regular text-zinc-300' ?> fa-star"></i>
                                     <?php endfor; ?>
                                 </div>
@@ -133,19 +137,25 @@ function filterUrl(array $overrides = []): string
                         <div class="space-y-3">
                             <a href="<?= filterUrl(['is_sale' => $isSale ? null : 1]) ?>" class="flex items-center gap-3 group <?= $isSale ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $isSale ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
-                                    <?php if ($isSale): ?><i class="fa-solid fa-check"></i><?php endif; ?>
+                                    <?php if ($isSale) :
+                                        ?><i class="fa-solid fa-check"></i><?php
+                                    endif; ?>
                                 </span>
                                 <span class="group-hover:text-rose-500 transition">حراج و تخفیف‌دار</span>
                             </a>
                             <a href="<?= filterUrl(['is_new' => $isNew ? null : 1]) ?>" class="flex items-center gap-3 group <?= $isNew ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $isNew ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
-                                    <?php if ($isNew): ?><i class="fa-solid fa-check"></i><?php endif; ?>
+                                    <?php if ($isNew) :
+                                        ?><i class="fa-solid fa-check"></i><?php
+                                    endif; ?>
                                 </span>
                                 <span class="group-hover:text-rose-500 transition">جدیدترین محصولات</span>
                             </a>
                             <a href="<?= filterUrl(['in_stock' => $inStock ? null : 1]) ?>" class="flex items-center gap-3 group <?= $inStock ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $inStock ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
-                                    <?php if ($inStock): ?><i class="fa-solid fa-check"></i><?php endif; ?>
+                                    <?php if ($inStock) :
+                                        ?><i class="fa-solid fa-check"></i><?php
+                                    endif; ?>
                                 </span>
                                 <span class="group-hover:text-rose-500 transition">فقط محصولات موجود</span>
                             </a>
@@ -177,12 +187,24 @@ function filterUrl(array $overrides = []): string
                     <input type="hidden" name="category" value="<?= e($category) ?>">
                     <input type="hidden" name="brand" value="<?= e($brand) ?>">
                     <input type="hidden" name="sort" value="<?= e($sort) ?>">
-                    <?php if ($priceMin > 0): ?><input type="hidden" name="price_min" value="<?= $priceMin ?>"><?php endif; ?>
-                    <?php if ($priceMax > 0): ?><input type="hidden" name="price_max" value="<?= $priceMax ?>"><?php endif; ?>
-                    <?php if ($rating > 0): ?><input type="hidden" name="rating" value="<?= $rating ?>"><?php endif; ?>
-                    <?php if ($isSale): ?><input type="hidden" name="is_sale" value="1"><?php endif; ?>
-                    <?php if ($isNew): ?><input type="hidden" name="is_new" value="1"><?php endif; ?>
-                    <?php if ($inStock): ?><input type="hidden" name="in_stock" value="1"><?php endif; ?>
+                    <?php if ($priceMin > 0) :
+                        ?><input type="hidden" name="price_min" value="<?= $priceMin ?>"><?php
+                    endif; ?>
+                    <?php if ($priceMax > 0) :
+                        ?><input type="hidden" name="price_max" value="<?= $priceMax ?>"><?php
+                    endif; ?>
+                    <?php if ($rating > 0) :
+                        ?><input type="hidden" name="rating" value="<?= $rating ?>"><?php
+                    endif; ?>
+                    <?php if ($isSale) :
+                        ?><input type="hidden" name="is_sale" value="1"><?php
+                    endif; ?>
+                    <?php if ($isNew) :
+                        ?><input type="hidden" name="is_new" value="1"><?php
+                    endif; ?>
+                    <?php if ($inStock) :
+                        ?><input type="hidden" name="in_stock" value="1"><?php
+                    endif; ?>
                     <input type="text" name="search" value="<?= e($search) ?>" placeholder="جستجوی محصولات..." 
                            class="w-full py-4 px-6 pr-14 rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:outline-none transition bg-white shadow-sm">
                     <i class="fa-solid fa-search absolute right-5 top-1/2 -translate-y-1/2 text-rose-400 text-lg"></i>
@@ -190,24 +212,24 @@ function filterUrl(array $overrides = []): string
 
                 <!-- Products Grid -->
                 <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <?php foreach ($products as $product): ?>
-                    <?php 
+                    <?php foreach ($products as $product) : ?>
+                        <?php
                         $item = $product;
                         $discount = 0;
                         if (!empty($item['old_price']) && $item['old_price'] > $item['price']) {
                             $discount = round((($item['old_price'] - $item['price']) / $item['old_price']) * 100);
                         }
-                    ?>
+                        ?>
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300 product-card-shop">
                         <div class="relative product-image overflow-hidden">
                             <a href="/product/<?= $item['id'] ?>">
                                 <img src="/assets/images/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-full h-64 object-cover transition-transform duration-500" onerror="this.src='/media/400/400/<?= $item['id'] ?>'">
                             </a>
                             <div class="absolute top-4 right-4 flex flex-col gap-2">
-                                <?php if ($discount > 0): ?>
+                                <?php if ($discount > 0) : ?>
                                 <span class="bg-gradient-to-l from-red-500 to-red-600 text-white text-xs px-3 py-1 rounded-full font-bold"><?= $discount ?>% تخفیف</span>
                                 <?php endif; ?>
-                                <?php if (!empty($item['is_new'])): ?>
+                                <?php if (!empty($item['is_new'])) : ?>
                                 <span class="bg-gradient-to-l from-emerald-500 to-emerald-600 text-white text-xs px-3 py-1 rounded-full font-bold">جدید</span>
                                 <?php endif; ?>
                             </div>
@@ -232,12 +254,12 @@ function filterUrl(array $overrides = []): string
                             </a>
                             <div class="flex items-center gap-2 mb-3">
                                 <div class="star-rating text-amber-400 text-sm">
-                                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                                        <?php if ($i <= floor($item['rating'] ?? 0)): ?>
+                                    <?php for ($i = 1; $i <= 5; $i++) : ?>
+                                        <?php if ($i <= floor($item['rating'] ?? 0)) : ?>
                                             <i class="fa-solid fa-star"></i>
-                                        <?php elseif ($i - 0.5 <= ($item['rating'] ?? 0)): ?>
+                                        <?php elseif ($i - 0.5 <= ($item['rating'] ?? 0)) : ?>
                                             <i class="fa-solid fa-star-half-alt"></i>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             <i class="fa-regular fa-star text-zinc-300"></i>
                                         <?php endif; ?>
                                     <?php endfor; ?>
@@ -246,7 +268,7 @@ function filterUrl(array $overrides = []): string
                             </div>
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <?php if (!empty($item['old_price']) && $item['old_price'] > $item['price']): ?>
+                                    <?php if (!empty($item['old_price']) && $item['old_price'] > $item['price']) : ?>
                                     <span class="text-zinc-400 text-sm line-through ml-2"><?= number_format($item['old_price']) ?> تومان</span>
                                     <?php endif; ?>
                                     <span class="text-lg font-bold text-rose-500"><?= number_format($item['price']) ?> تومان</span>
@@ -258,7 +280,7 @@ function filterUrl(array $overrides = []): string
                         </div>
                     </div>
                     <?php endforeach; ?>
-                    <?php if (empty($products)): ?>
+                    <?php if (empty($products)) : ?>
                     <div class="col-span-full text-center py-16">
                         <i class="fa-regular fa-box text-6xl text-zinc-300 mb-4"></i>
                         <p class="text-zinc-500 text-lg">محصولی یافت نشد</p>
@@ -267,17 +289,17 @@ function filterUrl(array $overrides = []): string
                 </div>
 
                 <!-- Pagination -->
-                <?php if ($totalPages > 1): ?>
+                <?php if ($totalPages > 1) : ?>
                 <div class="flex justify-center items-center gap-2 mt-10" id="pagination">
-                    <?php if ($page > 1): ?>
+                    <?php if ($page > 1) : ?>
                     <a href="<?= filterUrl(['page' => $page - 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
                         <i class="fa-solid fa-chevron-right"></i>
                     </a>
                     <?php endif; ?>
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
                     <a href="<?= filterUrl(['page' => $i]) ?>" class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition <?= $i === $page ? 'bg-rose-600 text-white' : 'border border-zinc-200 text-zinc-600 hover:border-rose-400 hover:text-rose-500' ?>"><?= $i ?></a>
                     <?php endfor; ?>
-                    <?php if ($page < $totalPages): ?>
+                    <?php if ($page < $totalPages) : ?>
                     <a href="<?= filterUrl(['page' => $page + 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
                         <i class="fa-solid fa-chevron-left"></i>
                     </a>
@@ -313,7 +335,7 @@ function applyPriceFilter() {
         }
     }
 }
-const shopProducts = <?= json_encode(array_map(function($p) {
+const shopProducts = <?= json_encode(array_map(function ($p) {
     return [
         'id' => (int)$p['id'],
         'name' => $p['name'],
@@ -329,7 +351,7 @@ const shopProducts = <?= json_encode(array_map(function($p) {
         'is_sale' => (!empty($p['old_price']) && $p['old_price'] > $p['price']),
         'description' => $p['description'] ?? '',
     ];
-}, $products), JSON_UNESCAPED_UNICODE) ?>;
+                     }, $products), JSON_UNESCAPED_UNICODE) ?>;
 </script>
 
 <!-- Quick View Modal -->

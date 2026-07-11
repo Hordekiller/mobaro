@@ -3,8 +3,8 @@
     <p class="text-[#9e9e9e] text-sm">دیدگاه‌هایی که در پست‌های وبلاگ ثبت کرده‌اید</p>
 </div>
 
-<?php if (!empty($blogComments)): ?>
-    <?php foreach ($blogComments as $comment): ?>
+<?php if (!empty($blogComments)) : ?>
+    <?php foreach ($blogComments as $comment) : ?>
     <div class="bg-white rounded-[18px] p-5 shadow-[0_4px_20px_rgba(183,110,121,0.06)] mb-3.5">
         <div class="flex items-start gap-4">
             <div class="w-[52px] h-[52px] rounded-xl bg-[#FDF6F0] flex items-center justify-center text-[#B76E79] text-lg flex-shrink-0">
@@ -21,7 +21,7 @@
                     </span>
                 </div>
                 <p class="text-zinc-600 text-sm leading-relaxed"><?= e($comment['text']) ?></p>
-                <?php if ($comment['likes'] > 0): ?>
+                <?php if ($comment['likes'] > 0) : ?>
                 <div class="mt-2 text-xs text-[#9e9e9e]">
                     <i class="fa-regular fa-heart ml-1"></i><?= $comment['likes'] ?> لایک
                 </div>
@@ -30,7 +30,7 @@
         </div>
     </div>
     <?php endforeach; ?>
-<?php else: ?>
+<?php else : ?>
     <div class="text-center py-12 text-[#9e9e9e]">
         <i class="fa-regular fa-comment text-5xl mb-4"></i>
         <p>دیدگاهی ثبت نکرده‌اید</p>

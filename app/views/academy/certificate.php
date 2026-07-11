@@ -1,4 +1,6 @@
-<?php $title = 'گواهی پایان دوره | ' . e($course['title']); ?>
+<?php
+
+$title = 'گواهی پایان دوره | ' . e($course['title']); ?>
 <style>
     @media print {
         body * { visibility: hidden; }

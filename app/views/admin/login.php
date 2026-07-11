@@ -25,10 +25,10 @@
             </div>
             <form method="POST" action="/admin/login" class="px-8 pb-8 space-y-5">
                 <?= csrf() ?>
-                <?php if ($err = flashError('admin')): ?>
+                <?php if ($err = flashError('admin')) : ?>
                     <p class="text-red-500 text-xs text-center bg-red-50 py-3 rounded-2xl"><?= e($err) ?></p>
                 <?php endif; ?>
-                <?php if ($err = flashError('rate_limit')): ?>
+                <?php if ($err = flashError('rate_limit')) : ?>
                     <p class="text-red-500 text-xs text-center bg-red-50 py-3 rounded-2xl"><?= e($err) ?></p>
                 <?php endif; ?>
                 <div>
@@ -42,7 +42,7 @@
                     <input name="password" type="password" placeholder="••••••••"
                            class="w-full border rounded-3xl px-7 py-5 outline-none focus:border-rose-500 transition-colors">
                 </div>
-                <?php if ($captchaEnabled): ?>
+                <?php if ($captchaEnabled) : ?>
                 <div>
                     <label class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
                     <div class="flex items-center gap-3">

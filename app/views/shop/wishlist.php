@@ -6,9 +6,9 @@
         <p class="text-zinc-500 text-sm mt-2">محصولاتی که به آنها علاقه‌مند شده‌اید</p>
     </div>
 
-    <?php if (!empty($products)): ?>
+    <?php if (!empty($products)) : ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <?php foreach ($products as $product): ?>
+        <?php foreach ($products as $product) : ?>
         <div class="bg-white rounded-[18px] overflow-hidden shadow-[0_4px_20px_rgba(183,110,121,0.06)] hover:-translate-y-1 hover:shadow-lg transition-all group">
             <div class="relative">
                 <a href="/product/<?= $product['id'] ?>">
@@ -17,7 +17,7 @@
                 <button onclick="removeWishlist(<?= $product['id'] ?>)" class="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
                     <i class="fa-solid fa-heart text-sm"></i>
                 </button>
-                <?php if ($product['is_sale']): ?>
+                <?php if ($product['is_sale']) : ?>
                 <span class="absolute top-3 right-3 bg-rose-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">حراج</span>
                 <?php endif; ?>
             </div>
@@ -26,7 +26,7 @@
                 <div class="text-xs text-zinc-400 mt-1"><?= e($product['category']) ?></div>
                 <div class="flex items-center justify-between mt-4">
                     <div>
-                        <?php if ($product['is_sale'] && $product['old_price'] > $product['price']): ?>
+                        <?php if ($product['is_sale'] && $product['old_price'] > $product['price']) : ?>
                         <span class="text-zinc-400 text-xs line-through"><?= number_format($product['old_price']) ?></span>
                         <?php endif; ?>
                         <span class="font-bold text-sm"><?= number_format($product['price']) ?> <span class="text-xs text-zinc-400">تومان</span></span>
@@ -39,7 +39,7 @@
         </div>
         <?php endforeach; ?>
     </div>
-    <?php else: ?>
+    <?php else : ?>
     <div class="text-center py-20">
         <i class="fa-regular fa-heart text-6xl text-zinc-300 mb-4"></i>
         <p class="text-zinc-500 text-lg">هنوز محصولی به علاقه‌مندی‌ها اضافه نکرده‌اید</p>

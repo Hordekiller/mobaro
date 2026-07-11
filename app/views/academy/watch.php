@@ -34,14 +34,14 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
         <div class="space-y-5">
             <!-- Video Player -->
             <div class="bg-zinc-900 rounded-2xl overflow-hidden">
-                <?php if (!empty($course['video_url'])): ?>
+                <?php if (!empty($course['video_url'])) : ?>
                 <div class="aspect-video">
                     <?php $videoType = $course['video_type'] ?? 'upload'; ?>
-                    <?php if ($videoType === 'youtube'): ?>
+                    <?php if ($videoType === 'youtube') : ?>
                     <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>?autoplay=1" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video"></iframe>
-                    <?php elseif ($videoType === 'aparat'): ?>
+                    <?php elseif ($videoType === 'aparat') : ?>
                     <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video"></iframe>
-                    <?php elseif (!empty($courseMedia)): ?>
+                    <?php elseif (!empty($courseMedia)) : ?>
                     <video controls autoplay id="course-video" class="w-full h-full object-contain"
                            data-course-id="<?= $course['id'] ?>"
                            data-module="<?= $activeModule ?>"
@@ -51,7 +51,7 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                         <source src="/media/stream/<?= $courseMedia['id'] ?>" type="video/mp4">
                         مرورگر شما پخش ویدیو را پشتیبانی نمی‌کند.
                     </video>
-                    <?php else: ?>
+                    <?php else : ?>
                     <div class="aspect-video flex items-center justify-center text-white/60">
                         <div class="text-center">
                             <i class="fa-solid fa-play-circle text-6xl mb-4"></i>
@@ -61,7 +61,7 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                     </div>
                     <?php endif; ?>
                 </div>
-                <?php else: ?>
+                <?php else : ?>
                 <div class="aspect-video flex items-center justify-center text-white/60">
                     <div class="text-center">
                         <i class="fa-solid fa-play-circle text-6xl mb-4"></i>
@@ -82,14 +82,14 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                     <button onclick="markComplete()" id="complete-btn"
                         class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all <?= in_array($activeIdx, $completedIndexes) ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-600 text-white hover:bg-rose-700' ?>"
                         data-completed="<?= in_array($activeIdx, $completedIndexes) ? '1' : '0' ?>">
-                        <?php if (in_array($activeIdx, $completedIndexes)): ?>
+                        <?php if (in_array($activeIdx, $completedIndexes)) : ?>
                         <i class="fa-solid fa-check-circle ml-1"></i>تکمیل شده
-                        <?php else: ?>
+                        <?php else : ?>
                         <i class="fa-solid fa-circle-check ml-1"></i>تکمیل درس
                         <?php endif; ?>
                     </button>
                 </div>
-                <?php if (!empty($activeLessonData['duration'])): ?>
+                <?php if (!empty($activeLessonData['duration'])) : ?>
                 <div class="text-sm text-zinc-400"><i class="fa-regular fa-clock ml-1"></i><?= e($activeLessonData['duration']) ?></div>
                 <?php endif; ?>
             </div>
@@ -111,20 +111,20 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
 
             <!-- Navigation Buttons -->
             <div class="flex justify-between">
-                <?php if ($activeIdx > 0): ?>
-                <?php $prev = $lessonMap[$activeIdx - 1]; ?>
+                <?php if ($activeIdx > 0) : ?>
+                    <?php $prev = $lessonMap[$activeIdx - 1]; ?>
                 <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>/watch?module=<?= $prev['module'] ?>&lesson=<?= $prev['lesson'] ?>" class="px-5 py-3 bg-white border border-zinc-200 rounded-xl font-semibold text-sm hover:bg-zinc-50 transition-all">
                     <i class="fa-solid fa-arrow-right ml-1"></i>درس قبلی
                 </a>
-                <?php else: ?>
+                <?php else : ?>
                 <div></div>
                 <?php endif; ?>
-                <?php if ($activeIdx < count($lessonMap) - 1): ?>
-                <?php $next = $lessonMap[$activeIdx + 1]; ?>
+                <?php if ($activeIdx < count($lessonMap) - 1) : ?>
+                    <?php $next = $lessonMap[$activeIdx + 1]; ?>
                 <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>/watch?module=<?= $next['module'] ?>&lesson=<?= $next['lesson'] ?>" class="px-5 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:bg-rose-700 transition-all">
                     درس بعدی<i class="fa-solid fa-arrow-left mr-1"></i>
                 </a>
-                <?php else: ?>
+                <?php else : ?>
                 <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>/certificate" class="px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-all">
                     <i class="fa-solid fa-certificate mr-1"></i>دریافت گواهی
                 </a>
@@ -140,7 +140,7 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                     <p class="text-xs text-zinc-400 mt-1"><?= faNum(count($curriculum)) ?> ماژول • <?= faNum($totalLessons) ?> درس</p>
                 </div>
                 <div class="max-h-[60vh] overflow-y-auto">
-                    <?php foreach ($curriculum as $mi => $module): ?>
+                    <?php foreach ($curriculum as $mi => $module) : ?>
                     <div class="border-b border-zinc-50 last:border-0">
                         <div class="px-4 py-3 bg-zinc-50 flex items-center justify-between">
                             <div class="flex items-center gap-2">
@@ -150,20 +150,26 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                             <span class="text-xs text-zinc-400"><?= e($module['duration'] ?? '') ?></span>
                         </div>
                         <div class="px-2 py-1">
-                            <?php foreach (($module['lessons'] ?? []) as $li => $lesson):
+                            <?php foreach (($module['lessons'] ?? []) as $li => $lesson) :
                                 $globIdx = 0;
-                                for ($k = 0; $k < $mi; $k++) { $globIdx += count($curriculum[$k]['lessons'] ?? []); }
+                                for ($k = 0; $k < $mi; $k++) {
+                                    $globIdx += count($curriculum[$k]['lessons'] ?? []);
+                                }
                                 $globIdx += $li;
                                 $isActive = ($mi === $activeModule && $li === $activeLesson);
                                 $isDone = in_array($globIdx, $completedIndexes);
-                            ?>
+                                ?>
                             <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>/watch?module=<?= $mi ?>&lesson=<?= $li ?>"
                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all <?= $isActive ? 'bg-rose-50 text-rose-700 font-semibold' : ($isDone ? 'bg-emerald-50/50 text-emerald-700' : 'hover:bg-zinc-50 text-zinc-600') ?>">
                                 <span class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs <?= $isDone ? 'bg-emerald-500 text-white' : ($isActive ? 'bg-rose-500 text-white' : 'bg-zinc-100 text-zinc-400') ?>">
-                                    <?php if ($isDone): ?><i class="fa-solid fa-check"></i><?php else: ?><?= faNum($li + 1) ?><?php endif; ?>
+                                    <?php if ($isDone) :
+                                        ?><i class="fa-solid fa-check"></i><?php
+                                    else :
+                                        ?><?= faNum($li + 1) ?><?php
+                                    endif; ?>
                                 </span>
                                 <span class="flex-1 min-w-0 line-clamp-1"><?= e($lesson['title'] ?? '') ?></span>
-                                <?php if (!empty($lesson['duration'])): ?>
+                                <?php if (!empty($lesson['duration'])) : ?>
                                 <span class="text-xs text-zinc-400 flex-shrink-0"><?= e($lesson['duration']) ?></span>
                                 <?php endif; ?>
                             </a>
@@ -221,7 +227,7 @@ function onVideoTimeUpdate(video) {
 }
 
 <?php $videoType = $course['video_type'] ?? 'upload'; ?>
-<?php if ($videoType === 'youtube'): ?>
+<?php if ($videoType === 'youtube') : ?>
 var tag = document.createElement('script');
 tag.src = 'https://www.youtube.com/iframe_api';
 var firstScriptTag = document.getElementsByTagName('script')[0];

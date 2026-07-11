@@ -30,8 +30,10 @@ class HomeController extends BaseController
         $captchaQuestion = $captchaEnabled ? Captcha::store() : '';
 
         $this->view('home/index', compact(
-            'homeData', 'settings',
-            'captchaQuestion', 'captchaEnabled'
+            'homeData',
+            'settings',
+            'captchaQuestion',
+            'captchaEnabled'
         ) + [
             'services' => $homeData['services'],
             'artists' => $homeData['artists'],

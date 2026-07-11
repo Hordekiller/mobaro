@@ -140,7 +140,7 @@
                 <span class="font-medium text-gray-700">تیم موبارو</span>
             </div>
         </div>
-        <?php if ($post['is_featured']): ?>
+        <?php if ($post['is_featured']) : ?>
         <div class="absolute top-8 left-8 bg-white rounded-3xl shadow-xl px-6 py-2 flex items-center gap-x-2 text-sm font-medium">
             <i class="fa-solid fa-star text-gold-500" style="color:#d4a843;"></i>
             <span>مقاله ویژه</span>
@@ -158,9 +158,13 @@
                 <?= $post['content'] ?>
             </div>
 
-            <?php if (!empty($tags)): ?>
+            <?php if (!empty($tags)) : ?>
             <div class="flex flex-wrap gap-2 mt-20">
-                <?php foreach ($tags as $tag): $tag = trim($tag); if (empty($tag)) continue; ?>
+                <?php foreach ($tags as $tag) :
+                    $tag = trim($tag);
+                    if (empty($tag)) {
+                        continue;
+                    } ?>
                 <a href="/blog?s=<?= e($tag)?>" class="text-xs bg-white border border-rose-200 hover:bg-rose-50 transition-colors px-5 py-2 rounded-3xl">#<?= e($tag) ?></a>
                 <?php endforeach; ?>
             </div>
@@ -206,8 +210,8 @@
                 </div>
 
                 <div id="comments-list">
-                <?php if (!empty($comments)): ?>
-                    <?php foreach ($comments as $comment): ?>
+                <?php if (!empty($comments)) : ?>
+                    <?php foreach ($comments as $comment) : ?>
                     <div class="bg-white rounded-3xl p-6 mb-4">
                         <div class="flex gap-x-3">
                             <div class="w-8 h-8 bg-rose-100 text-rose-500 rounded-2xl flex items-center justify-center text-xs font-bold"><?= e(mb_substr($comment['name'], 0, 1)) ?></div>
@@ -226,7 +230,7 @@
                         </div>
                     </div>
                     <?php endforeach; ?>
-                <?php else: ?>
+                <?php else : ?>
                     <div class="text-center py-10 text-zinc-400 text-sm">هنوز نظری ثبت نشده است. اولین نفری باشید که نظر می‌دهید!</div>
                 <?php endif; ?>
                 </div>
@@ -276,7 +280,7 @@
                 <div class="flex items-baseline justify-between mb-5 px-1">
                     <span class="uppercase text-xs font-semibold tracking-widest text-gray-400">مقالات محبوب</span>
                 </div>
-                <?php foreach ($popularPosts as $pp): ?>
+                <?php foreach ($popularPosts as $pp) : ?>
                 <a href="/blog/<?= e($pp['slug']) ?>" class="article-card group flex gap-4 cursor-pointer mb-8">
                     <div class="w-20 h-20 bg-cover bg-center rounded-2xl flex-shrink-0 shadow-inner"
                          style="background-image: url('/assets/images/<?= e($pp['image'] ?: 'placeholder.svg') ?>')"></div>
@@ -290,7 +294,7 @@
                 <?php endforeach; ?>
             </div>
 
-            <?php if (!empty($latestCourse)): ?>
+            <?php if (!empty($latestCourse)) : ?>
             <div class="bg-white border border-rose-200 rounded-3xl p-7">
                 <div class="flex items-center gap-2 mb-4">
                     <i class="fa-solid fa-graduation-cap text-rose-500"></i>
@@ -300,9 +304,9 @@
                     <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-36 rounded-2xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" onerror="this.src='/media/400/200/<?= e($latestCourse['id']) ?>'">
                     <h5 class="font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1"><?= e($latestCourse['title']) ?></h5>
                     <div class="text-xs text-gray-500 mb-2"><?= e($latestCourse['teacher']) ?></div>
-                    <?php if (!empty($latestCourse['is_free'])): ?>
+                    <?php if (!empty($latestCourse['is_free'])) : ?>
                     <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">رایگان</span>
-                    <?php else: ?>
+                    <?php else : ?>
                     <span class="text-rose-500 font-bold text-sm"><?= number_format($latestCourse['price']) ?> تومان</span>
                     <?php endif; ?>
                 </a>
@@ -363,7 +367,7 @@
     </div>
 </div>
 
-<?php if (!empty($relatedPosts)): ?>
+<?php if (!empty($relatedPosts)) : ?>
 <div class="max-w-screen-2xl mx-auto px-8 py-16 bg-white">
     <div class="flex items-end justify-between mb-8">
         <div class="text-3xl font-bold text-gray-900">مقالات مرتبط</div>
@@ -373,7 +377,7 @@
         </a>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <?php foreach ($relatedPosts as $rp): ?>
+        <?php foreach ($relatedPosts as $rp) : ?>
         <a href="/blog/<?= e($rp['slug']) ?>"
            class="article-card group bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden cursor-pointer">
             <div class="h-60 bg-cover bg-center transition-all group-active:scale-105"
@@ -385,7 +389,7 @@
                     <div><?= jdate('Y/m/d', strtotime($rp['published_at'])) ?></div>
                     <div class="flex items-center gap-x-1">
                         <i class="fa-solid fa-eye"></i>
-                        <span><?= faNum($rp['views'] > 999 ? round($rp['views']/1000, 1) . 'k' : $rp['views']) ?></span>
+                        <span><?= faNum($rp['views'] > 999 ? round($rp['views'] / 1000, 1) . 'k' : $rp['views']) ?></span>
                     </div>
                 </div>
             </div>

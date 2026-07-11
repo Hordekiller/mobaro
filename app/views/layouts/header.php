@@ -65,12 +65,12 @@
                             </span>
                         </button>
 
-                        <?php if (Auth::check()): ?>
+                        <?php if (Auth::check()) : ?>
                             <a href="/dashboard" class="flex items-center gap-x-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white px-7 py-3 rounded-3xl text-sm font-semibold shadow-md shadow-rose-200">
                                 <i class="fa-solid fa-user"></i>
                                 <span>پنل کاربری</span>
                             </a>
-                        <?php else: ?>
+                        <?php else : ?>
                             <a href="/login" class="flex items-center gap-x-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white px-7 py-3 rounded-3xl text-sm font-semibold shadow-md shadow-rose-200">
                                 <i class="fa-solid fa-user"></i>
                                 <span>ورود / ثبت‌نام</span>

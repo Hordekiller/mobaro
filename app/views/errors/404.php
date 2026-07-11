@@ -1,4 +1,6 @@
-<?php $title = 'صفحه یافت نشد | موبارو'; ?>
+<?php
+
+$title = 'صفحه یافت نشد | موبارو'; ?>
 <div class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 50%, #fff5f5 100%);">
     <div class="text-center max-w-lg">
         <div class="relative mb-10">

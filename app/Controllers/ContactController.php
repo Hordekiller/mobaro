@@ -21,9 +21,15 @@ class ContactController extends BaseController
         $message = sanitize($_POST['message'] ?? '');
 
         $errors = [];
-        if (empty($name)) $errors['name'] = 'نام را وارد کنید.';
-        if (empty($email) && empty($phone)) $errors['email'] = 'ایمیل یا تلفن را وارد کنید.';
-        if (empty($message)) $errors['message'] = 'پیام را وارد کنید.';
+        if (empty($name)) {
+            $errors['name'] = 'نام را وارد کنید.';
+        }
+        if (empty($email) && empty($phone)) {
+            $errors['email'] = 'ایمیل یا تلفن را وارد کنید.';
+        }
+        if (empty($message)) {
+            $errors['message'] = 'پیام را وارد کنید.';
+        }
 
         if (!empty($errors)) {
             $this->redirectWithErrors('/contact', $errors);

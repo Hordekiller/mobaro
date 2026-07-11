@@ -51,17 +51,17 @@
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($transactions)): ?>
-                    <?php foreach ($transactions as $t): ?>
+                <?php if (!empty($transactions)) : ?>
+                    <?php foreach ($transactions as $t) : ?>
                     <tr class="border-b border-[#efe5dc]">
                         <td class="py-3.5 px-3 text-sm"><?= jdate('Y/m/d', strtotime($t['created_at'])) ?></td>
                         <td class="py-3.5 px-3 text-sm"><?= e($t['description']) ?></td>
                         <td class="py-3.5 px-3 text-sm text-center">
-                            <?php if (!empty($t['payment_status'])): ?>
+                            <?php if (!empty($t['payment_status'])) : ?>
                             <span class="px-2 py-0.5 rounded-full text-xs font-semibold <?= $t['payment_status'] === 'paid' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700' ?>">
                                 <?= $t['payment_status'] === 'paid' ? 'پرداخت شده' : $t['payment_status'] ?>
                             </span>
-                            <?php else: ?>
+                            <?php else : ?>
                             <span class="text-[#9e9e9e] text-xs">-</span>
                             <?php endif; ?>
                         </td>
@@ -71,7 +71,7 @@
                         </td>
                     </tr>
                     <?php endforeach; ?>
-                <?php else: ?>
+                <?php else : ?>
                     <tr><td colspan="4" class="text-center py-8 text-[#9e9e9e]">تراکنشی یافت نشد</td></tr>
                 <?php endif; ?>
             </tbody>
