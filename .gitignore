@@ -65,6 +65,9 @@ skills/
 # DB backups
 rozhin_db_backup.sql
 
+# Report / audit files
+REPORT-PRODUCTION-ISSUES.md
+
 # Image cache
 public/assets/images/cache/
 
