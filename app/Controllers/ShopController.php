@@ -274,6 +274,27 @@ class ShopController extends BaseController
         $this->view('shop/wishlist', compact('products', 'cart', 'settings'));
     }
 
+    public function wishlistData(): void
+    {
+        $ids = $_SESSION['wishlist'] ?? [];
+        $products = [];
+        if (!empty($ids)) {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $rows = Database::fetchAll("SELECT id, name, price, old_price, image, brand FROM products WHERE id IN ({$placeholders}) AND is_active = 1", $ids);
+            foreach ($rows as $p) {
+                $products[] = [
+                    'id' => (int)$p['id'],
+                    'name' => $p['name'],
+                    'price' => (int)$p['price'],
+                    'old_price' => (int)($p['old_price'] ?? 0),
+                    'image' => '/assets/images/' . e($p['image']),
+                    'brand' => $p['brand'] ?? '',
+                ];
+            }
+        }
+        $this->json(['items' => $products]);
+    }
+
     public function cartSummary(): void
     {
         $cart = $_SESSION['cart'] ?? [];

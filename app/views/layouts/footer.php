@@ -128,6 +128,52 @@
 
     <div id="toast-container" class="hidden fixed bottom-6 right-6 z-[999999]"></div>
 
+    <!-- Cart Sidebar -->
+    <div id="cartSidebar" class="cart-sidebar hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="toggleCart()"></div>
+        <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300">
+            <div class="p-6 h-full flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-zinc-800">سبد خرید</h3>
+                    <button onclick="toggleCart()" class="text-zinc-400 hover:text-zinc-600">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="cartItems" class="flex-1 overflow-y-auto">
+                </div>
+                <div class="border-t pt-6 mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-zinc-600">جمع کل:</span>
+                        <span id="cartTotal" class="text-xl font-bold text-rose-500">۰ تومان</span>
+                    </div>
+                    <button onclick="window.location.href='/cart'" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-xl font-medium mb-3 transition-all">
+                        تکمیل خرید
+                    </button>
+                    <button onclick="toggleCart()" class="w-full border border-zinc-200 text-zinc-600 py-3 rounded-xl font-medium hover:bg-zinc-50 transition">
+                        ادامه خرید
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Sidebar -->
+    <div id="wishlistSidebar" class="cart-sidebar hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="toggleWishlistSidebar()"></div>
+        <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl">
+            <div class="p-6 h-full flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-zinc-800">لیست علاقه‌مندی‌ها</h3>
+                    <button onclick="toggleWishlistSidebar()" class="text-zinc-400 hover:text-zinc-600">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="wishlistItems" class="flex-1 overflow-y-auto">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Bottom Navigation Bar -->
     <div id="bottom-nav" class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-lg border-t border-zinc-200 z-50 safe-bottom">
         <div class="flex items-center justify-around py-2">

@@ -310,24 +310,15 @@ function toggleWishlistSidebar() {
 function renderWishlist() {
     const container = document.getElementById('wishlistItems');
     if (!container) return;
-    fetch('/wishlist', {
-        method: 'GET',
-        headers: { 'Accept': 'text/html' }
+    const body = '_action=wishlist_data&' + csrfParam();
+    fetch('/shop/wishlist/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
     })
-    .then(function(r) { return r.text(); })
-    .then(function(html) {
-        // Parse the response - we'll render client-side from shopProducts
-        const wishlistIds = [];
-        document.querySelectorAll('.heart-btn.active').forEach(function(btn) {
-            const onclick = btn.getAttribute('onclick') || '';
-            const match = onclick.match(/toggleWishlistItem\((\d+)\)/);
-            if (match) wishlistIds.push(parseInt(match[1]));
-        });
-        if (typeof shopProducts === 'undefined' || !shopProducts.length) {
-            container.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-zinc-400"><i class="fa-regular fa-heart text-6xl mb-4"></i><p>لیست علاقه‌مندی‌ها خالی است</p></div>';
-            return;
-        }
-        const items = shopProducts.filter(function(p) { return wishlistIds.includes(p.id); });
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        const items = data.items || [];
         if (items.length === 0) {
             container.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-zinc-400"><i class="fa-regular fa-heart text-6xl mb-4"></i><p>لیست علاقه‌مندی‌ها خالی است</p></div>';
             return;
@@ -347,7 +338,7 @@ function renderWishlist() {
             </div>`;
         }).join('');
     })
-    .catch(function() {});
+    .catch(function() { container.innerHTML = '<div class="text-center py-8 text-zinc-400">خطا در بارگذاری</div>'; });
 }
 
 // ========== QUICK VIEW ==========

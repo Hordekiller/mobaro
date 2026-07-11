@@ -50,6 +50,7 @@ Router::post('/shop/coupon/verify', ['ShopController', 'verifyCoupon']);
 Router::get('/cart', ['ShopController', 'cart']);
 Router::get('/shop/cart/summary', ['ShopController', 'cartSummary']);
 Router::post('/shop/wishlist/toggle', ['ShopController', 'toggleWishlist']);
+Router::post('/shop/wishlist/data', ['ShopController', 'wishlistData']);
 Router::get('/wishlist', ['ShopController', 'wishlist']);
 Router::post('/shop/course/add', ['ShopController', 'addCourseToCart']);
 
