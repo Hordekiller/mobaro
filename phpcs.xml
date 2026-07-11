@@ -6,10 +6,20 @@
     <file>public/</file>
 
     <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/public/assets/libs/*</exclude-pattern>
 
     <arg name="basepath" value="."/>
     <arg name="colors"/>
     <arg value="sp"/>
 
-    <rule ref="PSR12"/>
+    <rule ref="PSR12">
+        <exclude name="PSR1.Classes.ClassDeclaration"/>
+    </rule>
+    <rule ref="PSR1.Files.SideEffects">
+        <exclude-pattern>*/views/*</exclude-pattern>
+    </rule>
+
+    <rule ref="Generic.Files.LineLength">
+        <severity>0</severity>
+    </rule>
 </ruleset>
