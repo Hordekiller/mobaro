@@ -52,10 +52,7 @@ class Auth
         if (!self::check()) {
             return null;
         }
-        if (!isset($_SESSION['user']) || empty($_SESSION['user'])) {
-            $user = Database::fetch("SELECT * FROM users WHERE id = ?", [self::id()]);
-            $_SESSION['user'] = $user ?: [];
-        }
+        $_SESSION['user'] = Database::fetch("SELECT * FROM users WHERE id = ?", [self::id()]) ?: [];
         return $_SESSION['user'] ?: null;
     }
 
