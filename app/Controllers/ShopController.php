@@ -475,13 +475,14 @@ class ShopController extends BaseController
 
         $useWallet = !empty($_POST['use_wallet']);
         $walletBalance = (int) ($user['wallet'] ?? 0);
-        $paymentStatus = 'pending';
-        $paymentMethod = null;
 
-        if ($useWallet && $walletBalance >= $finalTotal) {
-            $paymentMethod = 'wallet';
-            $paymentStatus = 'paid';
+        if ($useWallet && $walletBalance < $finalTotal) {
+            $this->json(['error' => 'موجودی کیف پول کافی نیست. لطفاً کیف پول خود را شارژ کنید.'], 400);
+            return;
         }
+
+        $paymentStatus = $useWallet ? 'paid' : 'pending';
+        $paymentMethod = $useWallet ? 'wallet' : null;
 
         $orderId = Database::insert('orders', [
             'user_id' => $user['id'],

@@ -98,7 +98,7 @@
                 <div class="mb-4">
                     <label class="text-sm font-semibold text-zinc-600 mb-2 block">آدرس تحویل</label>
                     <div class="flex gap-2">
-                        <select id="address-select" class="flex-1 px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        <select id="address-select" required class="flex-1 px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <option value="">آدرس خود را انتخاب کنید</option>
                         </select>
                         <button type="button" id="editAddressBtn" onclick="editSelectedAddress()" class="px-3 py-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-all hidden" title="ویرایش آدرس">
@@ -293,6 +293,11 @@ document.getElementById('addressForm')?.addEventListener('submit', function(e) {
 
 function checkout() {
     const btn = event.target;
+    const addrId = selectedAddressId || document.getElementById('address-select')?.value || '';
+    if (!addrId) {
+        showToast('لطفاً یک آدرس تحویل انتخاب کنید.', 'error');
+        return;
+    }
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin ml-2"></i>در حال پردازش...';
     const couponCode = document.getElementById('coupon-code').value;
@@ -300,8 +305,7 @@ function checkout() {
     if (couponCode) body += '&coupon_code=' + encodeURIComponent(couponCode);
     const useWallet = document.getElementById('use-wallet')?.checked || false;
     if (useWallet) body += '&use_wallet=1';
-    const addrId = selectedAddressId || document.getElementById('address-select')?.value || '';
-    if (addrId) body += '&address_id=' + encodeURIComponent(addrId);
+    body += '&address_id=' + encodeURIComponent(addrId);
     fetch('/shop/cart/checkout', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body })
         .then(r => r.json())
         .then(d => {
