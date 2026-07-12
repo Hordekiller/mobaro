@@ -41,12 +41,18 @@ class AcademyController extends BaseController
             $params
         );
 
+        $featuredCourse = Cache::remember('academy_featured', Config::get('cache.ttl.page', 600), function () {
+            return Database::fetch(
+                "SELECT * FROM courses WHERE is_active = 1 ORDER BY RAND() LIMIT 1"
+            );
+        }, 'academy');
+
         $sidebar = $this->getSidebar();
         $settings = Settings::all();
 
         $this->view('academy/index', [
             'courses' => $courses, 'tab' => $tab, 'category' => $category,
-            'settings' => $settings,
+            'settings' => $settings, 'featuredCourse' => $featuredCourse,
         ] + $sidebar);
     }
 

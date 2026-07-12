@@ -39,6 +39,27 @@
                 </div>
             </div>
             <div class="hidden md:block">
+                <?php if ($featuredCourse) : ?>
+                <a href="/course/<?= e($featuredCourse['slug'] ?: $featuredCourse['id']) ?>" class="block relative bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
+                    <img src="/assets/images/<?= e($featuredCourse['image']) ?>"
+                         class="w-full h-56 object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
+                         onerror="this.src='/media/600/340/<?= e($featuredCourse['id']) ?>'">
+                    <div class="mt-4 flex items-center justify-between">
+                        <div>
+                            <div class="text-sm text-white/60">دوره ویژه هفته</div>
+                            <div class="font-semibold text-lg mt-1 group-hover:text-amber-300 transition-colors"><?= e($featuredCourse['title']) ?></div>
+                        </div>
+                        <div class="text-amber-300 text-2xl font-bold"><?= number_format($featuredCourse['rating'], 1) ?></div>
+                    </div>
+                    <div class="mt-3 flex items-center gap-2 text-sm text-white/60">
+                        <i class="fa-solid fa-clock"></i>
+                        <span><?= e($featuredCourse['duration']) ?></span>
+                        <span class="mx-2">•</span>
+                        <i class="fa-solid fa-user"></i>
+                        <span><?= number_format($featuredCourse['students']) ?> دانشجو</span>
+                    </div>
+                </a>
+                <?php else : ?>
                 <div class="relative bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
                     <img src="/assets/images/cache/600x340_1015.svg" alt="دوره ویژه" class="w-full h-56 object-cover rounded-2xl">
                     <div class="mt-4 flex items-center justify-between">
@@ -56,6 +77,7 @@
                         <span>۳۴۲ دانشجو</span>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
