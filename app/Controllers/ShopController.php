@@ -382,6 +382,10 @@ class ShopController extends BaseController
 
         foreach ($_SESSION['cart'] as &$item) {
             if ($item['id'] === $productId) {
+                if (($item['type'] ?? 'product') === 'course') {
+                    $this->json(['error' => 'تعداد دوره قابل تغییر نیست'], 400);
+                    return;
+                }
                 $item['qty'] = $qty;
                 break;
             }

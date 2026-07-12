@@ -252,25 +252,29 @@ function renderCart()
             return;
         }
         container.innerHTML = items.map(function (item) {
+            var isCourse = (item.type || 'product') === 'course';
             return `
-            < div class = "flex items-center gap-4 mb-4 pb-4 border-b border-zinc-100" >
-                < img src = "/assets/images/${item.image}" alt = "${item.name}" class = "w-20 h-20 rounded-lg object-cover" onerror = "this.src='/media/200/200/${item.id}'" >
-                < div class = "flex-1" >
-                    < h4 class = "font-medium text-zinc-800" > ${item.name} < / h4 >
-                    < p class = "text-sm text-zinc-500" > ${item.brand || ''} < / p >
-                    < div class = "flex items-center gap-3 mt-2" >
-                        < div class = "flex items-center border rounded-lg" >
-                            < button onclick = "updateShopQuantity(${item.id}, -1, this)" class = "px-3 py-1 text-zinc-500 hover:text-rose-500" > - < / button >
-                            < span class = "px-3 py-1 border-x" > ${item.qty} < / span >
-                            < button onclick = "updateShopQuantity(${item.id}, 1, this)" class = "px-3 py-1 text-zinc-500 hover:text-rose-500" > + < / button >
-                        <  / div >
-                        < button onclick = "removeFromCartItem(${item.id})" class = "text-red-400 hover:text-red-500" > < i class = "fa-solid fa-trash-can" > < / i > < / button >
-                    <  / div >
-                <  / div >
-                < div class = "text-left" >
-                    < span class = "font-bold text-rose-500" > ${formatPrice(item.price * item.qty)} < / span >
-                <  / div >
-            <  / div > `;
+            <div class="flex items-center gap-4 mb-4 pb-4 border-b border-zinc-100">
+                <img src="/assets/images/${item.image}" alt="${item.name}" class="w-20 h-20 rounded-lg object-cover" onerror="this.src='/media/200/200/${item.id}'">
+                <div class="flex-1">
+                    <h4 class="font-medium text-zinc-800">${item.name}</h4>
+                    ${item.brand ? '<p class="text-sm text-zinc-500">' + item.brand + '</p>' : ''}
+                    <div class="flex items-center gap-3 mt-2">
+                        ${isCourse
+                            ? '<span class="text-sm text-zinc-400">1x</span>'
+                            : '<div class="flex items-center border rounded-lg">' +
+                              '<button onclick="updateShopQuantity(' + item.id + ', -1, this)" class="px-3 py-1 text-zinc-500 hover:text-rose-500">-</button>' +
+                              '<span class="px-3 py-1 border-x">' + item.qty + '</span>' +
+                              '<button onclick="updateShopQuantity(' + item.id + ', 1, this)" class="px-3 py-1 text-zinc-500 hover:text-rose-500">+</button>' +
+                              '</div>'
+                        }
+                        <button onclick="removeFromCartItem(${item.id}, '${item.type || 'product'}')" class="text-red-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <span class="font-bold text-rose-500">${formatPrice(item.price * item.qty)}</span>
+                </div>
+            </div>`;
         }).join('');
         const total = items.reduce(function (sum, item) {
             return sum + (item.price * item.qty); }, 0);
@@ -309,7 +313,8 @@ function updateShopQuantity(productId, delta, btn)
 
 function removeFromCartItem(productId, type)
 {
-    const body = 'product_id=' + productId + '&type=' + (type || 'product') + '&' + csrfParam();
+    var itemType = type || 'product';
+    const body = 'product_id=' + productId + '&type=' + itemType + '&' + csrfParam();
     fetch('/shop/cart/remove', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -324,7 +329,7 @@ function removeFromCartItem(productId, type)
                 el.innerText = d.cart_count || 0;
             }
             renderCart();
-            showToast('محصول از سبد خرید حذف شد');
+            showToast(itemType === 'course' ? 'دوره از سبد خرید حذف شد' : 'محصول از سبد خرید حذف شد');
         }
     })
     .catch(function () {});
