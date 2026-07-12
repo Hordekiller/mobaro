@@ -295,7 +295,11 @@ class DashboardController extends BaseController
         $phone = sanitize($_POST['phone'] ?? '');
 
         if (empty($address)) {
-            $this->redirectWithErrors('/dashboard/addresses', ['address' => 'آدرس را وارد کنید.']);
+            if (isset($_POST['from_cart']) && $_POST['from_cart'] === '1') {
+                $this->json(['error' => 'آدرس را وارد کنید.'], 400);
+            } else {
+                $this->redirectWithErrors('/dashboard/addresses', ['address' => 'آدرس را وارد کنید.']);
+            }
             return;
         }
 
@@ -314,8 +318,12 @@ class DashboardController extends BaseController
             'is_default' => $isDefault,
         ]);
 
-        flash('success', 'آدرس جدید اضافه شد.');
-        back();
+        if (isset($_POST['from_cart']) && $_POST['from_cart'] === '1') {
+            $this->json(['success' => true, 'message' => 'آدرس جدید اضافه شد.']);
+        } else {
+            flash('success', 'آدرس جدید اضافه شد.');
+            back();
+        }
     }
 
     public function updateAddress(int $id): void
