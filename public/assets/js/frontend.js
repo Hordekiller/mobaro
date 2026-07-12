@@ -1039,11 +1039,6 @@ function openQuickView(productId)
     {
         window.location.href = '/academy';
     }
-    function openTutorial(n)
-    {
-        window.location.href = '/academy';
-    }
-
 // ========== PHONE VALIDATION ==========
     document.addEventListener('keyup', function (e) {
         const input = e.target;

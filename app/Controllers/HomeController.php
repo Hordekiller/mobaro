@@ -19,11 +19,14 @@ class HomeController extends BaseController
                 ),
                 'artists' => Database::fetchAll("SELECT * FROM artists WHERE is_active = 1"),
                 'hairModels' => Database::fetchAll("SELECT * FROM hair_models WHERE is_active = 1"),
-                'tutorials' => Database::fetchAll("SELECT * FROM tutorials WHERE is_active = 1"),
                 'products' => Database::fetchAll("SELECT * FROM products WHERE is_active = 1 ORDER BY id"),
                 'testimonials' => Database::fetchAll("SELECT * FROM testimonials WHERE is_active = 1 ORDER BY id"),
             ];
         }, 'homepage');
+
+        $educationCourses = Database::fetchAll(
+            "SELECT * FROM courses WHERE is_active = 1 ORDER BY RAND() LIMIT 4"
+        );
 
         $settings = Settings::all();
         $captchaEnabled = Captcha::isEnabled('booking');
@@ -38,7 +41,7 @@ class HomeController extends BaseController
             'services' => $homeData['services'],
             'artists' => $homeData['artists'],
             'hairModels' => $homeData['hairModels'],
-            'tutorials' => $homeData['tutorials'],
+            'educationCourses' => $educationCourses,
             'products' => $homeData['products'],
             'testimonials' => $homeData['testimonials'],
         ]);

@@ -17,25 +17,25 @@
             </div>
             <div class="md:col-span-7">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <?php foreach ($tutorials as $index => $tutorial) : ?>
-                    <div onclick="openTutorial(<?= $index ?>)" class="group bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden cursor-pointer">
+                    <?php foreach ($educationCourses as $course) : ?>
+                    <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>" class="group bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden">
                         <div class="relative">
-                            <img src="/assets/images/<?= e($tutorial['image']) ?>"
-                                 class="w-full h-52 object-cover gallery-img"
-                                 onerror="this.src='/media/600/340/<?= e($tutorial['id']) ?>'">
+                            <img src="/assets/images/<?= e($course['image']) ?>"
+                                 class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+                                 onerror="this.src='/media/600/340/<?= e($course['id']) ?>'">
                             <div class="absolute bottom-4 left-4 bg-black/70 text-white text-[10px] px-3 py-1 rounded-3xl flex items-center gap-x-2">
-                                <i class="fa-solid fa-video"></i>
-                                <span><?= e($tutorial['duration']) ?></span>
+                                <i class="fa-solid fa-clock"></i>
+                                <span><?= e($course['duration']) ?></span>
                             </div>
                         </div>
                         <div class="p-6">
                             <div class="flex justify-between text-xs">
-                                <span class="text-emerald-500"><?= e($tutorial['category']) ?></span>
-                                <span class="text-zinc-400"><?= number_format($tutorial['views']) ?> بازدید</span>
+                                <span class="text-emerald-500"><?= e($course['category']) ?></span>
+                                <span class="text-zinc-400"><?= number_format($course['students']) ?> دانشجو</span>
                             </div>
-                            <h4 class="font-semibold mt-2 group-hover:text-rose-500 transition-colors"><?= e($tutorial['title']) ?></h4>
+                            <h4 class="font-semibold mt-2 group-hover:text-rose-500 transition-colors"><?= e($course['title']) ?></h4>
                         </div>
-                    </div>
+                    </a>
                     <?php endforeach; ?>
                 </div>
                 <div class="mt-8 text-center">
