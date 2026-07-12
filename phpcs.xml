@@ -7,6 +7,7 @@
 
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/public/assets/libs/*</exclude-pattern>
+    <exclude-pattern>*.js</exclude-pattern>
 
     <arg name="basepath" value="."/>
     <arg name="colors"/>
