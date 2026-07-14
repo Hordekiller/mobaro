@@ -331,6 +331,7 @@
             </div>
             <?php endif; ?>
 
+            <?php if (!empty($columns)) : ?>
             <div class="bg-white rounded-[18px] shadow-[0_4px_20px_rgba(225,29,72,0.06)] overflow-x-auto">
                 <table class="w-full border-collapse admin-table">
                     <thead>
@@ -383,6 +384,7 @@
                     </tbody>
                 </table>
             </div>
+            <?php endif; ?>
 
             <?php if (isset($totalPages) && $totalPages > 1) : ?>
             <div class="flex justify-center items-center gap-2 mt-6">
@@ -419,6 +421,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="modal-fields">
                             <?php foreach ($columns as $col) :
                                 if ($col['key'] === 'id') {
+                                    continue;
+                                }
+                                if ($section === 'hair-prices' && in_array($col['key'], ['price', 'duration_modifier', 'is_active'])) {
                                     continue;
                                 }
                                 ?>
@@ -488,6 +493,28 @@
                                     </label>
                                     <?php endforeach; ?>
                                 </div>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if ($section === 'services' && !empty($allHairLengths)) : ?>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold mb-2 text-zinc-700 border-b border-rose-100 pb-2">
+                                    <i class="fa-solid fa-ruler-vertical ml-1 text-rose-500"></i> قیمت‌گذاری بر اساس قد مو
+                                </label>
+                                <div class="space-y-2" id="service-hair-prices">
+                                    <?php foreach ($allHairLengths as $hl) : ?>
+                                    <div class="flex items-center gap-2 bg-rose-50 rounded-xl px-3 py-2 hair-price-row" data-hl-id="<?= $hl['id'] ?>">
+                                        <span class="text-xs font-semibold text-zinc-600 min-w-[120px]"><?= e($hl['title']) ?></span>
+                                        <input type="number" name="hair_prices[<?= $hl['id'] ?>][price]" placeholder="قیمت (تومان)" step="1000" class="flex-1 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                        <input type="number" name="hair_prices[<?= $hl['id'] ?>][duration_modifier]" placeholder="ضریب" step="0.1" min="0.1" max="5" value="1.0" class="w-20 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                        <label class="flex items-center gap-1 cursor-pointer">
+                                            <input type="checkbox" name="hair_prices[<?= $hl['id'] ?>][is_active]" value="1" checked class="form-checkbox h-4 w-4 text-rose-600 rounded border-rose-300 focus:ring-0">
+                                            <span class="text-xs text-zinc-500">فعال</span>
+                                        </label>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <p class="text-xs text-zinc-400 mt-1.5">قیمت خالی = بدون قیمت مجزا برای این قد مو</p>
                             </div>
                             <?php endif; ?>
 
@@ -574,6 +601,9 @@
 
 <?php if ($section === 'artists') : ?>
 <script>window._artistServices = <?= $artistServicesJson ?? '{}' ?>;</script>
+<?php endif; ?>
+<?php if ($section === 'services') : ?>
+<script>window._serviceHairPrices = <?= $serviceHairPricesJson ?? '{}' ?>;</script>
 <?php endif; ?>
 <?php if ($section === 'products') : ?>
 <script>window._productGallery = <?= $productGalleryJson ?? '{}' ?>;</script>
@@ -697,6 +727,25 @@ function showEditModal(item) {
                 container.appendChild(wrapper);
             });
         }
+    }
+    if (window._serviceHairPrices && item.id) {
+        var prices = window._serviceHairPrices[item.id] || [];
+        document.querySelectorAll('.hair-price-row').forEach(function(row) {
+            var hlId = row.dataset.hlId;
+            var input_price = row.querySelector('input[name*="[price]"]');
+            var input_duration = row.querySelector('input[name*="[duration_modifier]"]');
+            var input_active = row.querySelector('input[name*="[is_active]"]');
+            var found = prices.find(function(p) { return String(p.hair_length_id) === String(hlId); });
+            if (found) {
+                if (input_price) input_price.value = found.price || '';
+                if (input_duration) input_duration.value = found.duration_modifier || 1.0;
+                if (input_active) input_active.checked = parseInt(found.is_active) === 1;
+            } else {
+                if (input_price) input_price.value = '';
+                if (input_duration) input_duration.value = 1.0;
+                if (input_active) input_active.checked = true;
+            }
+        });
     }
     document.getElementById('itemModal').classList.remove('hidden');
 }

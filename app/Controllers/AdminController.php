@@ -226,6 +226,23 @@ class AdminController extends BaseController
             $data['artistServicesJson'] = json_encode($artistServices);
         }
 
+        if ($section === 'services') {
+            $data['allHairLengths'] = Database::fetchAll("SELECT id, title, min_cm, max_cm FROM hair_lengths WHERE is_active = 1 ORDER BY sort_order");
+            $allServiceIds = array_column($data['items'] ?? [], 'id');
+            $serviceHairPrices = [];
+            if (!empty($allServiceIds)) {
+                $placeholders = implode(',', array_fill(0, count($allServiceIds), '?'));
+                $priceRows = Database::fetchAll(
+                    "SELECT * FROM service_hair_prices WHERE service_id IN ($placeholders) ORDER BY hair_length_id",
+                    $allServiceIds
+                );
+                foreach ($priceRows as $pr) {
+                    $serviceHairPrices[$pr['service_id']][] = $pr;
+                }
+            }
+            $data['serviceHairPricesJson'] = json_encode($serviceHairPrices);
+        }
+
         $this->view('admin/index', $data);
     }
 
@@ -465,6 +482,68 @@ class AdminController extends BaseController
                 'uploaded_by' => Auth::id(),
             ]);
         }
+    }
+
+    private function saveServiceHairPrices(int $serviceId): void
+    {
+        $hairPrices = $_POST['hair_prices'] ?? [];
+        $hasAnySubmittedPrice = false;
+
+        foreach ($hairPrices as $priceData) {
+            $price = (int) ($priceData['price'] ?? 0);
+            if ($price > 0) {
+                $hasAnySubmittedPrice = true;
+                break;
+            }
+        }
+
+        if ($hasAnySubmittedPrice) {
+            Database::query("DELETE FROM service_hair_prices WHERE service_id = ?", [$serviceId]);
+
+            foreach ($hairPrices as $hlId => $priceData) {
+                $hlId = (int) $hlId;
+                $price = (int) ($priceData['price'] ?? 0);
+                $durationModifier = (float) ($priceData['duration_modifier'] ?? 1.0);
+                $durationModifier = max(0.1, min(9.9, $durationModifier));
+                $isActive = isset($priceData['is_active']) ? 1 : 0;
+
+                if ($hlId > 0 && $price > 0) {
+                    Database::insert('service_hair_prices', [
+                        'service_id' => $serviceId,
+                        'hair_length_id' => $hlId,
+                        'price' => $price,
+                        'duration_modifier' => $durationModifier,
+                        'is_active' => $isActive,
+                    ]);
+                }
+            }
+        } else {
+            $existing = Database::fetch(
+                "SELECT COUNT(*) as cnt FROM service_hair_prices WHERE service_id = ?",
+                [$serviceId]
+            );
+
+            if (($existing['cnt'] ?? 0) == 0) {
+                $service = Database::fetch("SELECT price FROM services WHERE id = ?", [$serviceId]);
+                $basePrice = (int) ($service['price'] ?? 0);
+                if ($basePrice > 0) {
+                    $hairLengths = Database::fetchAll("SELECT id, sort_order FROM hair_lengths WHERE is_active = 1 ORDER BY sort_order");
+                    foreach ($hairLengths as $index => $hl) {
+                        $price = $basePrice + ($index * 150000);
+                        $durationMod = max(0.1, min(9.9, 1.0 + ($index * 0.2)));
+                        Database::insert('service_hair_prices', [
+                            'service_id' => $serviceId,
+                            'hair_length_id' => $hl['id'],
+                            'price' => $price,
+                            'duration_modifier' => $durationMod,
+                            'is_active' => 1,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        $this->clearCache('booking');
     }
 
     private function clearCache(string $section): void
@@ -724,7 +803,7 @@ class AdminController extends BaseController
             $serviceId = (int) ($_POST['service_id'] ?? 0);
             $hairLengthId = (int) ($_POST['hair_length_id'] ?? 0);
             $price = (int) ($_POST['price'] ?? 0);
-            $durationModifier = (float) ($_POST['duration_modifier'] ?? 1.0);
+            $durationModifier = max(0.1, min(9.9, (float) ($_POST['duration_modifier'] ?? 1.0)));
             $isActive = isset($_POST['is_active']) ? 1 : 0;
 
             if (!$serviceId || !$hairLengthId || !$price) {
@@ -890,6 +969,10 @@ class AdminController extends BaseController
             $id = Database::insert($table, $data);
         }
 
+        if ($section === 'services') {
+            $this->saveServiceHairPrices($id);
+        }
+
         if ($section === 'courses') {
             if (!empty($data['video_url']) && $data['video_type'] === 'upload') {
                 $this->syncMedia($data['video_url'], $_FILES['video_url']['name'] ?? basename($data['video_url']), 'video', 'course_video', $id);
@@ -950,7 +1033,7 @@ class AdminController extends BaseController
     {
         $this->requireAdmin();
         $this->verifyCsrf();
-        
+
         if ($section === 'hair-prices') {
             Database::query("DELETE FROM service_hair_prices WHERE id = ?", [$id]);
             $this->clearCache('booking');
@@ -958,7 +1041,7 @@ class AdminController extends BaseController
             redirect('/admin/hair-prices');
             return;
         }
-        
+
         $table = $this->sectionToTable($section);
 
         if ($section === 'products') {
@@ -1492,6 +1575,7 @@ class AdminController extends BaseController
             'blog-comments' => 'blog_comments',
             'product-categories' => 'product_categories',
             'product-brands' => 'product_brands',
+            'hair-prices' => 'service_hair_prices',
         ];
         return $map[$section] ?? null;
     }
@@ -1501,13 +1585,13 @@ class AdminController extends BaseController
         $search = trim($_GET['s'] ?? '');
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = 20;
-        
+
         $data['columns'] = $this->getColumns('hair-prices');
-        
+
         // Get all services and hair lengths for dropdowns
         $data['allServices'] = Database::fetchAll("SELECT id, title FROM services ORDER BY title");
         $data['allHairLengths'] = Database::fetchAll("SELECT id, title FROM hair_lengths ORDER BY sort_order");
-        
+
         // Base query for hair prices
         $baseQuery = "
             SELECT shp.*, s.title as service_title, hl.title as hair_length_title
@@ -1515,27 +1599,27 @@ class AdminController extends BaseController
             INNER JOIN services s ON shp.service_id = s.id
             INNER JOIN hair_lengths hl ON shp.hair_length_id = hl.id
         ";
-        
+
         $countQuery = "SELECT COUNT(*) as cnt FROM service_hair_prices shp
                         INNER JOIN services s ON shp.service_id = s.id
                         INNER JOIN hair_lengths hl ON shp.hair_length_id = hl.id";
-        
+
         $params = [];
         $searchWhere = '';
-        
+
         if ($search !== '') {
             $searchWhere = " WHERE s.title LIKE ? OR hl.title LIKE ?";
             $params = ["%$search%", "%$search%"];
         }
-        
+
         $countQuery .= $searchWhere;
         $total = (int) Database::fetch($countQuery, $params)['cnt'];
         $totalPages = max(1, (int) ceil($total / $perPage));
         $page = min($page, $totalPages);
         $offset = ($page - 1) * $perPage;
-        
+
         $items = Database::fetchAll($baseQuery . $searchWhere . " ORDER BY s.title, hl.sort_order LIMIT ? OFFSET ?", array_merge($params, [$perPage, $offset]));
-        
+
         $data['items'] = $items;
         $data['page'] = $page;
         $data['totalPages'] = $totalPages;
