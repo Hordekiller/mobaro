@@ -1,4 +1,5 @@
 <?php
+
 // Router script for PHP built-in dev server only.
 // On production (Apache), .htaccess handles routing instead.
 

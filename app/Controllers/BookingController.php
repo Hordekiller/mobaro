@@ -181,7 +181,7 @@ class BookingController extends BaseController
 
         $finalPrice = $service['price'];
         $durationModifier = 1.0;
-        
+
         // Get dynamic price if hair length is selected
         if ($hairLengthId) {
             $priceData = Database::fetch(
@@ -194,13 +194,13 @@ class BookingController extends BaseController
                 $durationModifier = (float) $priceData['duration_modifier'];
             }
         }
-        
+
         $notes = trim($_POST['notes'] ?? '');
         if ($durationModifier !== 1.0) {
             $durationNote = 'ضریب مدت: ' . $durationModifier . 'x';
             $notes = $notes ? $notes . ' | ' . $durationNote : $durationNote;
         }
-        
+
         $appointmentId = Database::insert('appointments', [
             'user_id' => Auth::id(),
             'service_id' => $serviceId,
@@ -233,24 +233,24 @@ class BookingController extends BaseController
         }, 'booking');
         $this->json(['hair_lengths' => $hairLengths]);
     }
-    
+
     public function getServicePrice(): void
     {
         $this->verifyCsrf();
         $serviceId = (int) ($_POST['service_id'] ?? 0);
         $hairLengthId = (int) ($_POST['hair_length_id'] ?? 0);
-        
+
         if (!$serviceId || !$hairLengthId) {
             $this->json(['error' => 'لطفاً خدمت و قد مو را انتخاب کنید.'], 400);
             return;
         }
-        
+
         $priceData = Database::fetch(
             "SELECT price, duration_modifier FROM service_hair_prices 
              WHERE service_id = ? AND hair_length_id = ? AND is_active = 1",
             [$serviceId, $hairLengthId]
         );
-        
+
         if (!$priceData) {
             // Fallback to base service price if no hair length pricing exists
             $service = Database::fetch("SELECT price, duration FROM services WHERE id = ?", [$serviceId]);
@@ -264,14 +264,14 @@ class BookingController extends BaseController
                 return;
             }
         }
-        
+
         $this->json([
             'price' => $priceData['price'],
             'duration' => $priceData['duration_modifier'],
             'formatted_price' => number_format($priceData['price']) . ' تومان'
         ]);
     }
-    
+
     public function refreshCaptcha(): void
     {
         $this->verifyCsrf();
