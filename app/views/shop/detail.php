@@ -4,7 +4,9 @@ $discount = 0;
 if (!empty($product['old_price']) && $product['old_price'] > $product['price']) {
     $discount = round((($product['old_price'] - $product['price']) / $product['old_price']) * 100);
 }
-$inWishlist = in_array($product['id'], $_SESSION['wishlist'] ?? []);
+$inWishlist = Auth::check()
+    ? (bool) Database::fetch("SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?", [Auth::id(), $product['id']])
+    : in_array($product['id'], $_SESSION['wishlist'] ?? []);
 ?>
 
 <div class="min-h-screen bg-zinc-50">

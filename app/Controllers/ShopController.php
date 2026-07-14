@@ -38,7 +38,7 @@ class ShopController extends BaseController
         }
         if ($search !== '') {
             $where .= " AND (p.name LIKE ? OR p.description LIKE ? OR p.brand LIKE ?)";
-            $s = "%{$search}%";
+            $s = likePattern($search);
             $params[] = $s;
             $params[] = $s;
             $params[] = $s;
@@ -98,7 +98,12 @@ class ShopController extends BaseController
 
         $facets = $this->getFacets();
         $cart = $_SESSION['cart'] ?? [];
-        $wishlist = $_SESSION['wishlist'] ?? [];
+        if (Auth::check()) {
+            $wRows = Database::fetchAll("SELECT product_id as id FROM wishlist WHERE user_id = ?", [Auth::id()]);
+            $wishlist = array_column($wRows, 'id');
+        } else {
+            $wishlist = $_SESSION['wishlist'] ?? [];
+        }
         $settings = Settings::all();
 
         $this->view('shop/index', [
@@ -246,23 +251,53 @@ class ShopController extends BaseController
             return;
         }
 
-        if (!isset($_SESSION['wishlist'])) {
-            $_SESSION['wishlist'] = [];
-        }
-
-        $idx = array_search($productId, $_SESSION['wishlist']);
-        if ($idx !== false) {
-            array_splice($_SESSION['wishlist'], $idx, 1);
-            $this->json(['success' => true, 'action' => 'removed', 'wishlist_count' => count($_SESSION['wishlist'])]);
+        if (Auth::check()) {
+            $existing = Database::fetch(
+                "SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?",
+                [Auth::id(), $productId]
+            );
+            if ($existing) {
+                Database::delete('wishlist', 'id = ?', [$existing['id']]);
+                $this->json(['success' => true, 'action' => 'removed', 'wishlist_count' => $this->getWishlistCount()]);
+            } else {
+                Database::insert('wishlist', ['user_id' => Auth::id(), 'product_id' => $productId]);
+                $this->json(['success' => true, 'action' => 'added', 'wishlist_count' => $this->getWishlistCount()]);
+            }
         } else {
-            $_SESSION['wishlist'][] = $productId;
-            $this->json(['success' => true, 'action' => 'added', 'wishlist_count' => count($_SESSION['wishlist'])]);
+            if (!isset($_SESSION['wishlist'])) {
+                $_SESSION['wishlist'] = [];
+            }
+            $idx = array_search($productId, $_SESSION['wishlist']);
+            if ($idx !== false) {
+                array_splice($_SESSION['wishlist'], $idx, 1);
+                $this->json(['success' => true, 'action' => 'removed', 'wishlist_count' => count($_SESSION['wishlist'])]);
+            } else {
+                $_SESSION['wishlist'][] = $productId;
+                $this->json(['success' => true, 'action' => 'added', 'wishlist_count' => count($_SESSION['wishlist'])]);
+            }
         }
+    }
+
+    private function getWishlistCount(): int
+    {
+        if (Auth::check()) {
+            $result = Database::fetch("SELECT COUNT(*) as cnt FROM wishlist WHERE user_id = ?", [Auth::id()]);
+            return (int) ($result['cnt'] ?? 0);
+        }
+        return count($_SESSION['wishlist'] ?? []);
     }
 
     public function wishlist(): void
     {
-        $ids = $_SESSION['wishlist'] ?? [];
+        if (Auth::check()) {
+            $rows = Database::fetchAll(
+                "SELECT product_id as id FROM wishlist WHERE user_id = ?",
+                [Auth::id()]
+            );
+            $ids = array_column($rows, 'id');
+        } else {
+            $ids = $_SESSION['wishlist'] ?? [];
+        }
         if (empty($ids)) {
             $products = [];
         } else {
@@ -276,7 +311,15 @@ class ShopController extends BaseController
 
     public function wishlistData(): void
     {
-        $ids = $_SESSION['wishlist'] ?? [];
+        if (Auth::check()) {
+            $rows = Database::fetchAll(
+                "SELECT product_id as id FROM wishlist WHERE user_id = ?",
+                [Auth::id()]
+            );
+            $ids = array_column($rows, 'id');
+        } else {
+            $ids = $_SESSION['wishlist'] ?? [];
+        }
         $products = [];
         if (!empty($ids)) {
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -459,7 +502,7 @@ class ShopController extends BaseController
         }
 
         $finalTotal = $total - $couponDiscount;
-        $trackingCode = 'MB-' . date('Ymd') . '-' . rand(100, 999);
+        $trackingCode = 'MB-' . date('Ymd') . '-' . str_pad((string) random_int(1000, 99999), 5, '0', STR_PAD_LEFT);
         $user = Auth::user();
 
         $addressId = (int) ($_POST['address_id'] ?? 0);
@@ -484,81 +527,91 @@ class ShopController extends BaseController
         $paymentStatus = $useWallet ? 'paid' : 'pending';
         $paymentMethod = $useWallet ? 'wallet' : null;
 
-        $orderId = Database::insert('orders', [
-            'user_id' => $user['id'],
-            'total' => $finalTotal,
-            'discount' => $couponDiscount,
-            'coupon_code' => $couponCode ?: null,
-            'coupon_discount' => $couponDiscount,
-            'status' => $paymentStatus === 'paid' ? 'processing' : 'pending',
-            'payment_status' => $paymentStatus,
-            'payment_method' => $paymentMethod,
-            'tracking_code' => $trackingCode,
-            'address' => $addressText ?: null,
-            'postal_code' => $postalCode ?: null,
-        ]);
-
-        $courseItems = [];
-        foreach ($cart as $item) {
-            Database::insert('order_items', [
-                'order_id' => $orderId,
-                'product_id' => $item['id'],
-                'product_name' => $item['name'],
-                'price' => $item['price'],
-                'quantity' => $item['qty'],
-            ]);
-            if (($item['type'] ?? 'product') === 'course') {
-                $courseItems[] = $item;
-            }
-        }
-
-        if ($couponCode && $couponDiscount > 0) {
-            Database::query("UPDATE coupons SET used_count = used_count + 1 WHERE code = ?", [$couponCode]);
-        }
-
-        if ($paymentMethod === 'wallet') {
-            Database::update('users', ['wallet' => $walletBalance - $finalTotal], 'id = :id', ['id' => $user['id']]);
-            Database::insert('transactions', [
+        Database::beginTransaction();
+        try {
+            $orderId = Database::insert('orders', [
                 'user_id' => $user['id'],
-                'type' => 'wallet_withdraw',
-                'amount' => $finalTotal,
-                'description' => "پرداخت سفارش {$trackingCode}",
-                'payment_status' => 'paid',
+                'total' => $finalTotal,
+                'discount' => $couponDiscount,
+                'coupon_code' => $couponCode ?: null,
+                'coupon_discount' => $couponDiscount,
+                'status' => $paymentStatus === 'paid' ? 'processing' : 'pending',
+                'payment_status' => $paymentStatus,
+                'payment_method' => $paymentMethod,
+                'tracking_code' => $trackingCode,
+                'address' => $addressText ?: null,
+                'postal_code' => $postalCode ?: null,
             ]);
 
-            $pointsEarned = floor($finalTotal / 10000);
-            if ($pointsEarned > 0) {
-                Database::insert('transactions', [
-                    'user_id' => $user['id'],
-                    'type' => 'points_earn',
-                    'amount' => $pointsEarned,
-                    'description' => "امتیاز خرید سفارش {$trackingCode}",
+            $courseItems = [];
+            foreach ($cart as $item) {
+                Database::insert('order_items', [
+                    'order_id' => $orderId,
+                    'product_id' => $item['id'],
+                    'product_name' => $item['name'],
+                    'price' => $item['price'],
+                    'quantity' => $item['qty'],
                 ]);
-                Database::query("UPDATE users SET points = points + ? WHERE id = ?", [$pointsEarned, $user['id']]);
-            }
-
-            $newCourseIds = array_map(fn($c) => $c['id'], $courseItems);
-            if (!empty($newCourseIds)) {
-                $uniqueIds = array_values(array_unique($newCourseIds));
-                $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
-                $existingEnrollments = Database::fetchAll(
-                    "SELECT course_id FROM course_enrollments WHERE user_id = ? AND course_id IN ({$placeholders})",
-                    array_merge([$user['id']], $uniqueIds)
-                );
-                $existingIds = array_column($existingEnrollments, 'course_id');
-                foreach ($courseItems as $course) {
-                    if (in_array($course['id'], $existingIds)) {
-                        continue;
-                    }
-                    Database::insert('course_enrollments', [
-                        'user_id' => $user['id'],
-                        'course_id' => $course['id'],
-                        'progress' => 0,
-                    ]);
-                    Database::query("UPDATE courses SET students = students + 1 WHERE id = ?", [$course['id']]);
+                if (($item['type'] ?? 'product') === 'course') {
+                    $courseItems[] = $item;
                 }
             }
 
+            if ($couponCode && $couponDiscount > 0) {
+                Database::query("UPDATE coupons SET used_count = used_count + 1 WHERE code = ?", [$couponCode]);
+            }
+
+            if ($paymentMethod === 'wallet') {
+                Database::update('users', ['wallet' => $walletBalance - $finalTotal], 'id = :id', ['id' => $user['id']]);
+                Database::insert('transactions', [
+                    'user_id' => $user['id'],
+                    'type' => 'wallet_withdraw',
+                    'amount' => $finalTotal,
+                    'description' => "پرداخت سفارش {$trackingCode}",
+                    'payment_status' => 'paid',
+                ]);
+
+                $pointsEarned = floor($finalTotal / 10000);
+                if ($pointsEarned > 0) {
+                    Database::insert('transactions', [
+                        'user_id' => $user['id'],
+                        'type' => 'points_earn',
+                        'amount' => $pointsEarned,
+                        'description' => "امتیاز خرید سفارش {$trackingCode}",
+                    ]);
+                    Database::query("UPDATE users SET points = points + ? WHERE id = ?", [$pointsEarned, $user['id']]);
+                }
+
+                $newCourseIds = array_map(fn($c) => $c['id'], $courseItems);
+                if (!empty($newCourseIds)) {
+                    $uniqueIds = array_values(array_unique($newCourseIds));
+                    $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
+                    $existingEnrollments = Database::fetchAll(
+                        "SELECT course_id FROM course_enrollments WHERE user_id = ? AND course_id IN ({$placeholders})",
+                        array_merge([$user['id']], $uniqueIds)
+                    );
+                    $existingIds = array_column($existingEnrollments, 'course_id');
+                    foreach ($courseItems as $course) {
+                        if (in_array($course['id'], $existingIds)) {
+                            continue;
+                        }
+                        Database::insert('course_enrollments', [
+                            'user_id' => $user['id'],
+                            'course_id' => $course['id'],
+                            'progress' => 0,
+                        ]);
+                        Database::query("UPDATE courses SET students = students + 1 WHERE id = ?", [$course['id']]);
+                    }
+                }
+            }
+
+            Database::commit();
+        } catch (\Throwable $e) {
+            Database::rollback();
+            throw $e;
+        }
+
+        if ($paymentMethod === 'wallet') {
             $_SESSION['cart'] = [];
             $_SESSION['user'] = Database::fetch("SELECT * FROM users WHERE id = ?", [$user['id']]);
 

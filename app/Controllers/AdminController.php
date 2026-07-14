@@ -183,7 +183,7 @@ class AdminController extends BaseController
                     $conditions = [];
                     foreach ($textCols as $tc) {
                         $conditions[] = "{$tc['key']} LIKE ?";
-                        $searchParams[] = "%{$search}%";
+                        $searchParams[] = likePattern($search);
                     }
                     $searchWhere = ' WHERE ' . implode(' OR ', $conditions);
                 }
@@ -1158,7 +1158,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' AND (u.name LIKE ? OR u.family LIKE ? OR s.title LIKE ? OR ar.name LIKE ? OR a.status LIKE ?)';
-            $searchParams = array_fill(0, 5, "%{$search}%");
+            $searchParams = array_fill(0, 5, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT a.*, u.name as user_name, u.family as user_family, s.title as service_title, ar.name as artist_name
@@ -1192,7 +1192,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' WHERE (name LIKE ? OR family LIKE ? OR phone LIKE ? OR email LIKE ?)';
-            $searchParams = array_fill(0, 4, "%{$search}%");
+            $searchParams = array_fill(0, 4, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT id, name, family, phone, email, avatar, role, is_active, level, points, wallet, created_at FROM users{$searchWhere} ORDER BY id DESC",
@@ -1236,7 +1236,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' AND (o.tracking_code LIKE ? OR u.name LIKE ? OR u.family LIKE ? OR o.status LIKE ? OR o.total LIKE ? OR EXISTS (SELECT 1 FROM order_items oi2 WHERE oi2.order_id = o.id AND oi2.product_name LIKE ?))';
-            $searchParams = array_fill(0, 6, "%{$search}%");
+            $searchParams = array_fill(0, 6, likePattern($search));
         }
 
         $today = date('Y-m-d');
@@ -1297,7 +1297,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' AND (u.name LIKE ? OR u.family LIKE ? OR c.title LIKE ?)';
-            $searchParams = array_fill(0, 3, "%{$search}%");
+            $searchParams = array_fill(0, 3, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT ce.*, u.name as user_name, u.family as user_family, c.title as course_title
@@ -1329,7 +1329,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' AND (u.name LIKE ? OR u.family LIKE ? OR t.type LIKE ? OR t.description LIKE ?)';
-            $searchParams = array_fill(0, 4, "%{$search}%");
+            $searchParams = array_fill(0, 4, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT t.*, u.name as user_name, u.family as user_family
@@ -1359,7 +1359,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' WHERE code LIKE ?';
-            $searchParams = ["%{$search}%"];
+            $searchParams = [likePattern($search)];
         }
         $paged = $this->paginate(
             "SELECT * FROM coupons{$searchWhere} ORDER BY id DESC",
@@ -1382,7 +1382,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' WHERE (title LIKE ? OR category LIKE ? OR author LIKE ? OR tags LIKE ?)';
-            $searchParams = array_fill(0, 4, "%{$search}%");
+            $searchParams = array_fill(0, 4, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT * FROM blog_posts{$searchWhere} ORDER BY created_at DESC",
@@ -1405,7 +1405,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' WHERE (r.user_name LIKE ? OR p.name LIKE ?)';
-            $searchParams = array_fill(0, 2, "%{$search}%");
+            $searchParams = array_fill(0, 2, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT r.*, p.name as product_name
@@ -1432,7 +1432,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' WHERE (name LIKE ? OR email LIKE ? OR phone LIKE ? OR subject LIKE ? OR message LIKE ?)';
-            $searchParams = array_fill(0, 5, "%{$search}%");
+            $searchParams = array_fill(0, 5, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT * FROM contact_messages{$searchWhere} ORDER BY id DESC",
@@ -1455,7 +1455,7 @@ class AdminController extends BaseController
         $searchParams = [];
         if ($search !== '') {
             $searchWhere = ' WHERE (bc.name LIKE ? OR bc.text LIKE ? OR bp.title LIKE ?)';
-            $searchParams = array_fill(0, 3, "%{$search}%");
+            $searchParams = array_fill(0, 3, likePattern($search));
         }
         $paged = $this->paginate(
             "SELECT bc.*, bp.title as post_title
@@ -1489,8 +1489,8 @@ class AdminController extends BaseController
 
             if ($search !== '') {
                 $where .= ' AND (original_name LIKE ? OR alt_text LIKE ?)';
-                $params[] = "%{$search}%";
-                $params[] = "%{$search}%";
+                $params[] = likePattern($search);
+                $params[] = likePattern($search);
             }
             if ($filter === 'image') {
                 $where .= " AND type = 'image'";

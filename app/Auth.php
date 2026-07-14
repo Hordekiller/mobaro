@@ -7,7 +7,8 @@ class Auth
         if (session_status() === PHP_SESSION_NONE) {
             $appUrl = (string) Config::get('app.url', '');
             $secureCookie = parse_url($appUrl, PHP_URL_SCHEME) === 'https'
-                || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+                || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 
             ini_set('session.use_only_cookies', '1');
             ini_set('session.use_strict_mode', '1');
@@ -36,8 +37,20 @@ class Auth
     public static function logout(): void
     {
         self::start();
-        session_destroy();
         $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
+        session_destroy();
     }
 
     public static function check(): bool
@@ -89,6 +102,9 @@ class Auth
 
     public static function hash(string $password): string
     {
+        if (defined('PASSWORD_ARGON2ID')) {
+            return password_hash($password, PASSWORD_ARGON2ID, ['memory_cost' => 65536, 'time_cost' => 4, 'threads' => 3]);
+        }
         return password_hash($password, PASSWORD_BCRYPT);
     }
 

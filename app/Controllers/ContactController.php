@@ -14,6 +14,14 @@ class ContactController extends BaseController
     {
         $this->verifyCsrf();
 
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        if (RateLimiter::isLocked('contact:' . $ip, 5, 15)) {
+            flash('error', 'درخواست‌های شما بیش از حد مجاز است. لطفاً چند دقیقه صبر کنید.');
+            redirect('/contact');
+            return;
+        }
+        RateLimiter::recordAttempt('contact:' . $ip);
+
         $name = sanitize($_POST['name'] ?? '');
         $email = sanitize($_POST['email'] ?? '');
         $phone = sanitize($_POST['phone'] ?? '');
