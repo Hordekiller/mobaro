@@ -574,6 +574,7 @@ class AdminController extends BaseController
             'blog-comments' => ['blog'],
             'product-categories' => ['products'],
             'product-brands' => ['products'],
+            'hair-prices' => ['booking'],
         ];
 
         $tags = $sectionToTags[$section] ?? [$section];

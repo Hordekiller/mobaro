@@ -36,10 +36,13 @@ class AcademyController extends BaseController
             $where .= " AND c.is_free = 1";
         }
 
-        $courses = Database::fetchAll(
-            "SELECT c.* FROM courses c {$where} ORDER BY {$orderBy}",
-            $params
-        );
+        $cacheKey = 'academy_list_' . md5(serialize([$tab, $category]));
+        $courses = Cache::remember($cacheKey, Config::get('cache.ttl.page', 600), function () use ($where, $params, $orderBy) {
+            return Database::fetchAll(
+                "SELECT c.* FROM courses c {$where} ORDER BY {$orderBy}",
+                $params
+            );
+        }, 'academy');
 
         $featuredCourse = Cache::remember('academy_featured', Config::get('cache.ttl.page', 600), function () {
             return Database::fetch(
