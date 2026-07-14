@@ -30,13 +30,13 @@ class BookingController extends BaseController
                 'avatar' => $a['avatar'] ?? '',
                 'working_hours' => $a['working_hours'] ?? '۹ صبح - ۸ شب',
                 'bio' => $a['bio'] ?? '',
-            ], $artists), JSON_UNESCAPED_UNICODE),
+            ], $artists), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG),
             'hairLengthsJson' => json_encode(array_map(fn($hl) => [
                 'id' => $hl['id'],
                 'title' => $hl['title'],
                 'min_cm' => $hl['min_cm'],
                 'max_cm' => $hl['max_cm'],
-            ], $formData['hairLengths'] ?? []), JSON_UNESCAPED_UNICODE),
+            ], $formData['hairLengths'] ?? []), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG),
         ]);
     }
 

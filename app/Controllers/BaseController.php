@@ -37,7 +37,7 @@ class BaseController
         foreach ($rules as $field => $ruleSet) {
             $ruleList = explode('|', $ruleSet);
             foreach ($ruleList as $rule) {
-                if ($rule === 'required' && empty($data[$field])) {
+                if ($rule === 'required' && (!isset($data[$field]) || $data[$field] === '')) {
                     $errors[$field] = 'این فیلد الزامی است.';
                 }
                 if (str_starts_with($rule, 'min:') && isset($data[$field])) {

@@ -190,6 +190,11 @@ class AcademyController extends BaseController
         $activeModule = (int) ($_GET['module'] ?? 0);
         $activeLesson = (int) ($_GET['lesson'] ?? 0);
 
+        $activeModule = max(0, min($activeModule, max(0, count($curriculum) - 1)));
+        if (!empty($curriculum[$activeModule]['lessons'])) {
+            $activeLesson = max(0, min($activeLesson, count($curriculum[$activeModule]['lessons']) - 1));
+        }
+
         $settings = Settings::all();
 
         $courseMedia = null;

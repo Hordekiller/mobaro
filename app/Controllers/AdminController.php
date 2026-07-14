@@ -213,7 +213,7 @@ class AdminController extends BaseController
                     $galleryData[$gr['product_id']][] = $gr;
                 }
             }
-            $data['productGalleryJson'] = json_encode($galleryData);
+            $data['productGalleryJson'] = json_encode($galleryData, JSON_HEX_TAG);
         }
 
         if ($section === 'artists') {
@@ -223,7 +223,7 @@ class AdminController extends BaseController
             foreach ($assignments as $as) {
                 $artistServices[$as['artist_id']][] = $as['service_id'];
             }
-            $data['artistServicesJson'] = json_encode($artistServices);
+            $data['artistServicesJson'] = json_encode($artistServices, JSON_HEX_TAG);
         }
 
         if ($section === 'services') {
@@ -240,7 +240,7 @@ class AdminController extends BaseController
                     $serviceHairPrices[$pr['service_id']][] = $pr;
                 }
             }
-            $data['serviceHairPricesJson'] = json_encode($serviceHairPrices);
+            $data['serviceHairPricesJson'] = json_encode($serviceHairPrices, JSON_HEX_TAG);
         }
 
         $this->view('admin/index', $data);
@@ -1610,7 +1610,7 @@ class AdminController extends BaseController
 
         if ($search !== '') {
             $searchWhere = " WHERE s.title LIKE ? OR hl.title LIKE ?";
-            $params = ["%$search%", "%$search%"];
+            $params = [likePattern($search), likePattern($search)];
         }
 
         $countQuery .= $searchWhere;

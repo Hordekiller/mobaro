@@ -267,6 +267,16 @@ function getVideoEmbedHtml(string $url, string $type = 'upload'): string
     return '<video controls class="w-full h-full object-contain"><source src="' . e($url) . '" type="video/mp4">مرورگر شما پخش ویدیو را پشتیبانی نمی‌کند.</video>';
 }
 
+function jsEscape(string $value): string
+{
+    return addcslashes($value, "\\\'\n\r\t/");
+}
+
+function jsonScript(mixed $value): string
+{
+    return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP);
+}
+
 function slugify(string $text): string
 {
     $text = strtolower(trim($text));
