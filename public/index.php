@@ -33,6 +33,8 @@ Router::post('/booking/slots', ['BookingController', 'getSlots']);
 Router::post('/booking/confirm', ['BookingController', 'confirm']);
 Router::post('/booking/captcha/refresh', ['BookingController', 'refreshCaptcha']);
 Router::get('/booking', ['BookingController', 'index']);
+Router::get('/api/hair-lengths', ['BookingController', 'getHairLengths']);
+Router::post('/booking/price-calculation', ['BookingController', 'getServicePrice']);
 
 Router::get('/shop', ['ShopController', 'index']);
 Router::get('/product/{id}', ['ShopController', 'show']);

@@ -23,6 +23,9 @@ class FileUploader
 
         $filename = ($prefix ? $prefix . '_' : '') . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $destDir = __DIR__ . '/../public/assets/images/';
+        if (!is_dir($destDir) && !mkdir($destDir, 0755, true) && !is_dir($destDir)) {
+            return null;
+        }
         $path = $destDir . $filename;
 
         $result = move_uploaded_file($file['tmp_name'], $path);

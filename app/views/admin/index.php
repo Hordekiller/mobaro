@@ -28,6 +28,7 @@
                 'tutorials' => ['fa-video', 'آموزش‌ها'],
                 'newsletter' => ['fa-envelope', 'خبرنامه'],
                 'captcha' => ['fa-shield-halved', 'کپچا'],
+                'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
                 'gallery' => ['fa-photo-film', 'گالری رسانه'],
                 'settings' => ['fa-gear', 'تنظیمات'],
             ];
@@ -525,6 +526,43 @@
                                 payEl.innerHTML = payParts.length ? '<span class="font-medium">پرداخت:</span> ' + payParts.join(' — ') : '';
                             }
                             </script>
+                            <?php endif; ?>
+                            
+                            <?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1.5">خدمت</label>
+                                    <select name="service_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
+                                        <option value="">انتخاب خدمت</option>
+                                        <?php foreach ($allServices as $svc) : ?>
+                                        <option value="<?= $svc['id'] ?>"><?= e($svc['title']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1.5">قد مو</label>
+                                    <select name="hair_length_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
+                                        <option value="">انتخاب قد مو</option>
+                                        <?php foreach ($allHairLengths as $hl) : ?>
+                                        <option value="<?= $hl['id'] ?>"><?= e($hl['title']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1.5">قیمت (تومان)</label>
+                                    <input type="number" name="price" step="1000" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-1.5">ضریب مدت (۱.۰ = بدون تغییر)</label>
+                                    <input type="number" name="duration_modifier" step="0.1" min="0.1" max="5" value="1.0" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="is_active" value="1" checked class="form-checkbox h-5 w-5 text-rose-600 rounded border-2 border-rose-200 focus:ring-0 focus:border-rose-500 transition-all">
+                                        <span class="text-sm font-semibold">فعال</span>
+                                    </label>
+                                </div>
+                            </div>
                             <?php endif; ?>
                         <button type="submit" id="save-btn" class="w-full py-3.5 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" onclick="this.disabled=true;this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin ml-2\'></i>در حال ذخیره...';this.closest('form').submit();">ذخیره</button>
                     </form>

@@ -44,6 +44,9 @@
                     </div>
                     <div class="flex gap-4 text-[#9e9e9e] text-sm flex-wrap">
                         <span><i class="fa-regular fa-user text-[#e11d48] ml-1"></i><?= e($apt['artist_name'] ?? 'نامشخص') ?></span>
+                        <?php if (!empty($apt['hair_length_title'])) : ?>
+                        <span><i class="fa-solid fa-ruler-vertical text-[#e11d48] ml-1"></i><?= e($apt['hair_length_title']) ?></span>
+                        <?php endif; ?>
                         <span><i class="fa-regular fa-calendar text-[#e11d48] ml-1"></i><?= jdate('Y/m/d', strtotime($apt['appointment_date'])) ?></span>
                         <span><i class="fa-regular fa-clock text-[#e11d48] ml-1"></i><?= e(substr($apt['appointment_time'], 0, 5)) ?></span>
                     </div>
@@ -101,7 +104,7 @@ function filterApts(btn, filter) {
     document.querySelectorAll('#appointments-list > div').forEach(card => {
         const status = card.dataset.status;
         const date = card.dataset.date;
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tehran' });
         if (filter === 'future') {
             card.style.display = (status !== 'cancelled' && date >= today) ? '' : 'none';
         } else if (filter === 'past') {

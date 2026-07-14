@@ -14,6 +14,7 @@ Thumbs.db
 # Project specific
 public/uploads/*
 !public/uploads/.gitkeep
+!public/uploads/.htaccess
 database/config.php
 
 # Composer
@@ -21,11 +22,15 @@ vendor/
 
 # Environment
 .env
+.env.*
+!.env.example
 .env.local
 
 # Logs
 *.log
 logs/
+!storage/logs/
+!storage/logs/.gitignore
 
 # Temp
 tmp/
@@ -55,9 +60,6 @@ logo.png
 
 # Analysis output
 analysis-output/
-
-# Environment
-.env.production
 
 # Skills
 skills/

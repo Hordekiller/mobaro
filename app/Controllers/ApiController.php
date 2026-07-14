@@ -6,7 +6,8 @@ class ApiController extends BaseController
     {
         $services = Cache::remember('api_services', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll(
-                "SELECT s.*, a.id as artist_id, a.name as artist_name
+                "SELECT s.*, a.id as artist_id, a.name as artist_name,
+                        EXISTS(SELECT 1 FROM service_hair_prices shp WHERE shp.service_id = s.id AND shp.is_active = 1) as requires_hair_length
                  FROM services s
                  INNER JOIN artist_services a_s ON s.id = a_s.service_id
                  INNER JOIN artists a ON a_s.artist_id = a.id

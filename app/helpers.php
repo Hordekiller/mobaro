@@ -11,12 +11,15 @@ function env(string $key, mixed $default = null): mixed
 
 function asset(string $path): string
 {
-    return Config::get('app.url') . '/assets/' . ltrim($path, '/');
+    return url('assets/' . ltrim($path, '/'));
 }
 
 function url(string $path = ''): string
 {
-    return Config::get('app.url') . '/' . ltrim($path, '/');
+    $baseUrl = rtrim((string) Config::get('app.url', ''), '/');
+    $normalizedPath = '/' . ltrim($path, '/');
+
+    return $baseUrl . ($normalizedPath === '/' ? '/' : $normalizedPath);
 }
 
 function redirect(string $path): void

@@ -36,6 +36,7 @@ $title = 'رزرو نوبت | موبارو'; ?>
 
 <script>
 window._mobaroArtists = <?= $artistsJson ?? '[]' ?>;
+window._mobaroHairLengths = <?= $hairLengthsJson ?? '[]' ?>;
 window._mobaroCaptchaQuestion = '<?= $captchaQuestion ?? '۵ + ۳' ?>';
 window._mobaroCaptchaEnabled = <?= ($captchaEnabled ?? true) ? 'true' : 'false' ?>;
 </script>

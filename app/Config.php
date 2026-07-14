@@ -25,9 +25,7 @@ class Config
 
             // App
             'app.name' => env('APP_NAME', 'Rozhin'),
-            'app.url' => env('APP_URL', isset($_SERVER['HTTP_HOST'])
-                ? (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST']
-                : 'http://localhost'),
+            'app.url' => rtrim((string) env('APP_URL', ''), '/'),
             'app.env' => env('APP_ENV', 'production'),
             'app.debug' => env('APP_DEBUG', 'false') === 'true',
 
