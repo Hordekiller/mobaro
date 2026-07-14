@@ -403,6 +403,60 @@ CREATE TABLE IF NOT EXISTS media (
     INDEX idx_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Blog Posts
+CREATE TABLE IF NOT EXISTS blog_posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    content TEXT NOT NULL,
+    excerpt TEXT DEFAULT NULL,
+    image VARCHAR(500) DEFAULT NULL,
+    category VARCHAR(100) DEFAULT NULL,
+    author VARCHAR(100) DEFAULT NULL,
+    tags VARCHAR(500) DEFAULT NULL,
+    reading_time INT DEFAULT 5,
+    is_published TINYINT(1) DEFAULT 1,
+    is_featured TINYINT(1) DEFAULT 0,
+    views INT DEFAULT 0,
+    published_at DATE DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_slug (slug),
+    INDEX idx_category (category),
+    INDEX idx_published (is_published),
+    INDEX idx_featured (is_featured),
+    INDEX idx_published_at (published_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Contact Messages
+CREATE TABLE IF NOT EXISTS contact_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL DEFAULT '',
+    email VARCHAR(100) NOT NULL DEFAULT '',
+    phone VARCHAR(20) DEFAULT '',
+    subject VARCHAR(200) DEFAULT '',
+    message TEXT NOT NULL,
+    is_read TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_read (is_read)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Coupons
+CREATE TABLE IF NOT EXISTS coupons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL,
+    discount_type ENUM('percentage', 'fixed') NOT NULL DEFAULT 'percentage',
+    discount_value DECIMAL(15,0) NOT NULL DEFAULT 0,
+    min_order DECIMAL(15,0) DEFAULT 0,
+    max_uses INT DEFAULT 0,
+    used_count INT DEFAULT 0,
+    expires_at DATE DEFAULT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_code (code),
+    INDEX idx_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Default hair lengths
 INSERT IGNORE INTO hair_lengths (id, title, min_cm, max_cm, sort_order, is_active) VALUES
 (1, 'کوتاه (زیر شانه)', 0, 30, 1, 1),

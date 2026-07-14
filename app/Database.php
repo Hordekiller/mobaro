@@ -12,7 +12,7 @@ class Database
         'login_attempts', 'favorite_models', 'addresses', 'newsletter',
         'settings', 'blog_comments', 'reviews', 'product_categories',
         'product_brands', 'hair_models', 'tutorials', 'media',
-        'blog_posts', 'contact_messages', 'coupons', 'wallet_topups',
+        'blog_posts', 'contact_messages', 'coupons',
     ];
 
     public static function connection(): PDO
