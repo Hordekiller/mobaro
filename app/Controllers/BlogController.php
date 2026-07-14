@@ -65,18 +65,25 @@ class BlogController extends BaseController
             $params[] = likePattern($search);
         }
 
-        $countResult = Database::fetch(
-            "SELECT COUNT(*) as cnt FROM blog_posts WHERE 1=1 {$where}",
-            $params
-        );
-        $totalPosts = (int) ($countResult['cnt'] ?? 0);
-        $totalPages = max(1, (int) ceil($totalPosts / $perPage));
+        $cacheKey = 'blog_list_' . md5(serialize([$category, $search, $page]));
+        $cached = Cache::remember($cacheKey, Config::get('cache.ttl.page', 600), function () use ($where, $params, $perPage, $offset) {
+            $countResult = Database::fetch(
+                "SELECT COUNT(*) as cnt FROM blog_posts WHERE 1=1 {$where}",
+                $params
+            );
+            $totalPosts = (int) ($countResult['cnt'] ?? 0);
+            $totalPages = max(1, (int) ceil($totalPosts / $perPage));
+            $allParams = array_merge($params, [$perPage, $offset]);
+            $posts = Database::fetchAll(
+                "SELECT * FROM blog_posts WHERE 1=1 {$where} ORDER BY published_at DESC LIMIT ? OFFSET ?",
+                $allParams
+            );
+            return compact('posts', 'totalPosts', 'totalPages');
+        }, 'blog');
 
-        $allParams = array_merge($params, [$perPage, $offset]);
-        $posts = Database::fetchAll(
-            "SELECT * FROM blog_posts WHERE 1=1 {$where} ORDER BY published_at DESC LIMIT ? OFFSET ?",
-            $allParams
-        );
+        $posts = $cached['posts'];
+        $totalPosts = $cached['totalPosts'];
+        $totalPages = $cached['totalPages'];
 
         $sidebar = $this->getSidebar();
         $settings = Settings::all();
@@ -200,6 +207,7 @@ class BlogController extends BaseController
             [$post['id']]
         );
         $post['views']++;
+        Cache::set('blog_post_' . $slug, $post, Config::get('cache.ttl.page', 600));
 
         $relatedPosts = Database::fetchAll(
             "SELECT * FROM blog_posts WHERE is_published = 1 AND category = ? AND id != ? ORDER BY published_at DESC LIMIT 3",

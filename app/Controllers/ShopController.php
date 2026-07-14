@@ -84,17 +84,24 @@ class ShopController extends BaseController
             $where .= " AND p.stock > 0";
         }
 
-        $countRow = Database::fetch("SELECT COUNT(*) as cnt FROM products p {$where}", $params);
-        $totalProducts = (int) ($countRow['cnt'] ?? 0);
-        $totalPages = max(1, (int) ceil($totalProducts / $perPage));
+        $cacheKey = 'shop_' . md5(serialize([$category, $brand, $search, $sort, $priceMin, $priceMax, $rating, $isSale, $isNew, $inStock, $page]));
+        $cached = Cache::remember($cacheKey, Config::get('cache.ttl.page', 600), function () use ($where, $params, $orderClause, $perPage, $offset) {
+            $countRow = Database::fetch("SELECT COUNT(*) as cnt FROM products p {$where}", $params);
+            $totalProducts = (int) ($countRow['cnt'] ?? 0);
+            $totalPages = max(1, (int) ceil($totalProducts / $perPage));
+            $allTotalRow = Database::fetch("SELECT COUNT(*) as cnt FROM products WHERE is_active = 1");
+            $allTotal = (int) ($allTotalRow['cnt'] ?? 0);
+            $products = Database::fetchAll(
+                "SELECT p.* FROM products p {$where} ORDER BY {$orderClause} LIMIT ? OFFSET ?",
+                array_merge($params, [$perPage, $offset])
+            );
+            return compact('products', 'totalProducts', 'totalPages', 'allTotal');
+        }, 'products');
 
-        $allTotalRow = Database::fetch("SELECT COUNT(*) as cnt FROM products WHERE is_active = 1");
-        $allTotal = (int) ($allTotalRow['cnt'] ?? 0);
-
-        $products = Database::fetchAll(
-            "SELECT p.* FROM products p {$where} ORDER BY {$orderClause} LIMIT ? OFFSET ?",
-            array_merge($params, [$perPage, $offset])
-        );
+        $products = $cached['products'];
+        $totalProducts = $cached['totalProducts'];
+        $totalPages = $cached['totalPages'];
+        $allTotal = $cached['allTotal'];
 
         $facets = $this->getFacets();
         $cart = $_SESSION['cart'] ?? [];
