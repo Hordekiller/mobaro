@@ -113,7 +113,7 @@ class AdminController extends BaseController
     public function section(string $section): void
     {
         $this->requireAdmin();
-        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery'];
+        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices'];
 
         if (!in_array($section, $validSections)) {
             redirect('/admin');
@@ -147,6 +147,7 @@ class AdminController extends BaseController
             'newsletter' => 'newsletter',
             'product-categories' => 'product_categories',
             'product-brands' => 'product_brands',
+            'hair-prices' => 'hair_prices',
         ];
 
         $columnsMap = $this->getColumns($section);
@@ -417,6 +418,13 @@ class AdminController extends BaseController
             ],
             'product-brands' => [
                 ['key' => 'name', 'label' => 'نام برند', 'type' => 'text', 'required' => true],
+                ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
+            ],
+            'hair-prices' => [
+                ['key' => 'service_title', 'label' => 'خدمت', 'type' => 'text'],
+                ['key' => 'hair_length_title', 'label' => 'قد مو', 'type' => 'text'],
+                ['key' => 'price', 'label' => 'قیمت', 'type' => 'price', 'required' => true],
+                ['key' => 'duration_modifier', 'label' => 'ضریب مدت', 'type' => 'text'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
         ];
@@ -712,6 +720,51 @@ class AdminController extends BaseController
             return;
         }
 
+        if ($section === 'hair-prices') {
+            $serviceId = (int) ($_POST['service_id'] ?? 0);
+            $hairLengthId = (int) ($_POST['hair_length_id'] ?? 0);
+            $price = (int) ($_POST['price'] ?? 0);
+            $durationModifier = (float) ($_POST['duration_modifier'] ?? 1.0);
+            $isActive = isset($_POST['is_active']) ? 1 : 0;
+
+            if (!$serviceId || !$hairLengthId || !$price) {
+                flash('error', 'لطفاً تمام فیلدهای ضروری را پر کنید.');
+                redirect('/admin/hair-prices');
+                return;
+            }
+
+            if ($id) {
+                Database::update('service_hair_prices', [
+                    'service_id' => $serviceId,
+                    'hair_length_id' => $hairLengthId,
+                    'price' => $price,
+                    'duration_modifier' => $durationModifier,
+                    'is_active' => $isActive
+                ], 'id = :id', ['id' => $id]);
+            } else {
+                $exists = Database::fetch(
+                    "SELECT id FROM service_hair_prices WHERE service_id = ? AND hair_length_id = ?",
+                    [$serviceId, $hairLengthId]
+                );
+                if ($exists) {
+                    flash('error', 'این ترکیب خدمت و قد مو از قبل وجود دارد.');
+                    redirect('/admin/hair-prices');
+                    return;
+                }
+                Database::insert('service_hair_prices', [
+                    'service_id' => $serviceId,
+                    'hair_length_id' => $hairLengthId,
+                    'price' => $price,
+                    'duration_modifier' => $durationModifier,
+                    'is_active' => $isActive
+                ]);
+            }
+            $this->clearCache('booking');
+            flash('success', 'قیمت با موفقیت ذخیره شد.');
+            redirect('/admin/hair-prices');
+            return;
+        }
+
         if (!empty($_FILES['image']['name'])) {
             $oldImage = null;
             if ($id) {
@@ -897,6 +950,15 @@ class AdminController extends BaseController
     {
         $this->requireAdmin();
         $this->verifyCsrf();
+        
+        if ($section === 'hair-prices') {
+            Database::query("DELETE FROM service_hair_prices WHERE id = ?", [$id]);
+            $this->clearCache('booking');
+            flash('success', 'قیمت با موفقیت حذف شد.');
+            redirect('/admin/hair-prices');
+            return;
+        }
+        
         $table = $this->sectionToTable($section);
 
         if ($section === 'products') {
@@ -1432,5 +1494,53 @@ class AdminController extends BaseController
             'product-brands' => 'product_brands',
         ];
         return $map[$section] ?? null;
+    }
+
+    private function sectionHairPrices(array &$data): void
+    {
+        $search = trim($_GET['s'] ?? '');
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 20;
+        
+        $data['columns'] = $this->getColumns('hair-prices');
+        
+        // Get all services and hair lengths for dropdowns
+        $data['allServices'] = Database::fetchAll("SELECT id, title FROM services ORDER BY title");
+        $data['allHairLengths'] = Database::fetchAll("SELECT id, title FROM hair_lengths ORDER BY sort_order");
+        
+        // Base query for hair prices
+        $baseQuery = "
+            SELECT shp.*, s.title as service_title, hl.title as hair_length_title
+            FROM service_hair_prices shp
+            INNER JOIN services s ON shp.service_id = s.id
+            INNER JOIN hair_lengths hl ON shp.hair_length_id = hl.id
+        ";
+        
+        $countQuery = "SELECT COUNT(*) as cnt FROM service_hair_prices shp
+                        INNER JOIN services s ON shp.service_id = s.id
+                        INNER JOIN hair_lengths hl ON shp.hair_length_id = hl.id";
+        
+        $params = [];
+        $searchWhere = '';
+        
+        if ($search !== '') {
+            $searchWhere = " WHERE s.title LIKE ? OR hl.title LIKE ?";
+            $params = ["%$search%", "%$search%"];
+        }
+        
+        $countQuery .= $searchWhere;
+        $total = (int) Database::fetch($countQuery, $params)['cnt'];
+        $totalPages = max(1, (int) ceil($total / $perPage));
+        $page = min($page, $totalPages);
+        $offset = ($page - 1) * $perPage;
+        
+        $items = Database::fetchAll($baseQuery . $searchWhere . " ORDER BY s.title, hl.sort_order LIMIT ? OFFSET ?", array_merge($params, [$perPage, $offset]));
+        
+        $data['items'] = $items;
+        $data['page'] = $page;
+        $data['totalPages'] = $totalPages;
+        $data['total'] = $total;
+        $data['search'] = $search;
+        $this->view('admin/index', $data);
     }
 }

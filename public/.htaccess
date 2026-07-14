@@ -1,7 +1,13 @@
+Options -Indexes
+
+<FilesMatch "(^\.|composer\.(json|lock)$|package(-lock)?\.json$|.*\.(sql|log|bak|zip|tar|gz)$)">
+    Require all denied
+</FilesMatch>
+
 RewriteEngine On
 
-# Block direct access to uploaded files (videos, gallery uploads)
-RewriteRule ^assets/uploads/ - [F,L]
+# Never execute PHP from user-writable public directories.
+RewriteRule ^(?:uploads|assets/(?:uploads|images))/.*\.(?:php[0-9]?|phtml|phar)$ - [F,L,NC]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

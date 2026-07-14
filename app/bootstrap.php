@@ -9,12 +9,20 @@ if (is_file($envFile)) {
     \Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->load();
 }
 
-$appDebug = ($_ENV['APP_DEBUG'] ?? $_SERVER['APP_DEBUG'] ?? 'true') === 'true';
+$appDebug = ($_ENV['APP_DEBUG'] ?? $_SERVER['APP_DEBUG'] ?? 'false') === 'true';
 ini_set('display_errors', $appDebug ? '1' : '0');
+ini_set('display_startup_errors', $appDebug ? '1' : '0');
+ini_set('log_errors', '1');
+
+$logPath = __DIR__ . '/../storage/logs';
+if (!is_dir($logPath)) {
+    @mkdir($logPath, 0755, true);
+}
+ini_set('error_log', $logPath . '/app.log');
 
 $sessPath = __DIR__ . '/../storage/sessions';
 if (!is_dir($sessPath)) {
-    @mkdir($sessPath, 0777, true);
+    @mkdir($sessPath, 0755, true);
 }
 session_save_path($sessPath);
 Auth::start();
@@ -41,6 +49,17 @@ if (
 }
 
 set_exception_handler(function (Throwable $e) {
+    error_log(sprintf(
+        '[%s] %s: %s in %s:%d%s%s',
+        date('c'),
+        get_class($e),
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine(),
+        PHP_EOL,
+        $e->getTraceAsString()
+    ));
+
     if (Config::get('app.debug')) {
         echo "<pre>" . $e->getMessage() . "\n" . $e->getTraceAsString() . "</pre>";
         return;

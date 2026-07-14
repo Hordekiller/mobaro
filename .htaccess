@@ -1,2 +1,11 @@
+Options -Indexes
+
+<FilesMatch "(^\.|composer\.(json|lock)$|package(-lock)?\.json$|phpunit\.xml$|phpcs\.xml$|sonar-project\.properties$|.*\.(sql|log|bak|zip|tar|gz)$)">
+    Require all denied
+</FilesMatch>
+
 RewriteEngine On
+
+RewriteRule ^(?:app|database|storage|tests|vendor|analysis-output|skills|_do_not_upload)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:README(?:\.[A-Za-z0-9_-]+)?|REPORT-[^/]+\.md)$ - [F,L,NC]
 RewriteRule ^(.*)$ public/$1 [L]

@@ -63,10 +63,11 @@ class DashboardController extends BaseController
         switch ($tab) {
             case 'appointments':
                 $data['appointments'] = Database::fetchAll(
-                    "SELECT a.*, s.title as service_title, s.price, ar.name as artist_name, ar.avatar as artist_avatar
+                    "SELECT a.*, s.title as service_title, s.price, ar.name as artist_name, ar.avatar as artist_avatar, hl.title as hair_length_title
                      FROM appointments a
                      LEFT JOIN services s ON a.service_id = s.id
                      LEFT JOIN artists ar ON a.artist_id = ar.id
+                     LEFT JOIN hair_lengths hl ON a.hair_length_id = hl.id
                      WHERE a.user_id = ?
                      ORDER BY a.appointment_date DESC",
                     [$user['id']]

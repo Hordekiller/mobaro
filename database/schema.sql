@@ -64,12 +64,23 @@ CREATE TABLE IF NOT EXISTS artist_services (
     UNIQUE KEY uk_artist_service (artist_id, service_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Hair Lengths
+CREATE TABLE IF NOT EXISTS hair_lengths (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    min_cm INT DEFAULT 0,
+    max_cm INT DEFAULT 0,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Appointments
 CREATE TABLE IF NOT EXISTS appointments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     service_id INT DEFAULT NULL,
     artist_id INT DEFAULT NULL,
+    hair_length_id INT DEFAULT NULL,
     appointment_date DATE NOT NULL,
     appointment_time VARCHAR(20) NOT NULL,
     price DECIMAL(15,0) DEFAULT NULL,
@@ -79,9 +90,24 @@ CREATE TABLE IF NOT EXISTS appointments (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL,
     FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE SET NULL,
+    FOREIGN KEY (hair_length_id) REFERENCES hair_lengths(id) ON DELETE SET NULL,
     INDEX idx_user (user_id),
     INDEX idx_date (appointment_date),
     INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Service Hair Prices
+CREATE TABLE IF NOT EXISTS service_hair_prices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    service_id INT NOT NULL,
+    hair_length_id INT NOT NULL,
+    price DECIMAL(15,0) NOT NULL DEFAULT 0,
+    duration_modifier DECIMAL(3,1) DEFAULT 1.0,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE,
+    FOREIGN KEY (hair_length_id) REFERENCES hair_lengths(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_service_hair_length (service_id, hair_length_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Products
@@ -375,3 +401,10 @@ CREATE TABLE IF NOT EXISTS media (
     INDEX idx_source (source_type, source_id),
     INDEX idx_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Default hair lengths
+INSERT IGNORE INTO hair_lengths (id, title, min_cm, max_cm, sort_order, is_active) VALUES
+(1, 'کوتاه (زیر شانه)', 0, 30, 1, 1),
+(2, 'متوسط (تا شانه)', 30, 50, 2, 1),
+(3, 'بلند (زیر کمر)', 50, 80, 3, 1),
+(4, 'خیلی بلند (بالای کمر)', 80, 150, 4, 1);

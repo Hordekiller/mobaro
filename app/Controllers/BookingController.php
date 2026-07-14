@@ -7,7 +7,8 @@ class BookingController extends BaseController
         return Cache::remember('booking_form_data', Config::get('cache.ttl.page', 600), function () {
             $services = Database::fetchAll("SELECT * FROM services WHERE is_active = 1");
             $artists = Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
-            return compact('services', 'artists');
+            $hairLengths = Database::fetchAll("SELECT * FROM hair_lengths WHERE is_active = 1 ORDER BY sort_order");
+            return compact('services', 'artists', 'hairLengths');
         }, 'booking');
     }
 
@@ -30,6 +31,12 @@ class BookingController extends BaseController
                 'working_hours' => $a['working_hours'] ?? '۹ صبح - ۸ شب',
                 'bio' => $a['bio'] ?? '',
             ], $artists), JSON_UNESCAPED_UNICODE),
+            'hairLengthsJson' => json_encode(array_map(fn($hl) => [
+                'id' => $hl['id'],
+                'title' => $hl['title'],
+                'min_cm' => $hl['min_cm'],
+                'max_cm' => $hl['max_cm'],
+            ], $formData['hairLengths'] ?? []), JSON_UNESCAPED_UNICODE),
         ]);
     }
 
@@ -118,7 +125,9 @@ class BookingController extends BaseController
 
         $tehranNow = new DateTime('now', new DateTimeZone('Asia/Tehran'));
         $selectedDate = DateTime::createFromFormat('Y-m-d', $date, new DateTimeZone('Asia/Tehran'));
-        if (!$selectedDate || $selectedDate < $tehranNow->setTime(0, 0, 0)) {
+        $tehranMidnight = clone $tehranNow;
+        $tehranMidnight->setTime(0, 0, 0);
+        if (!$selectedDate || $selectedDate < $tehranMidnight) {
             $this->json(['error' => 'تاریخ انتخاب‌شده نامعتبر است.'], 400);
             return;
         }
@@ -137,6 +146,16 @@ class BookingController extends BaseController
         $service = Database::fetch("SELECT * FROM services WHERE id = ?", [$serviceId]);
         if (!$service) {
             $this->json(['error' => 'خدمت مورد نظر یافت نشد.'], 404);
+            return;
+        }
+
+        $hairLengthId = (int) ($_POST['hair_length_id'] ?? 0);
+        $hasHairPricing = Database::fetch(
+            "SELECT 1 FROM service_hair_prices WHERE service_id = ? AND is_active = 1 LIMIT 1",
+            [$serviceId]
+        );
+        if ($hasHairPricing && !$hairLengthId) {
+            $this->json(['error' => 'برای این خدمت انتخاب قد مو الزامی است.'], 400);
             return;
         }
 
@@ -160,13 +179,38 @@ class BookingController extends BaseController
             return;
         }
 
+        $finalPrice = $service['price'];
+        $durationModifier = 1.0;
+        
+        // Get dynamic price if hair length is selected
+        if ($hairLengthId) {
+            $priceData = Database::fetch(
+                "SELECT price, duration_modifier FROM service_hair_prices 
+                 WHERE service_id = ? AND hair_length_id = ? AND is_active = 1",
+                [$serviceId, $hairLengthId]
+            );
+            if ($priceData) {
+                $finalPrice = $priceData['price'];
+                $durationModifier = (float) $priceData['duration_modifier'];
+            }
+        }
+        
+        $notes = trim($_POST['notes'] ?? '');
+        if ($durationModifier !== 1.0) {
+            $durationNote = 'ضریب مدت: ' . $durationModifier . 'x';
+            $notes = $notes ? $notes . ' | ' . $durationNote : $durationNote;
+        }
+        
         $appointmentId = Database::insert('appointments', [
             'user_id' => Auth::id(),
             'service_id' => $serviceId,
             'artist_id' => $artistId ?: null,
+            'hair_length_id' => $hairLengthId ?: null,
             'appointment_date' => $date,
             'appointment_time' => $time,
+            'price' => $finalPrice,
             'status' => 'pending',
+            'notes' => $notes ?: null,
         ]);
 
         $bookingPhone = Settings::get('booking_phone', '۰۲۱-۲۲۸۸۴۲۶۷');
@@ -182,6 +226,52 @@ class BookingController extends BaseController
         ]);
     }
 
+    public function getHairLengths(): void
+    {
+        $hairLengths = Cache::remember('hair_lengths', Config::get('cache.ttl.page', 600), function () {
+            return Database::fetchAll("SELECT * FROM hair_lengths WHERE is_active = 1 ORDER BY sort_order");
+        }, 'booking');
+        $this->json(['hair_lengths' => $hairLengths]);
+    }
+    
+    public function getServicePrice(): void
+    {
+        $this->verifyCsrf();
+        $serviceId = (int) ($_POST['service_id'] ?? 0);
+        $hairLengthId = (int) ($_POST['hair_length_id'] ?? 0);
+        
+        if (!$serviceId || !$hairLengthId) {
+            $this->json(['error' => 'لطفاً خدمت و قد مو را انتخاب کنید.'], 400);
+            return;
+        }
+        
+        $priceData = Database::fetch(
+            "SELECT price, duration_modifier FROM service_hair_prices 
+             WHERE service_id = ? AND hair_length_id = ? AND is_active = 1",
+            [$serviceId, $hairLengthId]
+        );
+        
+        if (!$priceData) {
+            // Fallback to base service price if no hair length pricing exists
+            $service = Database::fetch("SELECT price, duration FROM services WHERE id = ?", [$serviceId]);
+            if ($service) {
+                $priceData = [
+                    'price' => $service['price'],
+                    'duration_modifier' => 1.0
+                ];
+            } else {
+                $this->json(['error' => 'خدمت یافت نشد.'], 404);
+                return;
+            }
+        }
+        
+        $this->json([
+            'price' => $priceData['price'],
+            'duration' => $priceData['duration_modifier'],
+            'formatted_price' => number_format($priceData['price']) . ' تومان'
+        ]);
+    }
+    
     public function refreshCaptcha(): void
     {
         $this->verifyCsrf();

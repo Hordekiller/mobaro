@@ -516,25 +516,27 @@ function openQuickView(productId)
     }
 
 // ========== BOOKING SYSTEM ==========
-    function getPersianParts(date)
+    function getPersianParts(date, tz)
     {
-        var parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-            year: 'numeric', month: 'long', day: 'numeric'
-        }).formatToParts(date);
+        var opts = { year: 'numeric', month: 'long', day: 'numeric' };
+        if (tz) opts.timeZone = tz;
+        var parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian', opts).formatToParts(date);
         var r = {};
         parts.forEach(function (p) {
             r[p.type] = p.value; });
         return r;
     }
-    function getPersianWeekday(date)
+    function getPersianWeekday(date, tz)
     {
-        return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long' }).format(date);
+        var opts = { weekday: 'long' };
+        if (tz) opts.timeZone = tz;
+        return new Intl.DateTimeFormat('fa-IR-u-ca-persian', opts).format(date);
     }
-    function getPersianDateStr(date)
+    function getPersianDateStr(date, tz)
     {
-        return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-            year: 'numeric', month: 'long', day: 'numeric'
-        }).format(date);
+        var opts = { year: 'numeric', month: 'long', day: 'numeric' };
+        if (tz) opts.timeZone = tz;
+        return new Intl.DateTimeFormat('fa-IR-u-ca-persian', opts).format(date);
     }
     function getTehranNow()
     {
@@ -551,11 +553,36 @@ function openQuickView(productId)
         };
     }
 
+    function getTehranDateStr(offset)
+    {
+        var now = new Date();
+        var dateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Tehran' });
+        var parts = dateStr.split('-');
+        var y = parseInt(parts[0]);
+        var m = parseInt(parts[1]);
+        var d = parseInt(parts[2]);
+        var ts = Date.UTC(y, m - 1, d + (offset || 0));
+        var result = new Date(ts);
+        return result.getUTCFullYear() + '-' +
+            String(result.getUTCMonth() + 1).padStart(2, '0') + '-' +
+            String(result.getUTCDate()).padStart(2, '0');
+    }
+
+    function getTehranDateObj(offset)
+    {
+        var dateStr = getTehranDateStr(offset);
+        var parts = dateStr.split('-');
+        return new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0));
+    }
+
     var currentBookingStep = 0;
-    var selectedArtistId = 0;
-    var selectedServiceIndex = null;
-    var selectedDate = '';
-    var selectedTime = '';
+var selectedArtistId = 0;
+var selectedServiceIndex = null;
+var selectedHairLengthId = 0;
+var selectedDate = '';
+var selectedTime = '';
+var dynamicPrice = 0;
+var hairLengths = window._mobaroHairLengths || [];
 
     function getBookingContainer()
     {
@@ -655,8 +682,28 @@ function openQuickView(productId)
                 }
             }
 
+            // Generate hair length dropdown
+            var hairLengthHTML = '';
+            if (hairLengths.length > 0) {
+                hairLengthHTML = '<div class="mb-6">' +
+                    '<div class="text-xs font-medium ' + textMuted + ' mb-2">قد مو</div>' +
+                    '<div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="hair-length-select">';
+
+                for (var i = 0; i < hairLengths.length; i++) {
+                    var hl = hairLengths[i];
+                    var isSelected = selectedHairLengthId === hl.id;
+                    hairLengthHTML += '<div onclick="selectHairLength(' + hl.id + ', this)" class="cursor-pointer p-3 border ' + (isSelected ? selectedBorder + ' ' + selectedBg : baseBorder) + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center">' +
+                        '<div class="font-medium ' + textPrimary + '">' + hl.title + '</div>' +
+                        '<div class="text-xs ' + textMuted + ' mt-1">' + hl.min_cm + '-' + hl.max_cm + ' سانتیمتر</div>' +
+                        '</div>';
+                }
+
+                hairLengthHTML += '</div></div>';
+            }
+
             container.innerHTML =
             '<div class="text-xs font-medium ' + textMuted + ' mb-4">انتخاب خدمت</div>' +
+            hairLengthHTML +
             '<div class="grid grid-cols-2 gap-3 text-sm" id="service-select-grid"></div>' +
             '<div class="flex items-center gap-4 mt-8">' +
                 '<button onclick="prevBookingStep()" class="flex-1 py-4 border ' + btnBorder + ' ' + btnText + ' rounded-3xl text-sm">قبلی</button>' +
@@ -676,7 +723,7 @@ function openQuickView(productId)
                         el.innerHTML =
                         '<div class="font-medium ' + textPrimary + '">' + svc.title + '</div>' +
                         '<div class="text-xs ' + textMuted + ' mt-1">' + (svc.duration || '') + (svc.artist_name ? ' · ' + svc.artist_name : '') + '</div>' +
-                        '<div class="' + priceClass + ' font-semibold text-xl mt-5">' + (svc.price ? svc.price.toLocaleString('fa-IR') : '') + ' تومان</div>';
+                        '<div class="price-display-' + svc.id + ' ' + priceClass + ' font-semibold text-xl mt-5">' + (svc.price ? svc.price.toLocaleString('fa-IR') : '') + ' تومان</div>';
                         el.onclick = function () {
                             selectedServiceIndex = actualIdx;
                             renderBookingStep();
@@ -686,23 +733,15 @@ function openQuickView(productId)
                 }
             }
         } else if (currentBookingStep === 2) {
-            var today = new Date();
-            var dates = [];
-            for (var d = 0; d < 5; d++) {
-                var dt = new Date(today);
-                dt.setDate(today.getDate() + d);
-                dates.push(dt);
-            }
-
             var dateHTML = '';
-            for (var d = 0; d < dates.length; d++) {
-                var dt = dates[d];
-                var parts = getPersianParts(dt);
-                var weekday = getPersianWeekday(dt);
+            for (var d = 0; d < 5; d++) {
+                var dt = getTehranDateObj(d);
+                var parts = getPersianParts(dt, 'Asia/Tehran');
+                var weekday = getPersianWeekday(dt, 'Asia/Tehran');
                 var label = d === 0 ? 'امروز' : d === 1 ? 'فردا' : weekday;
                 var day = parts.day;
                 var month = parts.month;
-                var dateStr = dt.toISOString().split('T')[0];
+                var dateStr = getTehranDateStr(d);
                 var isSelected = selectedDate === dateStr;
                 dateHTML += '<div onclick="selectDate(\'' + dateStr + '\', this)" class="cursor-pointer text-center min-w-[70px] ' + (isDark ? 'bg-white/5 border-white/10 hover:border-white/40' : 'bg-zinc-50 border-zinc-200 hover:border-zinc-300') + ' border transition-colors rounded-3xl py-4 ' + (isSelected ? 'ring-2 ring-rose-400' : '') + '">' +
                 '<div class="text-xs ' + (isDark ? 'text-white/60' : 'text-zinc-400') + '">' + label + '</div>' +
@@ -755,8 +794,9 @@ function openQuickView(productId)
             }
             var displayDate = '';
             if (selectedDate) {
-                var dt = new Date(selectedDate);
-                displayDate = getPersianDateStr(dt);
+                var dtParts = selectedDate.split('-');
+                var dt = new Date(Date.UTC(parseInt(dtParts[0]), parseInt(dtParts[1]) - 1, parseInt(dtParts[2]), 12, 0, 0));
+                displayDate = getPersianDateStr(dt, 'Asia/Tehran');
             }
             var captchaQ = window._mobaroCaptchaQuestion || '۵ + ۳';
 
@@ -764,8 +804,9 @@ function openQuickView(productId)
             '<div class="' + (isDark ? 'bg-white/5 border-white/30' : 'bg-zinc-50 border-zinc-200') + ' border border-dashed rounded-3xl p-7 text-center">' +
                 '<div class="mx-auto w-20 h-20 ' + (isDark ? 'bg-white/10 text-white' : 'bg-zinc-200 text-zinc-500') + ' rounded-3xl flex items-center justify-center text-4xl mb-5">💇🏻‍♀️</div>' +
                 '<div class="font-semibold ' + textPrimary + '">مرور نوبت شما</div>' +
-                '<div class="text-xs text-emerald-400 mt-1">' + (displayDate || '') + (selectedTime ? ' - ساعت ' + selectedTime : '') + '</div>' +
-                (artist ? '<div class="text-xs ' + textMuted + ' mt-1">آرایشگر: ' + artist.name + '</div>' : '') +
+            '<div class="text-xs text-emerald-400 mt-1">' + (displayDate || '') + (selectedTime ? ' - ساعت ' + selectedTime : '') + '</div>' +
+            (artist ? '<div class="text-xs ' + textMuted + ' mt-1">آرایشگر: ' + artist.name + '</div>' : '') +
+            (selectedHairLengthId ? '<div class="text-xs ' + textMuted + ' mt-1">قد مو: ' + getHairLengthTitle(selectedHairLengthId) + '</div>' : '') +
                 '<div class="my-8 border-t ' + (isDark ? 'border-white/10' : 'border-zinc-200') + '"></div>' +
                 '<div class="flex justify-between text-xs">' +
                     '<div class="text-left">' +
@@ -774,7 +815,7 @@ function openQuickView(productId)
                     '</div>' +
                     '<div class="text-right">' +
                         '<div class="' + (isDark ? 'text-white/60' : 'text-zinc-400') + '">هزینه</div>' +
-                        '<div class="font-medium ' + priceClass + '">' + (svc ? svc.price.toLocaleString('fa-IR') : '0') + ' تومان</div>' +
+                        '<div class="font-medium ' + priceClass + '">' + (dynamicPrice > 0 ? dynamicPrice.toLocaleString('fa-IR') : (svc ? svc.price.toLocaleString('fa-IR') : '0')) + ' تومان</div>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
@@ -823,6 +864,70 @@ function openQuickView(productId)
         el.className = 'bg-emerald-900 text-emerald-400 border border-emerald-400 text-center py-5 rounded-3xl cursor-pointer';
     }
 
+function selectHairLength(id, el)
+{
+    selectedHairLengthId = id;
+    var container = getBookingContainer();
+    var theme = getBookingTheme();
+    var isDark = theme === 'dark';
+    var baseBorder = isDark ? 'border-white/10' : 'border-zinc-200';
+    var selectedBorder = isDark ? 'border-rose-400' : 'border-rose-500';
+    var selectedBg = isDark ? 'bg-rose-50/10' : 'bg-rose-50';
+    var hoverBorder = isDark ? 'hover:border-white/30' : 'hover:border-rose-200';
+    var hoverBg = isDark ? 'hover:bg-white/5' : 'hover:bg-rose-50/50';
+    
+    var items = el.parentElement.querySelectorAll('div');
+    for (var i = 0; i < items.length; i++) {
+        items[i].className = 'cursor-pointer p-3 border ' + baseBorder + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center';
+    }
+    el.className = 'cursor-pointer p-3 border ' + selectedBorder + ' ' + selectedBg + ' rounded-2xl transition-all text-center';
+    
+    // Update service prices if a service is selected
+    if (selectedServiceIndex !== null) {
+        updateServicePrice();
+    }
+}
+
+function updateServicePrice()
+{
+    var services = window._mobaroServices || [];
+    var svc = (selectedServiceIndex !== null && services[selectedServiceIndex]) ? services[selectedServiceIndex] : null;
+    
+    if (!svc || !selectedHairLengthId) {
+        return;
+    }
+    
+    var body = 'service_id=' + svc.id + '&hair_length_id=' + selectedHairLengthId + '&' + csrfParam();
+    
+    fetch('/booking/price-calculation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.price) {
+            dynamicPrice = data.price;
+            // Update the price in the service grid
+            var grid = document.getElementById('service-select-grid');
+            if (grid) {
+                var priceElement = grid.querySelector('.price-display-' + svc.id);
+                if (priceElement) {
+                    var durationNote = '';
+                    if (data.duration && data.duration !== 1.0) {
+                        durationNote = '<div class="text-xs ' + (getBookingTheme() === 'dark' ? 'text-white/40' : 'text-zinc-400') + ' mt-1"><i class="fa-solid fa-clock ml-1"></i>مدت تقریباً ' + data.duration.toLocaleString('fa-IR') + ' برابر</div>';
+                    }
+                    priceElement.innerHTML = '<div class="text-xs ' + (getBookingTheme() === 'dark' ? 'text-white/60' : 'text-zinc-400') + ' line-through">' + svc.price.toLocaleString('fa-IR') + ' تومان</div>' +
+                        '<div class="' + (getBookingTheme() === 'dark' ? 'text-rose-400' : 'text-rose-500') + ' font-semibold text-xl mt-1">' + data.price.toLocaleString('fa-IR') + ' تومان</div>' + durationNote;
+                }
+            }
+        }
+    })
+    .catch(function() {
+        showToast('خطا در محاسبه قیمت', 'error');
+    });
+}
+
     function setBookingStep(step)
     {
         currentBookingStep = step;
@@ -835,10 +940,18 @@ function openQuickView(productId)
             showToast('لطفاً یک آرایشگر را انتخاب کنید', 'error');
             return;
         }
-        if (currentBookingStep === 1 && selectedServiceIndex === null) {
+        if (currentBookingStep === 1) {
+        if (selectedServiceIndex === null) {
             showToast('لطفاً یک خدمت را انتخاب کنید', 'error');
             return;
         }
+        var services = window._mobaroServices || [];
+        var svc = services[selectedServiceIndex];
+        if (svc && svc.requires_hair_length && !selectedHairLengthId) {
+            showToast('لطفاً قد مو را انتخاب کنید', 'error');
+            return;
+        }
+    }
         if (currentBookingStep === 2 && !selectedTime) {
             showToast('لطفاً یک ساعت را انتخاب کنید', 'error');
             return;
@@ -865,6 +978,7 @@ function openQuickView(productId)
         }
         selectedArtistId = services[i].artist_id || 0;
         selectedServiceIndex = i;
+        dynamicPrice = 0;
         currentBookingStep = 1;
         var bookingSection = document.getElementById('booking');
         if (bookingSection) {
@@ -905,6 +1019,9 @@ function openQuickView(productId)
         if (btn) {
             btn.disabled = true; btn.textContent = 'در حال ثبت...'; }
         var body = 'service_id=' + (svc.id || svc.service_id || 0) + '&date=' + encodeURIComponent(selectedDate) + '&time=' + encodeURIComponent(selectedTime) + '&artist_id=' + selectedArtistId;
+        if (selectedHairLengthId) {
+            body += '&hair_length_id=' + selectedHairLengthId;
+        }
         if (captchaVal) {
             body += '&captcha=' + encodeURIComponent(captchaVal);
         }
@@ -951,8 +1068,9 @@ function openQuickView(productId)
         }
         var displayDate = '';
         if (data.date) {
-            var dt = new Date(data.date);
-            displayDate = getPersianDateStr(dt);
+            var cParts = data.date.split('-');
+            var dt = new Date(Date.UTC(parseInt(cParts[0]), parseInt(cParts[1]) - 1, parseInt(cParts[2]), 12, 0, 0));
+            displayDate = getPersianDateStr(dt, 'Asia/Tehran');
         }
         container.innerHTML =
         '<div class="text-center py-8">' +
@@ -987,6 +1105,8 @@ function openQuickView(productId)
         selectedServiceIndex = null;
         selectedDate = '';
         selectedTime = '';
+        selectedHairLengthId = 0;
+        dynamicPrice = 0;
         renderBookingStep();
     }
 
@@ -997,31 +1117,41 @@ function openQuickView(productId)
         showToast('نوبت شما ثبت گردید!', 'success');
     }
 
-    function refreshCaptcha()
-    {
-        var body = csrfParam();
-        fetch('/booking/captcha/refresh', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body
-        })
-        .then(function (r) {
-            return r.json(); })
-        .then(function (data) {
-            var qEl = document.getElementById('captcha-question');
-            var inputEl = document.getElementById('captcha-input');
-            if (qEl && data.question) {
-                qEl.textContent = data.question + ' = ?';
-                window._mobaroCaptchaQuestion = data.question;
-            }
-            if (inputEl) {
-                inputEl.value = '';
-            }
-        })
-        .catch(function () {
-            showToast('خطا در دریافت کپچای جدید', 'error');
-        });
+function getHairLengthTitle(id)
+{
+    for (var i = 0; i < hairLengths.length; i++) {
+        if (hairLengths[i].id === id) {
+            return hairLengths[i].title;
+        }
     }
+    return '';
+}
+
+function refreshCaptcha()
+{
+    var body = csrfParam();
+    fetch('/booking/captcha/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
+    })
+    .then(function (r) {
+        return r.json(); })
+    .then(function (data) {
+        var qEl = document.getElementById('captcha-question');
+        var inputEl = document.getElementById('captcha-input');
+        if (qEl && data.question) {
+            qEl.textContent = data.question + ' = ?';
+            window._mobaroCaptchaQuestion = data.question;
+        }
+        if (inputEl) {
+            inputEl.value = '';
+        }
+    })
+    .catch(function () {
+        showToast('خطا در دریافت کپچای جدید', 'error');
+    });
+}
 
 // ========== HOME PAGE SHOP (shop-block.php helpers) ==========
     function quickAddToCart(id, name, price, image, category)
@@ -1102,5 +1232,4 @@ function openQuickView(productId)
             }, 1500);
         }
 
-        console.log('%cموبارو فعال شد', 'color:#e11d48;font-weight:bold');
     })();

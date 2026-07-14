@@ -42,10 +42,17 @@ $artistsJson = json_encode(array_map(fn($a) => [
     'working_hours' => $a['working_hours'] ?? '۹ صبح - ۸ شب',
     'bio' => $a['bio'] ?? '',
 ], $artists ?? []), JSON_UNESCAPED_UNICODE);
+$hairLengths = Database::fetchAll("SELECT * FROM hair_lengths WHERE is_active = 1 ORDER BY sort_order");
 $capQ = $captchaQuestion ?? Captcha::store();
 ?>
 <script>
 window._mobaroArtists = <?= $artistsJson ?>;
+window._mobaroHairLengths = <?= json_encode(array_map(fn($hl) => [
+    'id' => $hl['id'],
+    'title' => $hl['title'],
+    'min_cm' => $hl['min_cm'],
+    'max_cm' => $hl['max_cm'],
+], $hairLengths ?? []), JSON_UNESCAPED_UNICODE) ?>;
 window._mobaroCaptchaQuestion = '<?= $capQ ?>';
 window._mobaroCaptchaEnabled = <?= isset($captchaEnabled) ? ($captchaEnabled ? 'true' : 'false') : 'true' ?>;
 </script>

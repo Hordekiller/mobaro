@@ -14,10 +14,10 @@ class Cache
     {
         self::$dir = Config::get('cache.dir', __DIR__ . '/../storage/cache');
         if (!is_dir(self::$dir)) {
-            @mkdir(self::$dir, 0775, true);
-            @mkdir(self::$dir . '/locks', 0775, true);
-            @mkdir(self::$dir . '/tags', 0775, true);
-            @mkdir(self::$dir . '/' . self::VERSION_DIR, 0775, true);
+            @mkdir(self::$dir, 0755, true);
+            @mkdir(self::$dir . '/locks', 0755, true);
+            @mkdir(self::$dir . '/tags', 0755, true);
+            @mkdir(self::$dir . '/' . self::VERSION_DIR, 0755, true);
             file_put_contents(self::$dir . '/.gitignore', "*\n");
         }
         if (random_int(1, 100) === 1) {
@@ -124,7 +124,7 @@ class Cache
         $path = self::path($key);
         $dir = dirname($path);
         if (!is_dir($dir)) {
-            @mkdir($dir, 0775, true);
+            @mkdir($dir, 0755, true);
         }
 
         $written = @file_put_contents($path, json_encode($entry, JSON_UNESCAPED_UNICODE), LOCK_EX);
@@ -178,7 +178,7 @@ class Cache
     {
         $tagDir = self::dir() . '/tags';
         if (!is_dir($tagDir)) {
-            @mkdir($tagDir, 0775, true);
+            @mkdir($tagDir, 0755, true);
         }
 
         $tagPath = $tagDir . '/' . md5(self::prefix() . ':' . $tag) . '.tag';
@@ -205,7 +205,7 @@ class Cache
     {
         $verDir = self::dir() . '/' . self::VERSION_DIR;
         if (!is_dir($verDir)) {
-            @mkdir($verDir, 0775, true);
+            @mkdir($verDir, 0755, true);
         }
         file_put_contents($verDir . '/default.ver', (string) (self::version() + 1), LOCK_EX);
         self::$local = [];
@@ -298,7 +298,7 @@ class Cache
         $lockFile = self::dir() . '/locks/' . md5(self::ns($key)) . '.lock';
         $lockDir = dirname($lockFile);
         if (!is_dir($lockDir)) {
-            @mkdir($lockDir, 0775, true);
+            @mkdir($lockDir, 0755, true);
         }
 
         $fp = @fopen($lockFile, 'c');
