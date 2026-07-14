@@ -30,7 +30,15 @@ function redirect(string $path): void
 
 function back(): void
 {
-    header('Location: ' . ($_SERVER['HTTP_REFERER'] ?? '/'));
+    $referer = $_SERVER['HTTP_REFERER'] ?? '/';
+    $parsed = parse_url($referer);
+    $host = $parsed['host'] ?? '';
+    $appHost = parse_url((string) Config::get('app.url', ''), PHP_URL_HOST);
+    if ($host === $appHost || $host === '') {
+        header('Location: ' . $referer);
+    } else {
+        header('Location: /');
+    }
     exit;
 }
 
@@ -129,6 +137,11 @@ function isActive(string $path): string
 function priceFormat(int $amount): string
 {
     return number_format($amount) . ' تومان';
+}
+
+function likePattern(string $search): string
+{
+    return '%' . Database::escapeLike($search) . '%';
 }
 
 function timeAgo(string $datetime): string

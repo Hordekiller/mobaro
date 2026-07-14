@@ -61,8 +61,8 @@ class BlogController extends BaseController
         }
         if (!empty($search)) {
             $where .= " AND (title LIKE ? OR content LIKE ?)";
-            $params[] = "%{$search}%";
-            $params[] = "%{$search}%";
+            $params[] = likePattern($search);
+            $params[] = likePattern($search);
         }
 
         $countResult = Database::fetch(
@@ -91,6 +91,14 @@ class BlogController extends BaseController
     {
         header('Content-Type: application/json');
         $this->verifyCsrf();
+
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        if (RateLimiter::isLocked('comment:' . $ip, 5, 15)) {
+            http_response_code(429);
+            echo json_encode(['success' => false, 'error' => 'درخواست‌های شما بیش از حد مجاز است. لطفاً چند دقیقه صبر کنید.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        RateLimiter::recordAttempt('comment:' . $ip);
 
         $post = Database::fetch("SELECT id FROM blog_posts WHERE slug = ?", [$slug]);
         if (!$post) {

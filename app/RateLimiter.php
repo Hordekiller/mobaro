@@ -75,6 +75,11 @@ class RateLimiter
 
     public static function cleanup(): void
     {
+        static $lastCleanup = 0;
+        if (time() - $lastCleanup < 3600) {
+            return;
+        }
+        $lastCleanup = time();
         Database::query(
             "DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)"
         );

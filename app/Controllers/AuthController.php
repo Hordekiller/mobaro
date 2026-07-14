@@ -65,6 +65,7 @@ class AuthController extends BaseController
 
         RateLimiter::recordAttempt('user_' . $login, true);
         Auth::login($user['id'], $user);
+        $this->syncSessionWishlist();
 
         $redirect = $_SESSION['redirect_after_login'] ?? '/dashboard';
         unset($_SESSION['redirect_after_login']);
@@ -123,6 +124,7 @@ class AuthController extends BaseController
 
         $user = Database::fetch("SELECT * FROM users WHERE id = ?", [$userId]);
         Auth::login($userId, $user);
+        $this->syncSessionWishlist();
 
         flash('success', 'ثبت‌نام با موفقیت انجام شد. خوش آمدید!');
         redirect('/dashboard');
@@ -210,10 +212,33 @@ class AuthController extends BaseController
 
         $user = GoogleAuth::findOrCreateUser($googleUser);
         Auth::login($user['id'], $user);
+        $this->syncSessionWishlist();
 
         flash('success', 'با موفقیت وارد شدید!');
         $redirect = $_SESSION['redirect_after_login'] ?? '/dashboard';
         unset($_SESSION['redirect_after_login']);
         redirect($redirect);
+    }
+
+    private function syncSessionWishlist(): void
+    {
+        $sessionIds = $_SESSION['wishlist'] ?? [];
+        if (empty($sessionIds) || !Auth::check()) {
+            return;
+        }
+        foreach ($sessionIds as $pid) {
+            $pid = (int) $pid;
+            if ($pid <= 0) {
+                continue;
+            }
+            $exists = Database::fetch(
+                "SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?",
+                [Auth::id(), $pid]
+            );
+            if (!$exists) {
+                Database::insert('wishlist', ['user_id' => Auth::id(), 'product_id' => $pid]);
+            }
+        }
+        $_SESSION['wishlist'] = [];
     }
 }

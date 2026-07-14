@@ -2,9 +2,13 @@
 
 class BaseController
 {
+    private static array $protectedVars = ['view', 'data', 'hideFooter', 'this'];
+
     protected function view(string $view, array $data = []): void
     {
-        extract($data);
+        $hideFooter = $data['hideFooter'] ?? false;
+        $safe = array_diff_key($data, array_flip(self::$protectedVars));
+        extract($safe);
         require __DIR__ . '/../views/layouts/header.php';
         require __DIR__ . '/../views/' . $view . '.php';
         if (empty($hideFooter)) {
@@ -14,7 +18,8 @@ class BaseController
 
     protected function viewRaw(string $view, array $data = []): void
     {
-        extract($data);
+        $safe = array_diff_key($data, array_flip(self::$protectedVars));
+        extract($safe);
         require __DIR__ . '/../views/' . $view . '.php';
     }
 

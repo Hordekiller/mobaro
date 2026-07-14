@@ -63,7 +63,14 @@
                         <button onclick="toggleWishlistSidebar()" class="relative flex items-center gap-x-2 px-4 py-2.5 bg-white hover:bg-zinc-100 border border-zinc-200 rounded-3xl text-sm font-medium transition-colors">
                             <i class="fa-regular fa-heart text-rose-500"></i>
                             <span id="wishlist-count" class="text-xs bg-rose-500 text-white w-5 h-5 flex items-center justify-center rounded-full">
-                                <?= e(count($_SESSION['wishlist'] ?? [])) ?>
+                                <?php
+                                if (Auth::check()) {
+                                    $wcResult = Database::fetch("SELECT COUNT(*) as cnt FROM wishlist WHERE user_id = ?", [Auth::id()]);
+                                    echo e($wcResult['cnt'] ?? 0);
+                                } else {
+                                    echo e(count($_SESSION['wishlist'] ?? []));
+                                }
+                                ?>
                             </span>
                         </button>
 

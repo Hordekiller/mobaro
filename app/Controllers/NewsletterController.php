@@ -5,6 +5,15 @@ class NewsletterController extends BaseController
     public function subscribe(): void
     {
         $this->verifyCsrf();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        if (RateLimiter::isLocked('newsletter:' . $ip, 3, 15)) {
+            http_response_code(429);
+            echo json_encode(['error' => 'درخواست‌های شما بیش از حد مجاز است. لطفاً چند دقیقه صبر کنید.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        RateLimiter::recordAttempt('newsletter:' . $ip);
 
         if (Captcha::isEnabled('newsletter') && !Captcha::verify($_POST['captcha'] ?? '')) {
             http_response_code(400);

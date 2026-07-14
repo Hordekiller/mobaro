@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL DEFAULT '',
     family VARCHAR(100) NOT NULL DEFAULT '',
-    phone VARCHAR(20) NOT NULL UNIQUE,
+    phone VARCHAR(20) NOT NULL DEFAULT '',
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) DEFAULT '',
     avatar VARCHAR(255) DEFAULT NULL,
@@ -325,7 +325,7 @@ CREATE TABLE IF NOT EXISTS blog_comments (
     name VARCHAR(200) NOT NULL DEFAULT '',
     email VARCHAR(200) DEFAULT '',
     text TEXT NOT NULL,
-    is_approved TINYINT(1) DEFAULT 1,
+    is_approved TINYINT(1) DEFAULT 0,
     likes INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES blog_posts(id) ON DELETE CASCADE,
@@ -364,6 +364,7 @@ CREATE TABLE IF NOT EXISTS product_brands (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Hair Models Gallery
+CREATE TABLE IF NOT EXISTS hair_models (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     category VARCHAR(100) DEFAULT '',
