@@ -5,40 +5,76 @@
         </div>
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             <?php
-            $sections = [
-                'dashboard' => ['fa-gauge-high', 'داشبورد', '/admin'],
-                'services' => ['fa-scissors', 'خدمات'],
-                'appointments' => ['fa-calendar-check', 'نوبت‌ها'],
-                'artists' => ['fa-user-tie', 'آرایشگران'],
-                'products' => ['fa-box', 'محصولات'],
-                'product-categories' => ['fa-layer-group', 'دسته‌بندی محصولات'],
-                'product-brands' => ['fa-tag', 'برندها'],
-                'orders' => ['fa-truck', 'سفارش‌ها'],
-                'users' => ['fa-users', 'کاربران'],
-                'courses' => ['fa-graduation-cap', 'دوره‌ها'],
-                'enrollments' => ['fa-user-graduate', 'ثبت‌نام دوره‌ها'],
-                'testimonials' => ['fa-comment', 'نظرات'],
-                'transactions' => ['fa-coins', 'تراکنش‌ها'],
-                'blog' => ['fa-pen', 'وبلاگ'],
-                'reviews' => ['fa-star', 'نظرات محصولات'],
-                'blog-comments' => ['fa-comments', 'نظرات وبلاگ'],
-                'coupons' => ['fa-tag', 'تخفیف‌ها'],
-                'contact-messages' => ['fa-message', 'پیام‌ها'],
-                'hair-models' => ['fa-image', 'مدل مو'],
-                'tutorials' => ['fa-video', 'آموزش‌ها'],
-                'newsletter' => ['fa-envelope', 'خبرنامه'],
-                'captcha' => ['fa-shield-halved', 'کپچا'],
-                'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
-                'gallery' => ['fa-photo-film', 'گالری رسانه'],
-                'settings' => ['fa-gear', 'تنظیمات'],
+            $activeSection = $section ?? '';
+            $groups = [
+                ['key' => 'salon', 'label' => 'سالن', 'icon' => 'fa-scissors', 'items' => [
+                    'services' => ['fa-scissors', 'خدمات'],
+                    'artists' => ['fa-user-tie', 'آرایشگران'],
+                    'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
+                    'appointments' => ['fa-calendar-check', 'نوبت‌ها'],
+                ]],
+                ['key' => 'shop', 'label' => 'فروشگاه', 'icon' => 'fa-shopping-bag', 'items' => [
+                    'products' => ['fa-box', 'محصولات'],
+                    'product-categories' => ['fa-layer-group', 'دسته‌بندی محصولات'],
+                    'product-brands' => ['fa-tag', 'برندها'],
+                    'orders' => ['fa-truck', 'سفارش‌ها'],
+                    'coupons' => ['fa-ticket', 'تخفیف‌ها'],
+                    'reviews' => ['fa-star', 'نظرات محصولات'],
+                ]],
+                ['key' => 'academy', 'label' => 'آکادمی', 'icon' => 'fa-graduation-cap', 'items' => [
+                    'courses' => ['fa-graduation-cap', 'دوره‌ها'],
+                    'enrollments' => ['fa-user-graduate', 'ثبت‌نام دوره‌ها'],
+                ]],
+                ['key' => 'content', 'label' => 'محتوا', 'icon' => 'fa-file-lines', 'items' => [
+                    'blog' => ['fa-pen', 'وبلاگ'],
+                    'blog-comments' => ['fa-comments', 'نظرات وبلاگ'],
+                    'hair-models' => ['fa-image', 'مدل مو'],
+                    'tutorials' => ['fa-video', 'آموزش‌ها'],
+                    'gallery' => ['fa-photo-film', 'گالری رسانه'],
+                    'testimonials' => ['fa-comment', 'نظرات'],
+                ]],
+                ['key' => 'users', 'label' => 'کاربران', 'icon' => 'fa-users', 'items' => [
+                    'users' => ['fa-users', 'کاربران'],
+                    'transactions' => ['fa-coins', 'تراکنش‌ها'],
+                    'contact-messages' => ['fa-envelope-open', 'پیام‌ها'],
+                    'newsletter' => ['fa-envelope', 'خبرنامه'],
+                ]],
+                ['key' => 'settings', 'label' => 'تنظیمات', 'icon' => 'fa-gear', 'items' => [
+                    'captcha' => ['fa-shield-halved', 'کپچا'],
+                    'settings' => ['fa-gear', 'تنظیمات'],
+                ]],
             ];
-            foreach ($sections as $key => $sec) :
-                $active = $section === $key ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600';
-                ?>
-            <a href="<?= $sec[2] ?? ('/admin/' . $key) ?>" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all <?= $active ?>">
-                <i class="fa-solid <?= $sec[0] ?> w-5 text-center"></i>
-                <span><?= $sec[1] ?></span>
+
+            $dashActive = $activeSection === 'dashboard' ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600';
+            ?>
+            <a href="/admin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all <?= $dashActive ?>">
+                <i class="fa-solid fa-gauge-high w-5 text-center"></i>
+                <span>داشبورد</span>
             </a>
+
+            <?php foreach ($groups as $group) :
+                $groupItems = $group['items'];
+                $hasActive = array_key_exists($activeSection, $groupItems);
+                ?>
+            <div class="admin-group mt-2" data-group="<?= $group['key'] ?>">
+                <button type="button" onclick="toggleGroup(this)" class="admin-group-btn w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all <?= $hasActive ? 'text-rose-600 bg-rose-50' : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50' ?>">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid <?= $group['icon'] ?> w-4 text-center text-[11px]"></i>
+                        <?= $group['label'] ?>
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 <?= $hasActive ? '' : '-rotate-90' ?>"></i>
+                </button>
+                <div class="admin-group-items <?= $hasActive ? '' : 'hidden' ?>" data-group-items="<?= $group['key'] ?>">
+                    <?php foreach ($groupItems as $key => $item) :
+                        $active = $activeSection === $key ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600';
+                        ?>
+                    <a href="/admin/<?= $key ?>" class="flex items-center gap-3 px-4 py-2.5 mr-2 rounded-xl text-sm font-semibold transition-all <?= $active ?>">
+                        <i class="fa-solid <?= $item[0] ?> w-5 text-center"></i>
+                        <span><?= $item[1] ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
             <?php endforeach; ?>
         </nav>
         <div class="p-4 border-t border-rose-100">
@@ -598,6 +634,50 @@
         <?php endif; ?>
     </main>
 </div>
+
+<script>
+function toggleGroup(btn) {
+    const group = btn.closest('.admin-group');
+    const items = group.querySelector('.admin-group-items');
+    const chevron = btn.querySelector('.fa-chevron-down');
+    const isOpen = !items.classList.contains('hidden');
+
+    if (isOpen) {
+        items.classList.add('hidden');
+        chevron.classList.add('-rotate-90');
+        btn.classList.remove('text-rose-600', 'bg-rose-50');
+        btn.classList.add('text-zinc-400');
+    } else {
+        items.classList.remove('hidden');
+        chevron.classList.remove('-rotate-90');
+        btn.classList.add('text-rose-600', 'bg-rose-50');
+        btn.classList.remove('text-zinc-400');
+    }
+
+    const key = group.dataset.group;
+    const open = JSON.parse(localStorage.getItem('admin_groups') || '{}');
+    open[key] = !isOpen;
+    localStorage.setItem('admin_groups', JSON.stringify(open));
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const open = JSON.parse(localStorage.getItem('admin_groups') || '{}');
+    document.querySelectorAll('.admin-group').forEach(function(g) {
+        const k = g.dataset.group;
+        const items = g.querySelector('.admin-group-items');
+        const chevron = g.querySelector('.fa-chevron-down');
+        const btn = g.querySelector('.admin-group-btn');
+        if (k in open) {
+            if (open[k]) {
+                items.classList.remove('hidden');
+                chevron.classList.remove('-rotate-90');
+            } else {
+                items.classList.add('hidden');
+                chevron.classList.add('-rotate-90');
+            }
+        }
+    });
+});
+</script>
 
 <?php if ($section === 'artists') : ?>
 <script>window._artistServices = <?= $artistServicesJson ?? '{}' ?>;</script>
