@@ -13,7 +13,7 @@
     <?php $_csrf_token = $_SESSION['_csrf'] ?? ''; ?>
     <meta name="csrf" content="<?= e($_csrf_token) ?>">
     <script>function csrfParam(){var t=document.querySelector('meta[name="csrf"]');return'_csrf='+encodeURIComponent(t?t.getAttribute('content'):'')}</script>
-    <script src="/assets/libs/tailwind/tailwind-full.js"></script>
+    <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="/assets/libs/fontawesome/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">

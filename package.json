@@ -1,0 +1,13 @@
+{
+  "name": "rozhin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mobaro beauty salon - Tailwind CSS build",
+  "scripts": {
+    "build:css": "npx tailwindcss -i src/input.css -o public/assets/css/app.css --minify",
+    "watch:css": "npx tailwindcss -i src/input.css -o public/assets/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}
