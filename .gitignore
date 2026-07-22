@@ -32,6 +32,12 @@ logs/
 !storage/logs/
 !storage/logs/.gitignore
 
+# Node.js
+node_modules/
+
+# Tailwind build source
+src/
+
 # Temp
 tmp/
 temp/

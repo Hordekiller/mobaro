@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ورود ادمین | موبارو</title>
     <meta name="csrf" content="<?= $_SESSION['_csrf'] ?? '' ?>">
-    <script src="/assets/libs/tailwind/tailwind-full.js"></script>
+    <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="/assets/libs/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/assets/fonts/google-fonts-woff2.css">
     <link rel="stylesheet" href="/assets/fonts/vazirmatn-font-face.css">

@@ -375,3 +375,20 @@ input[type=range]::-moz-range-thumb {
 .sidebar-filter::-webkit-scrollbar-thumb:hover {
     background: #d1d5db;
 }
+
+/* Vendor prefixes for cross-browser support */
+html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+* {
+    -webkit-mask-composite: source-out;
+    mask-composite: exclude;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
