@@ -57,7 +57,7 @@ class Router
     private static function renderError(int $code): void
     {
         http_response_code($code);
-        require __DIR__ . '/views/layouts/header.php';
+        require_once __DIR__ . '/views/layouts/header.php';
 
         $messages = [
             403 => 'شما دسترسی به این صفحه را ندارید.',
@@ -67,12 +67,12 @@ class Router
         ];
 
         if ($code === 404) {
-            require __DIR__ . '/views/errors/404.php';
+            require_once __DIR__ . '/views/errors/404.php';
         } else {
             $errorMessage = $messages[$code] ?? 'خطایی رخ داد.';
-            require __DIR__ . '/views/errors/500.php';
+            require_once __DIR__ . '/views/errors/500.php';
         }
 
-        require __DIR__ . '/views/layouts/footer.php';
+        require_once __DIR__ . '/views/layouts/footer.php';
     }
 }

@@ -2,10 +2,10 @@
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="flex justify-between items-center mb-10">
             <div class="text-4xl font-semibold tracking-tighter">مدل‌های مو و آرایش</div>
-            <div class="text-rose-500 flex items-center gap-x-2 cursor-pointer hover:text-rose-600">
+            <a href="/models" class="text-rose-500 flex items-center gap-x-2 cursor-pointer hover:text-rose-600">
                 <span class="text-sm font-medium">مشاهده همه</span>
                 <i class="fa-solid fa-arrow-left"></i>
-            </div>
+            </a>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" id="models-grid">
             <?php foreach ($hairModels as $model) : ?>

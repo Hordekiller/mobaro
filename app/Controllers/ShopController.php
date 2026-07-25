@@ -135,9 +135,9 @@ class ShopController extends BaseController
         });
         if (!$product) {
             http_response_code(404);
-            require __DIR__ . '/../views/layouts/header.php';
-            require __DIR__ . '/../views/errors/404.php';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/errors/404.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
             return;
         }
 
@@ -665,18 +665,18 @@ class ShopController extends BaseController
 
         if (!$orderId || !$authority) {
             http_response_code(400);
-            require __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
             echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت ناموفق</h2><p class="text-zinc-600">درخواست نامعتبر است.</p></div>';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
             return;
         }
 
         $order = Database::fetch("SELECT * FROM orders WHERE id = ? AND user_id = ?", [$orderId, Auth::id()]);
         if (!$order) {
             http_response_code(404);
-            require __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
             echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت ناموفق</h2><p class="text-zinc-600">سفارش یافت نشد.</p></div>';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
             return;
         }
 
@@ -687,9 +687,9 @@ class ShopController extends BaseController
 
         if ($status !== 'OK') {
             Database::update('orders', ['payment_status' => 'failed'], 'id = :id', ['id' => $orderId]);
-            require __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
             echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت لغو شد</h2><p class="text-zinc-600 mb-6">پرداخت شما لغو شد. می‌توانید مجدداً اقدام کنید.</p><a href="/orders/' . $orderId . '" class="px-6 py-3 bg-rose-600 text-white rounded-xl">تلاش مجدد</a></div>';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
             return;
         }
 
@@ -748,17 +748,17 @@ class ShopController extends BaseController
 
             $_SESSION['cart'] = [];
 
-            require __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
             echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-green-600 mb-4">پرداخت موفق</h2>
             <div class="bg-green-50 rounded-2xl p-6 mb-6"><p class="text-green-700">کد رهگیری پرداخت: <strong>' . e($result['ref_id']) . '</strong></p>
             <p class="text-green-700 mt-2">کد پیگیری سفارش: <strong>' . e($order['tracking_code']) . '</strong></p></div>
             <a href="/dashboard/orders" class="px-6 py-3 bg-rose-600 text-white rounded-xl font-semibold">مشاهده سفارشات</a></div>';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
         } else {
             Database::update('orders', ['payment_status' => 'failed'], 'id = :id', ['id' => $orderId]);
-            require __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
             echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت ناموفق</h2><p class="text-zinc-600">' . e($result['message']) . '</p></div>';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
         }
     }
 

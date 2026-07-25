@@ -204,18 +204,18 @@
                             $value = $settings[$key] ?? '';
                             ?>
                         <div>
-                            <label class="block text-sm font-semibold mb-1.5"><?= e($label) ?></label>
+                            <label for="setting_<?= e($key) ?>" class="block text-sm font-semibold mb-1.5"><?= e($label) ?></label>
                             <?php if (in_array($key, $textareaKeys)) : ?>
-                                <textarea name="setting_<?= e($key) ?>" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($value) ?></textarea>
+                                <textarea id="setting_<?= e($key) ?>" name="setting_<?= e($key) ?>" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($value) ?></textarea>
                             <?php elseif ($key === 'about_image') : ?>
                                 <div class="flex gap-2 items-center">
-                                    <input type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="flex-1 w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="مثال: about.jpg">
+                                    <input id="setting_<?= e($key) ?>" type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="flex-1 w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="مثال: about.jpg">
                                     <?php if (!empty($value)) : ?>
-                                    <img src="/assets/images/<?= e($value) ?>" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" onerror="this.style.display='none'">
+                                    <img src="/assets/images/<?= e($value) ?>" alt="" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" onerror="this.style.display='none'">
                                     <?php endif; ?>
                                 </div>
                             <?php else : ?>
-                                <input type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                <input id="setting_<?= e($key) ?>" type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <?php endif; ?>
                         </div>
                         <?php endforeach; ?>
@@ -233,16 +233,16 @@
                 <form action="/admin/password/change" method="POST" class="max-w-sm space-y-4">
                     <?= csrf() ?>
                     <div>
-                        <label class="block text-sm font-semibold mb-1.5">رمز عبور فعلی</label>
-                        <input type="password" name="current_password" required class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        <label for="current_password" class="block text-sm font-semibold mb-1.5">رمز عبور فعلی</label>
+                        <input id="current_password" type="password" name="current_password" required class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-1.5">رمز عبور جدید</label>
-                        <input type="password" name="new_password" required minlength="6" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        <label for="new_password" class="block text-sm font-semibold mb-1.5">رمز عبور جدید</label>
+                        <input id="new_password" type="password" name="new_password" required minlength="6" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-1.5">تکرار رمز عبور جدید</label>
-                        <input type="password" name="confirm_password" required minlength="6" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        <label for="confirm_password" class="block text-sm font-semibold mb-1.5">تکرار رمز عبور جدید</label>
+                        <input id="confirm_password" type="password" name="confirm_password" required minlength="6" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                     </div>
                     <button type="submit" class="px-8 py-3 bg-zinc-800 text-white rounded-xl font-semibold text-sm hover:bg-zinc-900 transition-all">تغییر رمز عبور</button>
                 </form>
@@ -307,7 +307,7 @@
                             ?>
                         <div class="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl">
                             <span class="w-7 h-7 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"><?= faNum($i) ?></span>
-                            <input type="text" name="<?= $key ?>" value="<?= e($val) ?>" placeholder="<?= e('مثال: 5 + 3') ?>" class="flex-1 px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                            <input id="<?= $key ?>" type="text" name="<?= $key ?>" value="<?= e($val) ?>" placeholder="<?= e('مثال: 5 + 3') ?>" class="flex-1 px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
                         </div>
                         <?php endfor; ?>
                     </div>
@@ -332,7 +332,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <form method="GET" action="/admin/<?= e($section) ?>" class="flex items-center gap-2">
-                        <input type="text" name="s" value="<?= e($_GET['s'] ?? '') ?>" placeholder="جستجو..." class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-44">
+                        <input id="admin-search" type="text" name="s" value="<?= e($_GET['s'] ?? '') ?>" placeholder="جستجو..." class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-44">
                         <button type="submit" class="px-3 py-2.5 bg-zinc-100 text-zinc-600 rounded-xl text-sm hover:bg-rose-50 hover:text-rose-600 transition-all"><i class="fa-solid fa-search"></i></button>
                         <?php if (!empty($_GET['s'])) : ?>
                         <a href="/admin/<?= e($section) ?>" class="px-3 py-2.5 bg-red-50 text-red-500 rounded-xl text-sm hover:bg-red-100 transition-all"><i class="fa-solid fa-xmark"></i></a>
@@ -385,7 +385,7 @@
                                 <?php foreach ($columns as $col) :
                                     $val = $item[$col['key']] ?? '';
                                     if ($col['type'] === 'image') : ?>
-                                        <td class="py-3 px-4"><img src="/assets/images/<?= e($val) ?>" class="w-12 h-12 rounded-lg object-cover" onerror="this.style.display='none'"></td>
+                                        <td class="py-3 px-4"><img src="/assets/images/<?= e($val) ?>" alt="" class="w-12 h-12 rounded-lg object-cover" onerror="this.style.display='none'"></td>
                                     <?php elseif ($col['type'] === 'price') : ?>
                                         <td class="py-3 px-4 font-bold"><?= priceFormat($val) ?></td>
                                     <?php elseif ($col['type'] === 'status') : ?>
@@ -445,7 +445,7 @@
             </div>
             <?php endif; ?>
 
-            <div id="itemModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" onclick="closeItemModal(event)">
+            <div id="itemModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" onclick="closeItemModal(event)">
                 <div class="bg-white rounded-[20px] p-6 w-full max-w-2xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
                     <div class="flex justify-between items-center mb-5">
                         <h3 class="text-xl font-bold" id="modalTitle">افزودن جدید</h3>
@@ -464,35 +464,35 @@
                                 }
                                 ?>
                             <div class="<?= in_array($col['type'], ['textarea', 'image', 'file']) ? 'md:col-span-2' : '' ?>">
-                                <label class="block text-sm font-semibold mb-1.5"><?= $col['label'] ?></label>
+                                <label for="<?= $col['key'] ?>" class="block text-sm font-semibold mb-1.5"><?= $col['label'] ?></label>
                                 <?php if ($col['type'] === 'textarea') : ?>
                                     <?php if ($section === 'blog' && $col['key'] === 'content') : ?>
-                                    <textarea name="<?= $col['key'] ?>" class="form-input w-full tinymce-editor" <?= ($col['required'] ?? false) ? 'required' : '' ?>></textarea>
+                                    <textarea id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" class="form-input w-full tinymce-editor" <?= ($col['required'] ?? false) ? 'required' : '' ?>></textarea>
                                     <?php else : ?>
-                                    <textarea name="<?= $col['key'] ?>" rows="3" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>></textarea>
+                                    <textarea id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" rows="3" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>></textarea>
                                     <?php endif; ?>
                                 <?php elseif ($col['type'] === 'image') : ?>
                                     <div class="image-field-wrapper">
-                                    <input type="file" name="<?= $col['key'] ?>" accept="image/*" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
+                                    <input id="<?= $col['key'] ?>" type="file" name="<?= $col['key'] ?>" accept="image/*" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
                                     </div>
                                 <?php elseif ($col['type'] === 'file') : ?>
                                     <div class="image-field-wrapper">
-                                    <input type="file" name="<?= $col['key'] ?>" accept="<?= $col['accept'] ?? '*' ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
+                                    <input id="<?= $col['key'] ?>" type="file" name="<?= $col['key'] ?>" accept="<?= $col['accept'] ?? '*' ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
                                     </div>
                                 <?php elseif ($col['type'] === 'select') : ?>
-                                    <select name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
+                                    <select id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
                                         <option value="">انتخاب کنید</option>
                                         <?php foreach (($col['options'] ?? []) as $opt) : ?>
                                         <option value="<?= e($opt) ?>"><?= e($opt) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 <?php elseif ($col['type'] === 'boolean') : ?>
-                                    <select name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                    <select id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                                         <option value="1">بله</option>
                                         <option value="0">خیر</option>
                                     </select>
                                 <?php elseif ($col['type'] === 'status') : ?>
-                                    <select name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                    <select id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                                         <?php
                                         $statusOptions = $col['options'] ?? ['pending', 'confirmed', 'processing', 'completed', 'delivered', 'shipped', 'cancelled', 'rejected', 'failed', 'active'];
                                         foreach ($statusOptions as $opt) : ?>
@@ -500,9 +500,9 @@
                                         <?php endforeach; ?>
                                     </select>
                                 <?php elseif ($col['type'] === 'price') : ?>
-                                    <input type="number" name="<?= $col['key'] ?>" step="1000" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
+                                    <input id="<?= $col['key'] ?>" type="number" name="<?= $col['key'] ?>" step="1000" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
                                 <?php else : ?>
-                                    <input type="<?= $col['type'] === 'password' ? 'password' : 'text' ?>" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
+                                    <input id="<?= $col['key'] ?>" type="<?= $col['type'] === 'password' ? 'password' : 'text' ?>" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
                                 <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
@@ -520,7 +520,7 @@
 
                             <?php if ($section === 'artists' && !empty($allServices)) : ?>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold mb-1.5">خدمات مرتبط</label>
+                            <div class="block text-sm font-semibold mb-1.5">خدمات مرتبط</div>
                                 <div class="grid grid-cols-2 gap-2" id="artist-services-cb">
                                     <?php foreach ($allServices as $svc) : ?>
                                     <label class="flex items-center gap-2 bg-rose-50 rounded-xl px-3 py-2 cursor-pointer hover:bg-rose-100 transition-all">
@@ -534,9 +534,9 @@
 
                             <?php if ($section === 'services' && !empty($allHairLengths)) : ?>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-bold mb-2 text-zinc-700 border-b border-rose-100 pb-2">
+                                <div class="block text-sm font-bold mb-2 text-zinc-700 border-b border-rose-100 pb-2">
                                     <i class="fa-solid fa-ruler-vertical ml-1 text-rose-500"></i> قیمت‌گذاری بر اساس قد مو
-                                </label>
+                                </div>
                                 <div class="space-y-2" id="service-hair-prices">
                                     <?php foreach ($allHairLengths as $hl) : ?>
                                     <div class="flex items-center gap-2 bg-rose-50 rounded-xl px-3 py-2 hair-price-row" data-hl-id="<?= $hl['id'] ?>">

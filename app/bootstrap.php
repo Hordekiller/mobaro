@@ -68,10 +68,10 @@ set_exception_handler(function (Throwable $e) {
         return;
     }
     http_response_code(500);
-    require __DIR__ . '/views/layouts/header.php';
+    require_once __DIR__ . '/views/layouts/header.php';
     $errorMessage = 'خطایی غیرمنتظره رخ داده است. لطفاً دوباره تلاش کنید.';
-    require __DIR__ . '/views/errors/500.php';
-    require __DIR__ . '/views/layouts/footer.php';
+    require_once __DIR__ . '/views/errors/500.php';
+    require_once __DIR__ . '/views/layouts/footer.php';
     exit;
 });
 

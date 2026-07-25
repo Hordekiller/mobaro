@@ -18,7 +18,7 @@ class SmsService
             return ['status' => false, 'message' => 'کلید API پیامک تنظیم نشده است.'];
         }
 
-        $template = $token ? 'verify' : 'verify';
+        $template = 'verify';
         $params = [
             'receptor' => $phone,
             'message' => $code,

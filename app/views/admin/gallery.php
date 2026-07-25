@@ -104,7 +104,7 @@ $total = $total ?? 0;
 </div>
 
 <!-- Upload Modal -->
-    <div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" onclick="if(event.target===this)closeUploadModal()" onkeydown="if(event.key==='Escape')closeUploadModal()">
+    <div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" onclick="if(event.target===this)closeUploadModal()" onkeydown="if(event.key==='Escape')closeUploadModal()">
     <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold">آپلود رسانه جدید</h3>
@@ -130,7 +130,7 @@ $total = $total ?? 0;
 </div>
 
 <!-- Delete Confirmation Modal -->
-    <div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" onclick="if(event.target===this)closeDeleteModal()" onkeydown="if(event.key==='Escape')closeDeleteModal()">
+    <div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" onclick="if(event.target===this)closeDeleteModal()" onkeydown="if(event.key==='Escape')closeDeleteModal()">
     <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl" onclick="event.stopPropagation()">
         <div class="text-center">
             <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i>

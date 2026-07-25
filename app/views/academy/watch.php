@@ -38,9 +38,9 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                 <div class="aspect-video">
                     <?php $videoType = $course['video_type'] ?? 'upload'; ?>
                     <?php if ($videoType === 'youtube') : ?>
-                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>?autoplay=1" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video"></iframe>
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>?autoplay=1" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video" title="ویدیوی دوره"></iframe>
                     <?php elseif ($videoType === 'aparat') : ?>
-                    <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video"></iframe>
+                    <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video" title="ویدیوی دوره"></iframe>
                     <?php elseif (!empty($courseMedia)) : ?>
                     <video controls autoplay id="course-video" class="w-full h-full object-contain"
                            data-course-id="<?= $course['id'] ?>"

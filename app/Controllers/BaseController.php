@@ -9,10 +9,10 @@ class BaseController
         $hideFooter = $data['hideFooter'] ?? false;
         $safe = array_diff_key($data, array_flip(self::$protectedVars));
         extract($safe);
-        require __DIR__ . '/../views/layouts/header.php';
-        require __DIR__ . '/../views/' . $view . '.php';
+        require_once __DIR__ . '/../views/layouts/header.php';
+        require_once __DIR__ . '/../views/' . $view . '.php';
         if (empty($hideFooter)) {
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
         }
     }
 
@@ -20,7 +20,7 @@ class BaseController
     {
         $safe = array_diff_key($data, array_flip(self::$protectedVars));
         extract($safe);
-        require __DIR__ . '/../views/' . $view . '.php';
+        require_once __DIR__ . '/../views/' . $view . '.php';
     }
 
     protected function json(mixed $data, int $status = 200): void

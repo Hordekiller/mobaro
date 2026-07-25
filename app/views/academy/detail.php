@@ -62,9 +62,9 @@ if (isset($_SESSION['user'])) {
             </div>
             <div class="aspect-video bg-zinc-900">
                 <?php if (($course['video_type'] ?? 'upload') === 'youtube') : ?>
-                <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
                 <?php elseif (($course['video_type'] ?? 'upload') === 'aparat') : ?>
-                <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
                 <?php else : ?>
                 <video controls preload="metadata" id="preview-video" class="w-full h-full object-contain" poster="/assets/images/<?= e($course['image'] ?? '') ?>">
                     <source src="<?= e($course['video_url']) ?>" type="video/mp4">
@@ -125,7 +125,7 @@ if (isset($_SESSION['user'])) {
         <div class="bg-white rounded-3xl border border-zinc-100 shadow-sm p-6">
             <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-chalkboard-user text-rose-500 ml-2"></i>مدرس دوره</h2>
             <div class="flex items-start gap-4">
-                <img src="/avatar/<?= e($course['teacher']) ?>/88" class="w-20 h-20 rounded-2xl border-2 border-rose-100 flex-shrink-0">
+                <img src="/avatar/<?= e($course['teacher']) ?>/88" alt="<?= e($course['teacher']) ?>" class="w-20 h-20 rounded-2xl border-2 border-rose-100 flex-shrink-0">
                 <div>
                     <h3 class="font-bold text-lg"><?= e($course['teacher']) ?></h3>
                     <p class="text-sm text-zinc-500 mt-1">مدرس <?= e($course['category']) ?> با بیش از ۱۰ سال سابقه تدریس و فعالیت حرفه‌ای در سالن‌های زیبایی معتبر.</p>
@@ -198,6 +198,7 @@ if (isset($_SESSION['user'])) {
         <div class="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
             <div class="relative">
                 <img src="/assets/images/<?= e($course['image']) ?>"
+                     alt="<?= e($course['title'] ?? '') ?>"
                      class="w-full h-48 object-cover"
                      onerror="this.src='/media/400/300/<?= e($course['id']) ?>'">
                 <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -293,6 +294,7 @@ if (isset($_SESSION['user'])) {
                 <?php foreach ($related as $rel) : ?>
                 <a href="/course/<?= e($rel['slug'] ?: $rel['id']) ?>" class="flex items-center gap-3 group">
                     <img src="/assets/images/<?= e($rel['image']) ?>"
+                         alt="<?= e($rel['title'] ?? '') ?>"
                          class="w-16 h-16 rounded-xl object-cover flex-shrink-0"
                          onerror="this.src='/media/100/100/<?= e($rel['id']) ?>'">
                     <div class="min-w-0">

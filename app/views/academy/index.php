@@ -42,6 +42,7 @@
                 <?php if ($featuredCourse) : ?>
                 <a href="/course/<?= e($featuredCourse['slug'] ?: $featuredCourse['id']) ?>" class="block relative bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20 hover:bg-white/20 transition-all group">
                     <img src="/assets/images/<?= e($featuredCourse['image']) ?>"
+                         alt="<?= e($featuredCourse['title'] ?? '') ?>"
                          class="w-full h-56 object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
                          onerror="this.src='/media/600/340/<?= e($featuredCourse['id']) ?>'">
                     <div class="mt-4 flex items-center justify-between">
@@ -121,6 +122,7 @@
         <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>" class="course-card bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden group">
             <div class="relative">
                 <img src="/assets/images/<?= e($course['image']) ?>"
+                     alt="<?= e($course['title'] ?? '') ?>"
                      class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
                      onerror="this.src='/media/600/340/<?= e($course['id']) ?>'">
                 <?php if ($course['is_free']) : ?>

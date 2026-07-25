@@ -19,10 +19,10 @@
                     <p class="text-red-500 text-xs text-center bg-red-50 py-3 rounded-2xl"><?= e($err) ?></p>
                 <?php endif; ?>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-2">شماره تلفن همراه</label>
+                    <label for="login-phone" class="text-xs text-zinc-500 block mb-2">شماره تلفن همراه</label>
                     <div class="flex border rounded-3xl px-6 items-center focus-within:border-rose-500 transition-colors">
                         <span class="text-zinc-400">+۹۸</span>
-                        <input name="phone" type="tel" placeholder="۹۱۲۳۴۵۶۷۸۹"
+                        <input id="login-phone" name="phone" type="tel" placeholder="۹۱۲۳۴۵۶۷۸۹"
                                class="flex-1 py-6 outline-none text-lg placeholder:text-zinc-300 px-4 bg-transparent"
                                value="<?= e(old('phone')) ?>">
                     </div>
@@ -31,20 +31,20 @@
                     <?php endif; ?>
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-2">رمز عبور</label>
-                    <input name="password" type="password" placeholder="••••••••"
+                    <label for="login-password" class="text-xs text-zinc-500 block mb-2">رمز عبور</label>
+                    <input id="login-password" name="password" type="password" placeholder="••••••••"
                            class="w-full border rounded-3xl px-7 py-6 outline-none focus:border-rose-500 transition-colors">
                     <?php if ($err = flashError('password')) : ?>
                         <p class="text-red-500 text-xs mt-2"><?= e($err) ?></p>
                     <?php endif; ?>
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
+                    <label for="login-captcha" class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
                     <div class="flex items-center gap-3">
                         <span class="text-lg font-bold text-zinc-700" id="captcha-question"><?= e($captchaQuestion ?? '۵ + ۳') ?> = ?</span>
                         <button type="button" onclick="refreshLoginCaptcha()" class="text-xs text-rose-500 hover:underline">تغییر</button>
                     </div>
-                    <input name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
+                    <input id="login-captcha" name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
                            class="w-full border rounded-3xl px-7 py-5 outline-none focus:border-rose-500 transition-colors mt-2 text-center text-lg font-bold"
                            required>
                     <?php if ($err = flashError('captcha')) : ?>
@@ -67,7 +67,7 @@
                 <?php endif; ?>
                 <div class="flex items-center justify-between text-xs">
                     <a href="/register" class="text-rose-500 hover:underline">ثبت‌نام</a>
-                    <span onclick="showForgotSection()" class="text-rose-500 cursor-pointer hover:underline">فراموشی رمز؟</span>
+                    <button type="button" onclick="showForgotSection()" class="text-rose-500 cursor-pointer hover:underline bg-transparent border-none p-0 text-xs font-normal">فراموشی رمز؟</button>
                 </div>
             </form>
         </div>
@@ -80,20 +80,20 @@
                     <h3 class="font-semibold text-xl">فراموشی رمز عبور</h3>
                     <p class="text-xs text-zinc-500 mt-2">شماره تلفن خود را وارد کنید</p>
                 </div>
-                <input name="phone" type="tel" placeholder="شماره تلفن"
+                <input id="forgot-phone" name="phone" type="tel" placeholder="شماره تلفن"
                        class="w-full border rounded-3xl px-8 py-6 text-center text-xl focus:border-rose-500 outline-none">
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
+                    <label for="forgot-captcha" class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
                     <div class="flex items-center gap-3">
                         <span class="text-lg font-bold text-zinc-700" id="forgot-captcha-question"><?= e($captchaQuestion ?? '۵ + ۳') ?> = ?</span>
                         <button type="button" onclick="refreshLoginCaptcha('forgot-captcha-question')" class="text-xs text-rose-500 hover:underline">تغییر</button>
                     </div>
-                    <input name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
+                    <input id="forgot-captcha" name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
                            class="w-full border rounded-3xl px-8 py-5 text-center text-lg font-bold focus:border-rose-500 outline-none mt-2"
                            required>
                 </div>
                 <button type="submit" class="w-full py-7 bg-amber-400 text-zinc-900 font-bold rounded-3xl">ارسال درخواست</button>
-                <div onclick="hideForgotSection()" class="text-center text-xs text-rose-500 cursor-pointer">بازگشت به ورود</div>
+                <button type="button" onclick="hideForgotSection()" class="block w-full text-center text-xs text-rose-500 cursor-pointer bg-transparent border-none p-0">بازگشت به ورود</button>
             </form>
         </div>
     </div>
