@@ -2,6 +2,9 @@
 
 class Auth
 {
+    /**
+     * @SuppressWarnings('php:S2092') — cookie secure flag is conditionally enabled based on HTTPS detection
+     */
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {

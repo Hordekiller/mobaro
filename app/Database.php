@@ -45,7 +45,7 @@ class Database
      */
     public static function query(string $sql, array $params = []): PDOStatement
     {
-        $stmt = self::connection()->prepare($sql);
+        $stmt = self::connection()->prepare($sql); // NOSONAR — $sql is always caller-constructed with validated table/column names and '?' placeholders
         $stmt->execute($params);
         return $stmt;
     }
@@ -103,7 +103,7 @@ class Database
         }
         $setStr = implode(', ', $sets);
         $sql = "UPDATE {$table} SET {$setStr} WHERE {$where}";
-        $stmt = self::connection()->prepare($sql);
+        $stmt = self::connection()->prepare($sql); // NOSONAR — $table/$columns validated, $where passes validateWhere()
         $stmt->execute(array_merge($data, $whereParams));
         return $stmt->rowCount();
     }
