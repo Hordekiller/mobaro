@@ -80,6 +80,7 @@
                     <h3 class="font-semibold text-xl">فراموشی رمز عبور</h3>
                     <p class="text-xs text-zinc-500 mt-2">شماره تلفن خود را وارد کنید</p>
                 </div>
+                <label for="forgot-phone" class="text-xs text-zinc-500 block mb-2">شماره تلفن</label>
                 <input id="forgot-phone" name="phone" type="tel" placeholder="شماره تلفن"
                        class="w-full border rounded-3xl px-8 py-6 text-center text-xl focus:border-rose-500 outline-none">
                 <div>

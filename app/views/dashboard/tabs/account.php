@@ -19,25 +19,25 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-semibold mb-1.5">نام</label>
-            <input type="text" name="name" value="<?= e($user['name']) ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" required>
+            <label for="acc-name" class="block text-sm font-semibold mb-1.5">نام</label>
+            <input id="acc-name" type="text" name="name" value="<?= e($user['name']) ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" required>
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">نام خانوادگی</label>
-            <input type="text" name="family" value="<?= e($user['family']) ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" required>
+            <label for="acc-family" class="block text-sm font-semibold mb-1.5">نام خانوادگی</label>
+            <input id="acc-family" type="text" name="family" value="<?= e($user['family']) ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" required>
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">شماره تلفن</label>
-            <input type="text" value="<?= e($user['phone']) ?>" disabled class="w-full px-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl text-gray-500 outline-none">
+            <label for="acc-phone" class="block text-sm font-semibold mb-1.5">شماره تلفن</label>
+            <input id="acc-phone" type="text" value="<?= e($user['phone']) ?>" disabled class="w-full px-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl text-gray-500 outline-none">
             <p class="text-xs text-[#9e9e9e] mt-1">تغییر شماره تلفن امکان‌پذیر نیست</p>
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">ایمیل</label>
-            <input type="email" name="email" value="<?= e($user['email'] ?? '') ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="example@mail.com">
+            <label for="acc-email" class="block text-sm font-semibold mb-1.5">ایمیل</label>
+            <input id="acc-email" type="email" name="email" value="<?= e($user['email'] ?? '') ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="example@mail.com">
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">سطح کاربری</label>
-            <input type="text" value="<?= e($user['level'] ?? '') ?>" disabled class="w-full px-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl text-gray-500 outline-none">
+            <label for="acc-level" class="block text-sm font-semibold mb-1.5">سطح کاربری</label>
+            <input id="acc-level" type="text" value="<?= e($user['level'] ?? '') ?>" disabled class="w-full px-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl text-gray-500 outline-none">
         </div>
     </div>
 

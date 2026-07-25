@@ -21,15 +21,15 @@
             <input type="hidden" name="_csrf" value="<?= e($_SESSION['_csrf'] ?? '') ?>">
 
             <div class="mb-4">
-                <label class="block text-sm font-semibold text-zinc-700 mb-2">رمز عبور جدید</label>
-                <input type="password" name="password" minlength="6"
+                <label for="reset-password" class="block text-sm font-semibold text-zinc-700 mb-2">رمز عبور جدید</label>
+                <input id="reset-password" type="password" name="password" minlength="6"
                     class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
                     placeholder حداقل ۶ کاراکتر" required>
             </div>
 
             <div class="mb-6">
-                <label class="block text-sm font-semibold text-zinc-700 mb-2">تکرار رمز عبور</label>
-                <input type="password" name="password_confirm" minlength="6"
+                <label for="reset-password-confirm" class="block text-sm font-semibold text-zinc-700 mb-2">تکرار رمز عبور</label>
+                <input id="reset-password-confirm" type="password" name="password_confirm" minlength="6"
                     class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
                     placeholder="رمز عبور را دوباره وارد کنید" required>
             </div>

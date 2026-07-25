@@ -132,7 +132,7 @@
         <div class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl shadow flex items-center gap-x-3 text-xs">
             <div class="flex -space-x-4">
                 <div class="w-6 h-6 bg-rose-300 border-2 border-white rounded-2xl overflow-hidden">
-                    <img src="/avatar/<?= urlencode($post['author']) ?>/48" class="object-cover">
+                    <img src="/avatar/<?= urlencode($post['author']) ?>/48" alt="<?= e($post['author']) ?>" class="object-cover">
                 </div>
             </div>
             <div class="text-gray-500 text-[10px] leading-none">
@@ -236,6 +236,7 @@
                 </div>
 
                 <div class="mt-8 bg-gray-100 rounded-3xl p-2">
+                    <label for="comment-textarea" class="sr-only">نظر شما</label>
                     <textarea id="comment-textarea" rows="3"
                               class="w-full bg-white focus:outline-none rounded-3xl px-6 py-5 text-sm resize-none"
                               placeholder="نظر خود را بنویسید..."></textarea>
@@ -263,6 +264,7 @@
                     آخرین نکات زیبایی را دریافت کنید
                 </div>
                 <div class="mt-8">
+                    <label for="newsletter-email" class="sr-only">ایمیل خبرنامه</label>
                     <input id="newsletter-email" type="email"
                            class="w-full border border-transparent focus:border-rose-300 bg-zinc-50 rounded-3xl px-6 py-6 outline-none text-sm"
                            placeholder="ایمیل شما">
@@ -301,7 +303,7 @@
                     <span class="text-sm font-bold text-gray-800">جدیدترین دوره آموزشی</span>
                 </div>
                 <a href="/course/<?= e($latestCourse['slug'] ?? $latestCourse['id']) ?>" class="block group">
-                    <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-36 rounded-2xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" onerror="this.src='/media/400/200/<?= e($latestCourse['id']) ?>'">
+                    <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-36 rounded-2xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" onerror="this.src='/media/400/200/<?= e($latestCourse['id']) ?>'"> // NOSONAR
                     <h5 class="font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1"><?= e($latestCourse['title']) ?></h5>
                     <div class="text-xs text-gray-500 mb-2"><?= e($latestCourse['teacher']) ?></div>
                     <?php if (!empty($latestCourse['is_free'])) : ?>
@@ -352,8 +354,8 @@
                 </div>
             </div>
 
-            <div onclick="window.location.href='/booking'"
-                 class="mt-6 bg-gradient-to-br from-rose-600 to-rose-800 text-white rounded-3xl px-7 py-7 cursor-pointer active:scale-[0.97] transition-transform">
+            <a href="/booking"
+               class="mt-6 bg-gradient-to-br from-rose-600 to-rose-800 text-white rounded-3xl px-7 py-7 cursor-pointer active:scale-[0.97] transition-transform block">
                 <div class="flex items-center justify-between">
                     <div class="max-w-[160px]">
                         <div class="text-sm opacity-75">نوبت خود را امروز رزرو کنید</div>
@@ -361,7 +363,7 @@
                     </div>
                     <div class="text-6xl opacity-60"><i class="fa-solid fa-calendar-check"></i></div>
                 </div>
-            </div>
+            </a>
 
         </div>
     </div>

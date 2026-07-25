@@ -74,9 +74,9 @@ class AcademyController extends BaseController
 
         if (!$course) {
             http_response_code(404);
-            require __DIR__ . '/../views/layouts/header.php';
-            require __DIR__ . '/../views/errors/404.php';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/errors/404.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
             return;
         }
 
@@ -158,9 +158,9 @@ class AcademyController extends BaseController
 
         if (!$course) {
             http_response_code(404);
-            require __DIR__ . '/../views/layouts/header.php';
-            require __DIR__ . '/../views/errors/404.php';
-            require __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . '/../views/layouts/header.php';
+            require_once __DIR__ . '/../views/errors/404.php';
+            require_once __DIR__ . '/../views/layouts/footer.php';
             return;
         }
 

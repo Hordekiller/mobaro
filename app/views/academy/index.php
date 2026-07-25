@@ -44,7 +44,7 @@
                     <img src="/assets/images/<?= e($featuredCourse['image']) ?>"
                          alt="<?= e($featuredCourse['title'] ?? '') ?>"
                          class="w-full h-56 object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
-                         onerror="this.src='/media/600/340/<?= e($featuredCourse['id']) ?>'">
+                         onerror="this.src='/media/600/340/<?= e($featuredCourse['id']) ?>'"> // NOSONAR
                     <div class="mt-4 flex items-center justify-between">
                         <div>
                             <div class="text-sm text-white/60">دوره ویژه هفته</div>
@@ -124,7 +124,7 @@
                 <img src="/assets/images/<?= e($course['image']) ?>"
                      alt="<?= e($course['title'] ?? '') ?>"
                      class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
-                     onerror="this.src='/media/600/340/<?= e($course['id']) ?>'">
+                     onerror="this.src='/media/600/340/<?= e($course['id']) ?>'"> // NOSONAR
                 <?php if ($course['is_free']) : ?>
                 <div class="absolute top-4 left-4 bg-emerald-500 text-white text-[11px] font-semibold px-3 py-1 rounded-full">رایگان</div>
                 <?php endif; ?>

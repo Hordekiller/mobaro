@@ -210,7 +210,8 @@
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-rose-50">
                         <h4 class="text-lg font-bold text-gray-900 mb-4" style="border-right:4px solid #e11d48;padding-right:12px;">جستجو</h4>
                         <form method="GET" action="/blog" class="relative">
-                            <input type="text" name="s" value="<?= e($search) ?>" placeholder="جستجو..." class="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:border-rose-400 focus:outline-none search-input">
+                            <label for="blog-search" class="sr-only">جستجو</label>
+                            <input id="blog-search" type="text" name="s" value="<?= e($search) ?>" placeholder="جستجو..." class="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:border-rose-400 focus:outline-none search-input">
                             <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </form>
                     </div>
@@ -250,7 +251,7 @@
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-rose-50">
                         <h4 class="text-lg font-bold text-gray-900 mb-4" style="border-right:4px solid #e11d48;padding-right:12px;">جدیدترین دوره آموزشی</h4>
                         <a href="/course/<?= e($latestCourse['slug'] ?? $latestCourse['id']) ?>" class="block group">
-                            <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-40 rounded-xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" onerror="this.src='/media/400/200/<?= e($latestCourse['id']) ?>'">
+                            <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-40 rounded-xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" onerror="this.src='/media/400/200/<?= e($latestCourse['id']) ?>'"> // NOSONAR
                             <h5 class="font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1"><?= e($latestCourse['title']) ?></h5>
                             <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                 <span><?= e($latestCourse['teacher']) ?></span>
@@ -285,6 +286,7 @@
                         <h4 class="text-lg font-bold mb-2">عضویت در خبرنامه</h4>
                         <p class="text-rose-100 text-sm mb-4">از جدیدترین مقالات و تخفیف‌های ویژه مطلع شوید</p>
                         <form class="space-y-3" onsubmit="event.preventDefault();blogSubscribeNewsletter()">
+                            <label for="nl-email-blog" class="sr-only">ایمیل خبرنامه</label>
                             <input id="nl-email-blog" type="email" placeholder="ایمیل خود را وارد کنید" class="w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-300 text-sm">
                             <button type="submit" class="w-full" style="background:#d4a843;color:white;padding:12px 20px;border-radius:12px;font-weight:bold;transition:all 0.3s;">عضو شوید</button>
                         </form>

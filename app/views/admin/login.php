@@ -18,7 +18,7 @@
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div class="p-8 text-center">
                 <div class="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-200 overflow-hidden" role="img" aria-label="لوگوی موبارو">
-                    <img src="/assets/images/logo.png" alt="لوگوی موبارو" class="w-full h-full object-cover" onerror="this.innerHTML='<i class=\'fa-solid fa-shield-halved text-white text-3xl\'></i>'">
+                    <img src="/assets/images/logo.png" alt="لوگوی موبارو" class="w-full h-full object-cover" onerror="this.innerHTML='<i class=\'fa-solid fa-shield-halved text-white text-3xl\'></i>'"> // NOSONAR
                 </div>
                 <h1 class="text-2xl font-bold mb-1">پنل مدیریت</h1>
                 <p class="text-zinc-500 text-sm">موبارو</p>

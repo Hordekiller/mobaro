@@ -27,8 +27,8 @@
             <input type="hidden" name="_csrf" value="<?= e($_SESSION['_csrf'] ?? '') ?>">
 
             <div class="mb-6">
-                <label class="block text-sm font-semibold text-zinc-700 mb-2">کد تأیید</label>
-                <input type="text" name="code" maxlength="5" inputmode="numeric" autocomplete="one-time-code"
+                <label for="verify-code" class="block text-sm font-semibold text-zinc-700 mb-2">کد تأیید</label>
+                <input id="verify-code" type="text" name="code" maxlength="5" inputmode="numeric" autocomplete="one-time-code"
                     class="w-full text-center text-2xl tracking-[0.5em] font-mono px-4 py-4 border-2 border-zinc-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
                     placeholder="-----" required autofocus>
             </div>

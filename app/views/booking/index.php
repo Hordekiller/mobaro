@@ -11,17 +11,17 @@ $title = 'رزرو نوبت | موبارو'; ?>
 
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-zinc-100">
                 <div class="flex items-center justify-between mb-6">
-                    <div onclick="setBookingStep(0)"
-                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۱</div>
+                    <button type="button" onclick="setBookingStep(0)"
+                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۱</button>
                     <div class="flex-1 h-px bg-zinc-200 mx-2"></div>
-                    <div onclick="setBookingStep(1)"
-                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۲</div>
+                    <button type="button" onclick="setBookingStep(1)"
+                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۲</button>
                     <div class="flex-1 h-px bg-zinc-200 mx-2"></div>
-                    <div onclick="setBookingStep(2)"
-                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۳</div>
+                    <button type="button" onclick="setBookingStep(2)"
+                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۳</button>
                     <div class="flex-1 h-px bg-zinc-200 mx-2"></div>
-                    <div onclick="setBookingStep(3)"
-                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۴</div>
+                    <button type="button" onclick="setBookingStep(3)"
+                         class="booking-step cursor-pointer w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all border-2">۴</button>
                 </div>
                 <div id="booking-form-content" data-theme="light">
                     <div class="text-center py-12 text-zinc-400">

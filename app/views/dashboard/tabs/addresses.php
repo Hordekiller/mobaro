@@ -63,24 +63,24 @@
             <input type="hidden" name="address_id" id="editAddressId" value="0">
             <input type="hidden" name="from_cart" id="fromCartInput" value="0">
             <div>
-                <label class="block text-sm font-semibold mb-1.5">عنوان آدرس</label>
+                <label for="editTitle" class="block text-sm font-semibold mb-1.5">عنوان آدرس</label>
                 <input type="text" name="title" id="editTitle" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="مثلاً: منزل، محل کار" value="خانه">
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-1.5">آدرس کامل</label>
+                <label for="editAddress" class="block text-sm font-semibold mb-1.5">آدرس کامل</label>
                 <textarea name="address" id="editAddress" rows="3" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="استان، شهر، خیابان، کوچه، پلاک" required></textarea>
             </div>
             <div class="grid grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">شهر</label>
+                    <label for="editCity" class="block text-sm font-semibold mb-1.5">شهر</label>
                     <input type="text" name="city" id="editCity" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="تهران">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">کد پستی</label>
+                    <label for="editZipCode" class="block text-sm font-semibold mb-1.5">کد پستی</label>
                     <input type="text" name="zip_code" id="editZipCode" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">تلفن</label>
+                    <label for="editPhone" class="block text-sm font-semibold mb-1.5">تلفن</label>
                     <input type="text" name="phone" id="editPhone" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all" placeholder="اختیاری">
                 </div>
             </div>

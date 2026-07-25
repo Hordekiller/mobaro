@@ -46,14 +46,16 @@
                     <?= csrf() ?>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <input type="text" name="name" placeholder="نام و نام خانوادگی" value="<?= e(old('name')) ?>"
+                            <label for="contact-name" class="sr-only">نام و نام خانوادگی</label>
+                            <input id="contact-name" type="text" name="name" placeholder="نام و نام خانوادگی" value="<?= e(old('name')) ?>"
                                    class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <?php if ($err = flashError('name')) :
                                 ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
                             endif; ?>
                         </div>
                         <div>
-                            <input type="email" name="email" placeholder="ایمیل" value="<?= e(old('email')) ?>"
+                            <label for="contact-email" class="sr-only">ایمیل</label>
+                            <input id="contact-email" type="email" name="email" placeholder="ایمیل" value="<?= e(old('email')) ?>"
                                    class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <?php if ($err = flashError('email')) :
                                 ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
@@ -62,16 +64,19 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <input type="text" name="phone" placeholder="تلفن" value="<?= e(old('phone')) ?>"
+                            <label for="contact-phone" class="sr-only">تلفن</label>
+                            <input id="contact-phone" type="text" name="phone" placeholder="تلفن" value="<?= e(old('phone')) ?>"
                                    class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                         </div>
                         <div>
-                            <input type="text" name="subject" placeholder="موضوع" value="<?= e(old('subject')) ?>"
+                            <label for="contact-subject" class="sr-only">موضوع</label>
+                            <input id="contact-subject" type="text" name="subject" placeholder="موضوع" value="<?= e(old('subject')) ?>"
                                    class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                         </div>
                     </div>
                     <div>
-                        <textarea name="message" rows="5" placeholder="پیام شما..." 
+                        <label for="contact-message" class="sr-only">پیام شما</label>
+                        <textarea id="contact-message" name="message" rows="5" placeholder="پیام شما..." 
                                   class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e(old('message')) ?></textarea>
                         <?php if ($err = flashError('message')) :
                             ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php

@@ -17,8 +17,8 @@
                 <?= csrf() ?>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs text-zinc-500 block mb-2">نام</label>
-                        <input name="name" type="text" placeholder="سارا"
+                        <label for="reg-name" class="text-xs text-zinc-500 block mb-2">نام</label>
+                        <input id="reg-name" name="name" type="text" placeholder="سارا"
                                class="w-full border rounded-3xl px-6 py-6 outline-none focus:border-rose-500 transition-colors"
                                value="<?= e(old('name')) ?>">
                         <?php if ($err = flashError('name')) :
@@ -26,8 +26,8 @@
                         endif; ?>
                     </div>
                     <div>
-                        <label class="text-xs text-zinc-500 block mb-2">نام خانوادگی</label>
-                        <input name="family" type="text" placeholder="احمدی"
+                        <label for="reg-family" class="text-xs text-zinc-500 block mb-2">نام خانوادگی</label>
+                        <input id="reg-family" name="family" type="text" placeholder="احمدی"
                                class="w-full border rounded-3xl px-6 py-6 outline-none focus:border-rose-500 transition-colors"
                                value="<?= e(old('family')) ?>">
                         <?php if ($err = flashError('family')) :
@@ -36,10 +36,10 @@
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-2">شماره تلفن</label>
+                    <label for="reg-phone" class="text-xs text-zinc-500 block mb-2">شماره تلفن</label>
                     <div class="flex border rounded-3xl px-6 items-center focus-within:border-rose-500 transition-colors">
                         <span class="text-zinc-400">+۹۸</span>
-                        <input name="phone" type="tel" placeholder="۹۱۲۳۴۵۶۷۸۹"
+                        <input id="reg-phone" name="phone" type="tel" placeholder="۹۱۲۳۴۵۶۷۸۹"
                                class="flex-1 py-6 outline-none text-lg px-4 bg-transparent"
                                value="<?= e(old('phone')) ?>">
                     </div>
@@ -48,20 +48,20 @@
                     endif; ?>
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-2">رمز عبور</label>
-                    <input name="password" type="password" placeholder="حداقل ۶ کاراکتر"
+                    <label for="reg-password" class="text-xs text-zinc-500 block mb-2">رمز عبور</label>
+                    <input id="reg-password" name="password" type="password" placeholder="حداقل ۶ کاراکتر"
                            class="w-full border rounded-3xl px-7 py-6 outline-none focus:border-rose-500 transition-colors">
                     <?php if ($err = flashError('password')) :
                         ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php
                     endif; ?>
                 </div>
                 <div>
-                    <label class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
+                    <label for="reg-captcha" class="text-xs text-zinc-500 block mb-2">کد امنیتی</label>
                     <div class="flex items-center gap-3">
                         <span class="text-lg font-bold text-zinc-700" id="captcha-question"><?= e($captchaQuestion ?? '۵ + ۳') ?> = ?</span>
                         <button type="button" onclick="refreshCaptcha()" class="text-xs text-rose-500 hover:underline">تغییر</button>
                     </div>
-                    <input name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
+                    <input id="reg-captcha" name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
                            class="w-full border rounded-3xl px-7 py-5 outline-none focus:border-rose-500 transition-colors mt-2 text-center text-lg font-bold"
                            required>
                     <?php if ($err = flashError('captcha')) :
