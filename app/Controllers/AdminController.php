@@ -120,6 +120,33 @@ class AdminController extends BaseController
         }
 
         $data = ['section' => $section];
+        $data['sections'] = [
+            'services' => ['fa-scissors', 'خدمات'],
+            'artists' => ['fa-user-tie', 'آرایشگران'],
+            'appointments' => ['fa-calendar-check', 'نوبت\u200cها'],
+            'products' => ['fa-box', 'محصولات'],
+            'users' => ['fa-users', 'کاربران'],
+            'courses' => ['fa-graduation-cap', 'دوره\u200cها'],
+            'enrollments' => ['fa-user-graduate', 'ثبت\u200cنام دوره\u200cها'],
+            'testimonials' => ['fa-comment', 'نظرات'],
+            'transactions' => ['fa-coins', 'تراکنش\u200cها'],
+            'settings' => ['fa-gear', 'تنظیمات'],
+            'captcha' => ['fa-shield-halved', 'کپچا'],
+            'hair-models' => ['fa-image', 'مدل مو'],
+            'tutorials' => ['fa-video', 'آموزش\u200cها'],
+            'orders' => ['fa-truck', 'سفارش\u200cها'],
+            'newsletter' => ['fa-envelope', 'خبرنامه'],
+            'coupons' => ['fa-ticket', 'تخفیف\u200cها'],
+            'contact-messages' => ['fa-envelope-open', 'پیام\u200cها'],
+            'blog' => ['fa-pen', 'وبلاگ'],
+            'reviews' => ['fa-star', 'نظرات محصولات'],
+            'blog-comments' => ['fa-comments', 'نظرات وبلاگ'],
+            'product-categories' => ['fa-layer-group', 'دسته\u200cبندی محصولات'],
+            'product-brands' => ['fa-tag', 'برندها'],
+            'gallery' => ['fa-photo-film', 'گالری رسانه'],
+            'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
+        ];
+
         $method = 'section' . str_replace('-', '', ucwords($section, '-'));
 
         if (method_exists($this, $method)) {
@@ -554,7 +581,7 @@ class AdminController extends BaseController
             'services' => ['homepage', 'booking'],
             'artists' => ['homepage', 'booking'],
             'products' => ['products'],
-            'hair-models' => ['homepage'],
+            'hair-models' => ['homepage', 'models'],
             'tutorials' => ['homepage'],
             'testimonials' => ['homepage'],
             'courses' => ['academy'],
@@ -692,7 +719,11 @@ class AdminController extends BaseController
 
         if ($section === 'orders') {
             if ($id && isset($data['status'])) {
-                Database::update($table, ['status' => $data['status']], 'id = :id', ['id' => $id]);
+                $updateData = ['status' => $data['status']];
+                if (isset($data['payment_status'])) {
+                    $updateData['payment_status'] = $data['payment_status'];
+                }
+                Database::update($table, $updateData, 'id = :id', ['id' => $id]);
                 flash('success', 'وضعیت سفارش به‌روزرسانی شد.');
             }
             $this->clearCache($section);
@@ -1124,6 +1155,38 @@ class AdminController extends BaseController
         $this->verifyCsrf();
 
         $htmlKeys = ['about_content', 'contact_map_location'];
+        $toggleKeys = ['sms_enabled'];
+
+        $smsEnabled = isset($_POST['setting_sms_enabled']);
+        $apiKey = trim($_POST['setting_sms_api_key'] ?? '');
+        $sender = trim($_POST['setting_sms_sender'] ?? '');
+        $otpTtl = $_POST['setting_sms_otp_ttl'] ?? '';
+        $otpLength = $_POST['setting_sms_otp_length'] ?? '';
+
+        if ($smsEnabled) {
+            if ($apiKey === '') {
+                flash('error', 'کلید API کاوه‌نگار نمی‌تواند خالی باشد.');
+                redirect('/admin/settings');
+                return;
+            }
+            if ($sender === '') {
+                flash('error', 'شماره فرستنده نمی‌تواند خالی باشد.');
+                redirect('/admin/settings');
+                return;
+            }
+        }
+
+        if ($otpTtl !== '' && (!ctype_digit($otpTtl) || (int)$otpTtl < 60 || (int)$otpTtl > 600)) {
+            flash('error', 'مدت اعتبار کد تأیید باید عددی بین ۶۰ تا ۶۰۰ ثانیه باشد.');
+            redirect('/admin/settings');
+            return;
+        }
+
+        if ($otpLength !== '' && (!ctype_digit($otpLength) || (int)$otpLength < 4 || (int)$otpLength > 6)) {
+            flash('error', 'طول کد تأیید باید عددی بین ۴ تا ۶ رقم باشد.');
+            redirect('/admin/settings');
+            return;
+        }
 
         $upserts = [];
         $upsertParams = [];
@@ -1136,6 +1199,15 @@ class AdminController extends BaseController
                 $upsertParams[] = $value;
             }
         }
+
+        foreach ($toggleKeys as $toggleKey) {
+            if (!isset($_POST['setting_' . $toggleKey])) {
+                $upserts[] = '(?, ?)';
+                $upsertParams[] = $toggleKey;
+                $upsertParams[] = '0';
+            }
+        }
+
         if (!empty($upserts)) {
             $values = implode(', ', $upserts);
             Database::query(
@@ -1145,6 +1217,7 @@ class AdminController extends BaseController
         }
 
         Settings::invalidate();
+        Config::reset();
         Cache::flushByTag('homepage');
         Cache::forget('home_data');
         flash('success', 'تنظیمات با موفقیت ذخیره شد.');

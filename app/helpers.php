@@ -134,9 +134,9 @@ function isActive(string $path): string
     return $uri === $path ? 'active' : '';
 }
 
-function priceFormat(int $amount): string
+function priceFormat(int|string $amount): string
 {
-    return number_format($amount) . ' تومان';
+    return number_format((int) $amount) . ' تومان';
 }
 
 function likePattern(string $search): string
