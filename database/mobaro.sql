@@ -734,7 +734,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'admin','سیستم','09130209657','admin@mobaro.ir','$2y$12$WG5mdxPOHKhx3IwVqQyXeeQBsEwqS2mr5lCWK5OiQfCGKl1b3DAfO','admin','gold',183,1000000,NULL,NULL,1,'','2026-01-01 06:30:00'),(2,'علی','محمدی','09121111111','','$2y$12$RCBgY6JIK7eDOisw/i1efewEmJcqKuMjXeClPb2G3oBky2IALkFVe','user','silver',50,0,NULL,NULL,1,NULL,'2026-07-09 10:25:08'),(3,'علی','محمدی','09129999999','','$2y$12$ZnwdgqEuyTpj/UKCjD7qk.dGkt2Nvor0hYOrIyPOsUVyZxDMsdgTq','user','silver',50,0,NULL,NULL,1,NULL,'2026-07-09 10:25:58'),(4,'تست','کاربر','09120000001','','$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi','user','',0,0,NULL,NULL,1,NULL,'2026-07-10 06:08:36'),(5,'احمد','سارایی','9333347128','','$2y$12$jxlJrTDriYfucKq7rnD1G.Akt/uRvAPIaTb7rQ1OWowzgkXeaRm9W','user','silver',50,0,NULL,NULL,1,NULL,'2026-07-10 06:11:58');
+INSERT INTO `users` VALUES (1,'admin','سیستم','09130209657','admin@mobaro.ir','$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9','admin','gold',183,1000000,NULL,NULL,1,'','2026-01-01 06:30:00'),(2,'علی','محمدی','09121111111','','$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9','user','silver',50,0,NULL,NULL,1,NULL,'2026-07-09 10:25:08'),(3,'علی','محمدی','09129999999','','$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9','user','silver',50,0,NULL,NULL,1,NULL,'2026-07-09 10:25:58'),(4,'تست','کاربر','09120000001','','$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9','user','',0,0,NULL,NULL,1,NULL,'2026-07-10 06:08:36'),(5,'احمد','سارایی','9333347128','','$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9','user','silver',50,0,NULL,NULL,1,NULL,'2026-07-10 06:11:58');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 

@@ -37,6 +37,12 @@ class Database
         return self::$instance;
     }
 
+    /**
+     * Execute a prepared statement. All SQL must use '?' placeholders for user data.
+     *
+     * @param string $sql  SQL with '?' placeholders, NOT user-supplied values
+     * @param array  $params  Bound parameters matching the '?' placeholders
+     */
     public static function query(string $sql, array $params = []): PDOStatement
     {
         $stmt = self::connection()->prepare($sql);
@@ -113,7 +119,7 @@ class Database
 
     private static function validateWhere(string $where): void
     {
-        if (preg_match('/[\'";`]|--|\/\*|\*\//', $where)) {
+        if (preg_match('/[\'";`]|--|\/\*|\*\/|UNION|SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|EXEC|xp_/i', $where)) {
             throw new InvalidArgumentException("Invalid WHERE clause: potential SQL injection");
         }
     }

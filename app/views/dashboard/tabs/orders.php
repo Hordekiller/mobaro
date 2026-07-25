@@ -136,7 +136,7 @@ foreach ($statusTabs as $k => $label) {
     <?php if (($orderTotalPages ?? 1) > 1) : ?>
     <div class="flex justify-center items-center gap-2 mt-6">
         <?php if (($orderPage ?? 1) > 1) : ?>
-        <a href="?tab=orders&page=<?= ($orderPage ?? 1) - 1 ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?>"
+        <a href="?tab=orders&page=<?= ($orderPage ?? 1) - 1 ?><?= $statusFilter ? '&status=' . e($statusFilter) : '' ?>"
            class="w-10 h-10 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-600 hover:bg-rose-600 hover:text-white transition-all text-sm">
             <i class="fa-solid fa-chevron-right"></i>
         </a>
@@ -145,13 +145,13 @@ foreach ($statusTabs as $k => $label) {
         $startP = max(1, ($orderPage ?? 1) - 2);
         $endP = min($orderTotalPages ?? 1, ($orderPage ?? 1) + 2);
         for ($i = $startP; $i <= $endP; $i++) : ?>
-        <a href="?tab=orders&page=<?= $i ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?>"
+        <a href="?tab=orders&page=<?= $i ?><?= $statusFilter ? '&status=' . e($statusFilter) : '' ?>"
            class="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm transition-all <?= $i === ($orderPage ?? 1) ? 'bg-rose-600 text-white shadow-lg' : 'border border-zinc-300 text-zinc-600 hover:bg-rose-600 hover:text-white' ?>">
             <?= faNum($i) ?>
         </a>
         <?php endfor; ?>
         <?php if (($orderPage ?? 1) < ($orderTotalPages ?? 1)) : ?>
-        <a href="?tab=orders&page=<?= ($orderPage ?? 1) + 1 ?><?= $statusFilter ? '&status=' . $statusFilter : '' ?>"
+        <a href="?tab=orders&page=<?= ($orderPage ?? 1) + 1 ?><?= $statusFilter ? '&status=' . e($statusFilter) : '' ?>"
            class="w-10 h-10 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-600 hover:bg-rose-600 hover:text-white transition-all text-sm">
             <i class="fa-solid fa-chevron-left"></i>
         </a>
