@@ -64,6 +64,12 @@ dore page.html
 *mahsol*.html
 logo.png
 
+# Deploy / build artifacts
+deploy/
+*.zip
+*.tar.gz
+*.tar.bz2
+
 # Analysis output
 analysis-output/
 
