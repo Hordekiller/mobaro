@@ -10,4 +10,4 @@ if ($uri !== '/' && is_file($file)) {
     return false;
 }
 
-require __DIR__ . '/index.php';
+require_once __DIR__ . '/index.php';

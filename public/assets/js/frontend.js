@@ -1032,9 +1032,9 @@ function updateServicePrice()
             body: body
         })
         .then(function (r) {
-            try {
-                return r.json(); } catch (e) {
-                return { error: 'خطا در پاسخ سرور' }; }
+            return r.json().catch(function () {
+                return { error: 'خطا در پاسخ سرور' };
+            });
         })
         .then(function (data) {
             if (btn) {

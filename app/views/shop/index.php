@@ -78,6 +78,7 @@ function filterUrl(array $overrides = []): string
                             <i class="fa-solid fa-tag text-rose-400"></i>
                             محدوده قیمت
                         </h4>
+                        <label for="priceRange" class="sr-only">محدوده قیمت</label>
                         <input type="range" min="0" max="5000000" value="<?= min($priceMax ?: 2500000, 5000000) ?>" class="range-slider mb-4" id="priceRange">
                         <div class="flex justify-between text-sm text-zinc-600">
                             <span>۰ تومان</span>

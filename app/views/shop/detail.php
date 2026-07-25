@@ -39,10 +39,10 @@ $inWishlist = Auth::check()
                         <?php endif; ?>
                     </div>
                     <div class="flex gap-3 overflow-x-auto" id="thumbnails">
-                        <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-rose-500 opacity-100 hover:opacity-80 transition-all thumb-img" onclick="changeImage(this)" onerror="this.src='/media/200/200/<?= e($product['id']) ?>'">
+                        <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-rose-500 opacity-100 hover:opacity-80 transition-all thumb-img" onclick="changeImage(this)" onerror="this.src='/media/200/200/<?= e($product['id']) ?>'" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')changeImage(this)">
                         <?php if (!empty($gallery)) : ?>
                             <?php foreach ($gallery as $gi) : ?>
-                        <img src="/assets/images/<?= e($gi['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'">
+                        <img src="/assets/images/<?= e($gi['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')changeImage(this)">
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
@@ -56,9 +56,9 @@ $inWishlist = Auth::check()
                         <?php elseif ($product['video_type'] !== 'upload') : ?>
                         <div class="relative w-full" style="padding-bottom:56.25%">
                             <?php if ($product['video_type'] === 'youtube') : ?>
-                            <iframe class="absolute inset-0 w-full h-full" src="<?= e($product['video_url']) ?>" frameborder="0" allowfullscreen></iframe>
+                            <iframe class="absolute inset-0 w-full h-full" src="<?= e($product['video_url']) ?>" frameborder="0" allowfullscreen title="ویدیو محصول"></iframe>
                             <?php elseif ($product['video_type'] === 'aparat') : ?>
-                            <iframe class="absolute inset-0 w-full h-full" src="<?= e($product['video_url']) ?>" frameborder="0" allowfullscreen></iframe>
+                            <iframe class="absolute inset-0 w-full h-full" src="<?= e($product['video_url']) ?>" frameborder="0" allowfullscreen title="ویدیو محصول"></iframe>
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>

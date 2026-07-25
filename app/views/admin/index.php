@@ -317,7 +317,7 @@
             </form>
 
         <?php elseif ($section === 'gallery') : ?>
-            <?php require __DIR__ . '/gallery.php'; ?>
+            <?php require_once __DIR__ . '/gallery.php'; ?>
         <?php else : ?>
             <?php $table = $section;
             if (in_array($section, ['hair-models'])) {
@@ -509,9 +509,9 @@
 
                             <?php if ($section === 'products') : ?>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold mb-1.5">گالری تصاویر</label>
+                                <label for="galleryImages" class="block text-sm font-semibold mb-1.5">گالری تصاویر</label>
                                 <div id="gallery-preview" class="flex flex-wrap gap-2 mb-2"></div>
-                                <input type="file" name="gallery_images[]" accept="image/*" multiple
+                                <input id="galleryImages" type="file" name="gallery_images[]" accept="image/*" multiple
                                     class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
                                 <p class="text-xs text-zinc-400 mt-1">می‌توانید چند تصویر را هم‌زمان انتخاب کنید</p>
                                 <input type="hidden" name="delete_gallery_ids" id="delete-gallery-ids" value="">
@@ -541,8 +541,10 @@
                                     <?php foreach ($allHairLengths as $hl) : ?>
                                     <div class="flex items-center gap-2 bg-rose-50 rounded-xl px-3 py-2 hair-price-row" data-hl-id="<?= $hl['id'] ?>">
                                         <span class="text-xs font-semibold text-zinc-600 min-w-[120px]"><?= e($hl['title']) ?></span>
-                                        <input type="number" name="hair_prices[<?= $hl['id'] ?>][price]" placeholder="قیمت (تومان)" step="1000" class="flex-1 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
-                                        <input type="number" name="hair_prices[<?= $hl['id'] ?>][duration_modifier]" placeholder="ضریب" step="0.1" min="0.1" max="5" value="1.0" class="w-20 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                        <input id="hpPrice_<?= $hl['id'] ?>" type="number" name="hair_prices[<?= $hl['id'] ?>][price]" placeholder="قیمت (تومان)" step="1000" class="flex-1 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                        <label for="hpPrice_<?= $hl['id'] ?>" class="sr-only">قیمت <?= e($hl['title']) ?></label>
+                                        <input id="hpDuration_<?= $hl['id'] ?>" type="number" name="hair_prices[<?= $hl['id'] ?>][duration_modifier]" placeholder="ضریب" step="0.1" min="0.1" max="5" value="1.0" class="w-20 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                        <label for="hpDuration_<?= $hl['id'] ?>" class="sr-only">ضریب <?= e($hl['title']) ?></label>
                                         <label class="flex items-center gap-1 cursor-pointer">
                                             <input type="checkbox" name="hair_prices[<?= $hl['id'] ?>][is_active]" value="1" checked class="form-checkbox h-4 w-4 text-rose-600 rounded border-rose-300 focus:ring-0">
                                             <span class="text-xs text-zinc-500">فعال</span>
@@ -594,8 +596,8 @@
                             <?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
                             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-semibold mb-1.5">خدمت</label>
-                                    <select name="service_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
+                                    <label for="hpService" class="block text-sm font-semibold mb-1.5">خدمت</label>
+                                    <select id="hpService" name="service_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
                                         <option value="">انتخاب خدمت</option>
                                         <?php foreach ($allServices as $svc) : ?>
                                         <option value="<?= $svc['id'] ?>"><?= e($svc['title']) ?></option>
@@ -603,8 +605,8 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold mb-1.5">قد مو</label>
-                                    <select name="hair_length_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
+                                    <label for="hpHairLength" class="block text-sm font-semibold mb-1.5">قد مو</label>
+                                    <select id="hpHairLength" name="hair_length_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
                                         <option value="">انتخاب قد مو</option>
                                         <?php foreach ($allHairLengths as $hl) : ?>
                                         <option value="<?= $hl['id'] ?>"><?= e($hl['title']) ?></option>
@@ -612,12 +614,12 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold mb-1.5">قیمت (تومان)</label>
-                                    <input type="number" name="price" step="1000" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
+                                    <label for="hpPrice" class="block text-sm font-semibold mb-1.5">قیمت (تومان)</label>
+                                    <input id="hpPrice" type="number" name="price" step="1000" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold mb-1.5">ضریب مدت (۱.۰ = بدون تغییر)</label>
-                                    <input type="number" name="duration_modifier" step="0.1" min="0.1" max="5" value="1.0" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                    <label for="hpDuration" class="block text-sm font-semibold mb-1.5">ضریب مدت (۱.۰ = بدون تغییر)</label>
+                                    <input id="hpDuration" type="number" name="duration_modifier" step="0.1" min="0.1" max="5" value="1.0" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="flex items-center gap-2 cursor-pointer">

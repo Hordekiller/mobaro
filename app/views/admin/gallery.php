@@ -13,12 +13,14 @@ $total = $total ?? 0;
     </div>
     <div class="flex items-center gap-3">
         <form method="GET" action="/admin/gallery" class="flex items-center gap-2">
-            <select name="filter" onchange="this.form.submit()" class="px-3 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+            <select id="galleryFilter" name="filter" onchange="this.form.submit()" class="px-3 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
                 <option value="">همه</option>
                 <option value="image" <?= $filter === 'image' ? 'selected' : '' ?>>تصاویر</option>
                 <option value="video" <?= $filter === 'video' ? 'selected' : '' ?>>ویدیوها</option>
             </select>
-            <input type="text" name="s" value="<?= e($search) ?>" placeholder="جستجو..." class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-44">
+            <label for="galleryFilter" class="sr-only">نوع رسانه</label>
+            <input id="gallerySearch" type="text" name="s" value="<?= e($search) ?>" placeholder="جستجو..." class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-44">
+            <label for="gallerySearch" class="sr-only">جستجو</label>
             <button type="submit" class="px-3 py-2.5 bg-zinc-100 text-zinc-600 rounded-xl text-sm hover:bg-rose-50 hover:text-rose-600 transition-all"><i class="fa-solid fa-search"></i></button>
         </form>
         <button onclick="showUploadModal()" class="px-4 py-2.5 bg-rose-600 text-white rounded-xl text-sm font-semibold hover:bg-rose-700 transition-all shadow-lg shadow-rose-600/20">
@@ -102,7 +104,7 @@ $total = $total ?? 0;
 </div>
 
 <!-- Upload Modal -->
-<div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" onclick="if(event.target===this)closeUploadModal()">
+    <div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" onclick="if(event.target===this)closeUploadModal()" onkeydown="if(event.key==='Escape')closeUploadModal()">
     <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold">آپلود رسانه جدید</h3>
@@ -111,14 +113,14 @@ $total = $total ?? 0;
         <form action="/admin/gallery/save" method="POST" enctype="multipart/form-data" class="space-y-4">
             <?= csrf() ?>
             <div>
-                <label class="block text-sm font-semibold mb-1.5">انتخاب فایل</label>
-                <input type="file" name="file" required
+                <label for="galleryFile" class="block text-sm font-semibold mb-1.5">انتخاب فایل</label>
+                <input id="galleryFile" type="file" name="file" required
                     accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/ogg,video/quicktime"
                     class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-1.5">عنوان (اختیاری)</label>
-                <input type="text" name="alt_text" placeholder="نام نمایشی فایل" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                <label for="galleryAltText" class="block text-sm font-semibold mb-1.5">عنوان (اختیاری)</label>
+                <input id="galleryAltText" type="text" name="alt_text" placeholder="نام نمایشی فایل" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
             </div>
             <button type="submit" class="w-full py-3.5 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">
                 <i class="fa-solid fa-upload ml-1"></i>آپلود
@@ -128,7 +130,7 @@ $total = $total ?? 0;
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" onclick="if(event.target===this)closeDeleteModal()">
+    <div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" onclick="if(event.target===this)closeDeleteModal()" onkeydown="if(event.key==='Escape')closeDeleteModal()">
     <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl" onclick="event.stopPropagation()">
         <div class="text-center">
             <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i>

@@ -134,7 +134,7 @@
 
     <!-- Cart Sidebar -->
     <div id="cartSidebar" class="cart-sidebar hidden">
-        <div class="absolute inset-0 bg-black/50" onclick="toggleCart()"></div>
+        <div class="absolute inset-0 bg-black/50" onclick="toggleCart()" onkeydown="if(event.key==='Escape')toggleCart()"></div>
         <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300">
             <div class="p-6 h-full flex flex-col">
                 <div class="flex items-center justify-between mb-6">
@@ -163,7 +163,7 @@
 
     <!-- Wishlist Sidebar -->
     <div id="wishlistSidebar" class="cart-sidebar hidden">
-        <div class="absolute inset-0 bg-black/50" onclick="toggleWishlistSidebar()"></div>
+        <div class="absolute inset-0 bg-black/50" onclick="toggleWishlistSidebar()" onkeydown="if(event.key==='Escape')toggleWishlistSidebar()"></div>
         <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl">
             <div class="p-6 h-full flex flex-col">
                 <div class="flex items-center justify-between mb-6">
