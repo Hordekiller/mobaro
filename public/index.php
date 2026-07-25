@@ -68,6 +68,8 @@ Router::post('/contact/send', ['ContactController', 'send']);
 
 Router::get('/about', ['AboutController', 'index']);
 
+Router::get('/models', ['ModelsController', 'index']);
+
 Router::get('/dashboard/wallet/payment/callback', ['DashboardController', 'walletPaymentCallback']);
 
 Router::post('/newsletter/subscribe', ['NewsletterController', 'subscribe']);
