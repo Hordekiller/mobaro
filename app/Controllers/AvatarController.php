@@ -11,7 +11,7 @@ class AvatarController
     public static function generate(string $name, int $size = 64): void
     {
         $cacheDir = __DIR__ . '/../../public/assets/images/cache/avatars';
-        $hash = md5($name . $size);
+        $hash = hash('sha256', $name . $size);
         $cacheFile = $cacheDir . '/' . $hash . '.svg';
 
         if (!is_dir($cacheDir)) {

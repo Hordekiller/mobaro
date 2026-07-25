@@ -65,7 +65,7 @@ class BlogController extends BaseController
             $params[] = likePattern($search);
         }
 
-        $cacheKey = 'blog_list_' . md5(serialize([$category, $search, $page]));
+        $cacheKey = 'blog_list_' . hash('sha256', serialize([$category, $search, $page]));
         $cached = Cache::remember($cacheKey, Config::get('cache.ttl.page', 600), function () use ($where, $params, $perPage, $offset) {
             $countResult = Database::fetch(
                 "SELECT COUNT(*) as cnt FROM blog_posts WHERE 1=1 {$where}",

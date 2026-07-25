@@ -489,13 +489,19 @@ class AdminController extends BaseController
     private function syncMedia(string $filepath, string $originalName, string $type, string $sourceType, ?int $sourceId): void
     {
         $filepath = ltrim($filepath, '/');
+
+        $publicDir = realpath(__DIR__ . '/../../public');
+        $fullPath = realpath($publicDir . '/' . $filepath);
+        if ($fullPath === false || !str_starts_with($fullPath, $publicDir . '/') && $fullPath !== $publicDir) {
+            return;
+        }
+
         $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
         if ($existing) {
             Database::update('media', [
                 'source_id' => $sourceId,
             ], 'id = :id', ['id' => $existing['id']]);
         } else {
-            $fullPath = __DIR__ . '/../../public/' . $filepath;
             $mime = file_exists($fullPath) ? mime_content_type($fullPath) : '';
             $size = file_exists($fullPath) ? filesize($fullPath) : 0;
             Database::insert('media', [
@@ -1555,7 +1561,7 @@ class AdminController extends BaseController
         $search = trim($_GET['s'] ?? '');
         $filter = trim($_GET['filter'] ?? '');
         $page = max(1, (int) ($_GET['page'] ?? 1));
-        $cacheKey = 'gallery_page_' . $page . '_' . $filter . '_' . md5($search);
+        $cacheKey = 'gallery_page_' . $page . '_' . $filter . '_' . hash('sha256', $search);
 
         $paged = Cache::remember($cacheKey, Config::get('cache.ttl.admin', 300), function () use ($search, $filter) {
             $where = 'WHERE 1=1';

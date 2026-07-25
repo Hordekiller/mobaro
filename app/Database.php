@@ -89,6 +89,7 @@ class Database
         self::validateTable($table);
         $keys = array_keys($data);
         self::validateColumns($keys);
+        self::validateWhere($where);
 
         $sets = [];
         foreach ($keys as $key) {
@@ -104,9 +105,17 @@ class Database
     public static function delete(string $table, string $where, array $params = []): int
     {
         self::validateTable($table);
+        self::validateWhere($where);
         $sql = "DELETE FROM {$table} WHERE {$where}";
         $stmt = self::query($sql, $params);
         return $stmt->rowCount();
+    }
+
+    private static function validateWhere(string $where): void
+    {
+        if (preg_match('/[\'";`]|--|\/\*|\*\//', $where)) {
+            throw new InvalidArgumentException("Invalid WHERE clause: potential SQL injection");
+        }
     }
 
     public static function escapeLike(string $value): string

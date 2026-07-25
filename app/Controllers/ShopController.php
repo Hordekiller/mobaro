@@ -84,7 +84,7 @@ class ShopController extends BaseController
             $where .= " AND p.stock > 0";
         }
 
-        $cacheKey = 'shop_' . md5(serialize([$category, $brand, $search, $sort, $priceMin, $priceMax, $rating, $isSale, $isNew, $inStock, $page]));
+        $cacheKey = 'shop_' . hash('sha256', serialize([$category, $brand, $search, $sort, $priceMin, $priceMax, $rating, $isSale, $isNew, $inStock, $page]));
         $cached = Cache::remember($cacheKey, Config::get('cache.ttl.page', 600), function () use ($where, $params, $orderClause, $perPage, $offset) {
             $countRow = Database::fetch("SELECT COUNT(*) as cnt FROM products p {$where}", $params);
             $totalProducts = (int) ($countRow['cnt'] ?? 0);

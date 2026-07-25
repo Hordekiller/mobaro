@@ -162,7 +162,7 @@ class Cache
 
     public static function flushByTag(string $tag): void
     {
-        $tagPath = self::dir() . '/tags/' . md5(self::prefix() . ':' . $tag) . '.tag';
+        $tagPath = self::dir() . '/tags/' . hash('sha256', self::prefix() . ':' . $tag) . '.tag';
         if (!is_file($tagPath)) {
             return;
         }
@@ -181,7 +181,7 @@ class Cache
             @mkdir($tagDir, 0755, true);
         }
 
-        $tagPath = $tagDir . '/' . md5(self::prefix() . ':' . $tag) . '.tag';
+        $tagPath = $tagDir . '/' . hash('sha256', self::prefix() . ':' . $tag) . '.tag';
         $existing = [];
         if (is_file($tagPath)) {
             $existing = file($tagPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
@@ -281,7 +281,7 @@ class Cache
 
     private static function safeFileName(string $key): string
     {
-        $hash = md5(self::ns($key));
+        $hash = hash('sha256', self::ns($key));
         return substr($hash, 0, 2) . '/' . $hash;
     }
 
@@ -295,7 +295,7 @@ class Cache
 
     private static function lock(string $key): bool
     {
-        $lockFile = self::dir() . '/locks/' . md5(self::ns($key)) . '.lock';
+        $lockFile = self::dir() . '/locks/' . hash('sha256', self::ns($key)) . '.lock';
         $lockDir = dirname($lockFile);
         if (!is_dir($lockDir)) {
             @mkdir($lockDir, 0755, true);
@@ -318,7 +318,7 @@ class Cache
 
     private static function unlock(string $key): void
     {
-        $lockFile = self::dir() . '/locks/' . md5(self::ns($key)) . '.lock';
+        $lockFile = self::dir() . '/locks/' . hash('sha256', self::ns($key)) . '.lock';
         if (is_file($lockFile)) {
             @unlink($lockFile);
         }

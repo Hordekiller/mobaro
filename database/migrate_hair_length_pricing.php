@@ -2,17 +2,22 @@
 // Migration: Hair Length Pricing System
 // Adds tables for hair length options and dynamic pricing based on hair length
 
-// Direct PDO connection to avoid bootstrap issues
-$host = 'localhost';
-$dbname = 'mobaro';
-$user = 'root';
-$pass = '';
+require_once __DIR__ . '/../vendor/autoload.php';
+if (is_file(__DIR__ . '/../.env')) {
+    \Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->load();
+}
+
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$dbname = $_ENV['DB_NAME'] ?? 'mobaro';
+$user = $_ENV['DB_USER'] ?? 'root';
+$pass = $_ENV['DB_PASS'] ?? '';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    error_log('Migration DB connection failed: ' . $e->getMessage());
+    die("Database connection failed. Check .env configuration.");
 }
 
 function executeQuery($pdo, $sql, $params = []) {
