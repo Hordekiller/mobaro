@@ -12,10 +12,11 @@
             <div class="product-card bg-white rounded-3xl overflow-hidden border border-transparent hover:border-zinc-200">
                 <a href="/product/<?= $product['id'] ?>" class="relative block">
                     <img src="/assets/images/<?= e($product['image']) ?>"
+                         alt="<?= e($product['name']) ?>"
                          class="w-full aspect-square object-cover"
-                         onerror="this.src='/media/280/280/<?= e($product['id']) ?>'">
+                         data-fallback="/media/280/280/<?= e($product['id']) ?>">
                     <button onclick="event.preventDefault(); quickAddToCart(<?= $product['id'] ?>, '<?= jsEscape($product['name']) ?>', <?= $product['price'] ?>, '/assets/images/<?= jsEscape($product['image']) ?>', '<?= jsEscape($product['category']) ?>')"
-                            class="absolute top-4 left-4 bg-white h-8 w-8 rounded-2xl flex items-center justify-center shadow text-rose-500 text-lg leading-none pt-px">🛒</button>
+                            class="absolute top-4 left-4 bg-white h-8 w-8 rounded-2xl flex items-center justify-center shadow text-rose-500 text-lg leading-none pt-px" aria-label="افزودن <?= e($product['name']) ?> به سبد خرید">🛒</button>
                 </a>
                 <div class="p-5">
                     <div class="text-xs text-zinc-400"><?= e($product['category']) ?></div>
@@ -23,7 +24,7 @@
                     <div class="flex justify-between items-baseline mt-6">
                         <div class="font-bold text-rose-500"><?= number_format($product['price']) ?> تومان</div>
                         <button onclick="addToCartFromShop(<?= $product['id'] ?>, '<?= jsEscape($product['name']) ?>', <?= $product['price'] ?>, '/assets/images/<?= jsEscape($product['image']) ?>', '<?= jsEscape($product['category']) ?>')"
-                                class="text-xs border border-zinc-300 hover:bg-zinc-50 px-5 py-3 rounded-3xl">اضافه به سبد</button>
+                                class="text-xs border border-zinc-300 hover:bg-zinc-50 px-5 py-3 rounded-3xl" aria-label="افزودن <?= e($product['name']) ?> به سبد خرید">اضافه به سبد</button>
                     </div>
                 </div>
             </div>

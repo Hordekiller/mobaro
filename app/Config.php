@@ -2,6 +2,8 @@
 
 class Config
 {
+    public const VERSION = '1.0.2';
+
     private static array $cache = [];
 
     public static function get(string $key, mixed $default = null): mixed
@@ -28,23 +30,7 @@ class Config
             'app.url' => rtrim((string) env('APP_URL', ''), '/'),
             'app.env' => env('APP_ENV', 'production'),
             'app.debug' => env('APP_DEBUG', 'false') === 'true',
-
-            // Brand (hardcoded — not in .env)
-            'brand.name' => 'موبارو',
-            'brand.phone' => '۰۲۱-۲۲۸۸۴۲۶۷',
-            'brand.address' => 'تهران، خیابان ولیعصر، پلاک ۱۲۸',
-            'brand.hours' => 'شنبه تا پنجشنبه ۹ صبح - ۸ شب',
-            'brand.email' => 'info@mobaro.ir',
-            'brand.instagram' => '#',
-            'brand.telegram' => '#',
-            'brand.linkedin' => '#',
-
-            // Colors (hardcoded theme)
-            'color.primary' => '#e11d48',
-            'color.primaryDark' => '#be185d',
-            'color.gold' => '#D4AF37',
-            'color.cream' => '#FDF6F0',
-            'color.text' => '#27272A',
+            'app.version' => self::VERSION,
 
             // Upload
             'upload.maxSize' => 5 * 1024 * 1024,

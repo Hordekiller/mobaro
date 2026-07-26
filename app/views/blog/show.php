@@ -18,25 +18,6 @@
         bottom: -8px;
         right: 0;
     }
-    .nav-link {
-        position: relative;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .nav-link:after {
-        content: '';
-        position: absolute;
-        width: 0;
-        height: 2px;
-        bottom: -2px;
-        right: 0;
-        background-color: #e11d48;
-        transition: width 0.3s ease;
-    }
-    .nav-link:hover:after {
-        width: 100%;
-        right: auto;
-        left: 0;
-    }
     .featured-image {
         transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -52,14 +33,6 @@
     .prose a:hover {
         color: #be123c;
     }
-    .scroll-progress {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 4px;
-        background: linear-gradient(to right, #e11d48, #d4a843);
-        z-index: 60;
-    }
     .search-input:focus {
         box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.2);
     }
@@ -74,8 +47,6 @@
         top: 100px;
     }
 </style>
-
-<div id="progress-bar" class="scroll-progress w-0"></div>
 
 <div class="max-w-screen-2xl mx-auto px-8 pt-6">
     <div class="flex items-center gap-x-2 text-xs text-rose-700 font-medium">
@@ -116,9 +87,9 @@
                 <span class="text-sm"><?= e($post['reading_time']) ?> دقیقه مطالعه</span>
             </div>
             <div class="flex items-center gap-x-5 text-gray-400">
-                <button onclick="shareArticle('twitter')" class="hover:text-sky-400 transition-colors"><i class="fa-brands fa-x-twitter"></i></button>
-                <button onclick="shareArticle('instagram')" class="hover:text-pink-500 transition-colors"><i class="fa-brands fa-instagram"></i></button>
-                <button onclick="shareArticle('whatsapp')" class="hover:text-emerald-500 transition-colors"><i class="fa-brands fa-whatsapp"></i></button>
+                <button onclick="shareArticle('twitter')" class="hover:text-sky-400 transition-colors" aria-label="اشتراک‌گذاری در توییتر"><i class="fa-brands fa-x-twitter"></i></button>
+                <button onclick="shareArticle('instagram')" class="hover:text-pink-500 transition-colors" aria-label="اشتراک‌گذاری در اینستاگرام"><i class="fa-brands fa-instagram"></i></button>
+                <button onclick="shareArticle('whatsapp')" class="hover:text-emerald-500 transition-colors" aria-label="اشتراک‌گذاری در واتساپ"><i class="fa-brands fa-whatsapp"></i></button>
             </div>
         </div>
     </div>
@@ -137,7 +108,7 @@
             </div>
             <div class="text-gray-500 text-[10px] leading-none">
                 عکس از<br>
-                <span class="font-medium text-gray-700">تیم موبارو</span>
+                <span class="font-medium text-gray-700">تیم <?= e($settings['brand_name'] ?? 'موبارو') ?></span>
             </div>
         </div>
         <?php if ($post['is_featured']) : ?>
@@ -190,9 +161,9 @@
             <div class="flex items-center justify-between border-b pb-8 mt-8">
                 <div class="text-xs font-medium text-gray-400">این مقاله را به اشتراک بگذارید</div>
                 <div class="flex items-center gap-x-6 text-2xl text-gray-300">
-                    <button onclick="shareArticle('twitter')" class="hover:text-sky-400 transition-colors"><i class="fa-brands fa-x-twitter"></i></button>
-                    <button onclick="shareArticle('facebook')" class="hover:text-blue-600 transition-colors"><i class="fa-brands fa-facebook-f"></i></button>
-                    <button onclick="shareArticle('whatsapp')" class="hover:text-emerald-500 transition-colors"><i class="fa-brands fa-whatsapp"></i></button>
+                    <button onclick="shareArticle('twitter')" class="hover:text-sky-400 transition-colors" aria-label="اشتراک‌گذاری در توییتر"><i class="fa-brands fa-x-twitter"></i></button>
+                    <button onclick="shareArticle('facebook')" class="hover:text-blue-600 transition-colors" aria-label="اشتراک‌گذاری در فیسبوک"><i class="fa-brands fa-facebook-f"></i></button>
+                    <button onclick="shareArticle('whatsapp')" class="hover:text-emerald-500 transition-colors" aria-label="اشتراک‌گذاری در واتساپ"><i class="fa-brands fa-whatsapp"></i></button>
                 </div>
             </div>
 
@@ -222,7 +193,7 @@
                                 </div>
                                 <p class="text-sm text-gray-600 mt-2"><?= e($comment['text']) ?></p>
                                 <button onclick="likeComment(<?= $comment['id'] ?>, this)"
-                                        class="text-xs flex items-center gap-x-1 text-gray-400 hover:text-red-400 mt-5">
+                                        class="text-xs flex items-center gap-x-1 text-gray-400 hover:text-red-400 mt-5" aria-label="پسندیدن نظر <?= e($comment['name']) ?>">
                                     <i class="fa-solid fa-heart"></i>
                                     <span class="like-count"><?= faNum($comment['likes']) ?></span>
                                 </button>
@@ -258,7 +229,7 @@
 
             <div class="bg-white border border-rose-200 rounded-3xl p-7">
                 <div class="text-center">
-                    <span class="px-4 py-1 text-xs bg-rose-100 text-rose-600 rounded-3xl">خبرنامه موبارو</span>
+                    <span class="px-4 py-1 text-xs bg-rose-100 text-rose-600 rounded-3xl">خبرنامه <?= e($settings['brand_name'] ?? 'موبارو') ?></span>
                 </div>
                 <div class="text-2xl font-bold text-center mt-5 leading-none text-gray-800">
                     آخرین نکات زیبایی را دریافت کنید
@@ -303,7 +274,7 @@
                     <span class="text-sm font-bold text-gray-800">جدیدترین دوره آموزشی</span>
                 </div>
                 <a href="/course/<?= e($latestCourse['slug'] ?? $latestCourse['id']) ?>" class="block group">
-                    <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-36 rounded-2xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" onerror="this.src='/media/400/200/<?= e($latestCourse['id']) ?>'"> // NOSONAR
+                    <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-36 rounded-2xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" data-fallback="/media/400/200/<?= e($latestCourse['id']) ?>">
                     <h5 class="font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1"><?= e($latestCourse['title']) ?></h5>
                     <div class="text-xs text-gray-500 mb-2"><?= e($latestCourse['teacher']) ?></div>
                     <?php if (!empty($latestCourse['is_free'])) : ?>
@@ -319,19 +290,19 @@
                 <div class="flex justify-center -mt-2">
                     <i class="fa-solid fa-spa text-6xl text-rose-300"></i>
                 </div>
-                <div class="text-center mt-6 text-xl font-medium">خدمات ویژه موبارو</div>
+                <div class="text-center mt-6 text-xl font-medium">خدمات ویژه <?= e($settings['brand_name'] ?? 'موبارو') ?></div>
                 <ul class="mt-7 space-y-6 text-sm">
                     <li class="flex justify-between items-center border-b border-dotted pb-6">
-                        <span>کراتین تراپی</span>
-                        <span class="font-mono text-rose-500">۱.۲۹۰</span>
+                        <span><?= e($settings['blog_service_1_name'] ?? 'کراتین تراپی') ?></span>
+                        <span class="font-mono text-rose-500"><?= e($settings['blog_service_1_price'] ?? '۱.۲۹۰') ?></span>
                     </li>
                     <li class="flex justify-between items-center border-b border-dotted pb-6">
-                        <span>رنگساژ بالیاژ</span>
-                        <span class="font-mono text-rose-500">۹۵۰</span>
+                        <span><?= e($settings['blog_service_2_name'] ?? 'رنگساژ بالیاژ') ?></span>
+                        <span class="font-mono text-rose-500"><?= e($settings['blog_service_2_price'] ?? '۹۵۰') ?></span>
                     </li>
                     <li class="flex justify-between items-center">
-                        <span>لایه‌برداری پوست سر</span>
-                        <span class="font-mono text-rose-500">۴۸۰</span>
+                        <span><?= e($settings['blog_service_3_name'] ?? 'لایه‌برداری پوست سر') ?></span>
+                        <span class="font-mono text-rose-500"><?= e($settings['blog_service_3_price'] ?? '۴۸۰') ?></span>
                     </li>
                 </ul>
                 <a href="/#services" class="mt-8 text-xs w-full py-6 border border-rose-400 hover:bg-rose-50 transition-colors rounded-3xl font-medium block text-center">
@@ -341,7 +312,7 @@
 
             <div class="pt-3">
                 <div class="flex justify-between text-xs font-medium text-gray-400 mb-6 px-1">
-                    <div>@mobarosalon</div>
+                    <div><?= e($settings['brand_instagram'] ?? '@mobarosalon') ?></div>
                     <div class="flex items-center gap-x-3">
                         <i class="fa-brands fa-instagram"></i>
                         <span>اینستاگرام</span>
@@ -391,7 +362,7 @@
                     <div><?= jdate('Y/m/d', strtotime($rp['published_at'])) ?></div>
                     <div class="flex items-center gap-x-1">
                         <i class="fa-solid fa-eye"></i>
-                        <span><?= faNum($rp['views'] > 999 ? round($rp['views'] / 1000, 1) . 'k' : $rp['views']) ?></span>
+                        <span><?= faNum((int) ($rp['views'] > 999 ? round($rp['views'] / 1000, 1) . 'k' : $rp['views'])) ?></span>
                     </div>
                 </div>
             </div>
@@ -405,7 +376,7 @@
 function shareArticle(network) {
     let message = '';
     switch(network) {
-        case 'twitter': message = 'مقاله "<?= e($post['title']) ?>" از وبلاگ موبارو را بخوانید!'; break;
+        case 'twitter': message = 'مقاله "<?= e($post['title']) ?>" از وبلاگ <?= e($settings['brand_name'] ?? 'موبارو') ?> را بخوانید!'; break;
         case 'facebook': message = 'اشتراک گذاری در فیسبوک'; break;
         case 'instagram': message = 'این پست را در اینستاگرام ذخیره کنید'; break;
         case 'whatsapp': message = 'مقاله را از طریق واتس‌اپ بفرستید'; break;

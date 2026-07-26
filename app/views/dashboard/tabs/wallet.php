@@ -79,17 +79,17 @@
     </div>
 </div>
 
-<div id="topUpModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" onclick="closeTopUpModal(event)">
-    <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl" onclick="event.stopPropagation()">
+<div id="topUpModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" data-modal-backdrop>
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold">افزایش موجودی کیف پول</h3>
-            <button onclick="closeTopUpModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm">
+            <button onclick="closeTopUpModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm" aria-label="بستن">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-semibold mb-1.5">مبلغ (تومان)</label>
+                <label for="topup-amount" class="block text-sm font-semibold mb-1.5">مبلغ (تومان)</label>
                 <input type="number" id="topup-amount" min="10000" step="5000" value="50000" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all">
                 <p class="text-xs text-[#9e9e9e] mt-1">حداقل ۱۰,۰۰۰ تومان</p>
             </div>
@@ -121,7 +121,7 @@ function closeTopUpModal(e) {
 }
 
 function submitTopUp() {
-    const amount = parseInt(document.getElementById('topup-amount').value);
+    const amount = Number.parseInt(document.getElementById('topup-amount').value, 10);
     if (!amount || amount < 10000) {
         showToast('حداقل مبلغ ۱۰,۰۰۰ تومان است', 'error');
         return;

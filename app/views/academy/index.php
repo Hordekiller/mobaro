@@ -1,4 +1,20 @@
-<?php $title = 'آکادمی | موبارو'; ?>
+<?php
+$title = 'آکادمی | ' . ($settings['brand_name'] ?? 'موبارو');
+function academyFilterUrl(array $overrides = []): string {
+    $params = [];
+    $current = ['tab', 'category'];
+    foreach ($current as $key) {
+        $val = $_GET[$key] ?? null;
+        if ($val !== null && $val !== '' && $val !== 'all') {
+            if ($key === 'tab' && $val === 'newest') continue;
+            $params[$key] = $val;
+        }
+    }
+    $params = array_merge($params, $overrides);
+    $params = array_filter($params, fn($v) => $v !== null && $v !== '');
+    return '/academy?' . http_build_query($params);
+}
+?>
 
 <section class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-rose-600 text-white">
     <div class="absolute inset-0 opacity-10">
@@ -44,7 +60,7 @@
                     <img src="/assets/images/<?= e($featuredCourse['image']) ?>"
                          alt="<?= e($featuredCourse['title'] ?? '') ?>"
                          class="w-full h-56 object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
-                         onerror="this.src='/media/600/340/<?= e($featuredCourse['id']) ?>'"> // NOSONAR
+                         data-fallback="/media/600/340/<?= e($featuredCourse['id']) ?>">
                     <div class="mt-4 flex items-center justify-between">
                         <div>
                             <div class="text-sm text-white/60">دوره ویژه هفته</div>
@@ -124,7 +140,7 @@
                 <img src="/assets/images/<?= e($course['image']) ?>"
                      alt="<?= e($course['title'] ?? '') ?>"
                      class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
-                     onerror="this.src='/media/600/340/<?= e($course['id']) ?>'"> // NOSONAR
+                     data-fallback="/media/600/340/<?= e($course['id']) ?>">
                 <?php if ($course['is_free']) : ?>
                 <div class="absolute top-4 left-4 bg-emerald-500 text-white text-[11px] font-semibold px-3 py-1 rounded-full">رایگان</div>
                 <?php endif; ?>
@@ -167,6 +183,25 @@
         </a>
         <?php endforeach; ?>
     </div>
+
+    <?php if ($totalPages > 1) : ?>
+    <div class="flex justify-center items-center gap-2 mt-10">
+        <?php if ($page > 1) : ?>
+        <a href="<?= academyFilterUrl(['page' => $page - 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+        <?php endif; ?>
+        <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+        <a href="<?= academyFilterUrl(['page' => $i]) ?>" class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition <?= $i === $page ? 'bg-rose-600 text-white' : 'border border-zinc-200 text-zinc-600 hover:border-rose-400 hover:text-rose-500' ?>"><?= $i ?></a>
+        <?php endfor; ?>
+        <?php if ($page < $totalPages) : ?>
+        <a href="<?= academyFilterUrl(['page' => $page + 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <?php endif; ?>
 </div>
 
@@ -177,4 +212,5 @@ function switchTab(tab) {
 function filterByCategory(cat) {
     window.location.href = '/academy?tab=<?= e($tab) ?>&category=' + encodeURIComponent(cat);
 }
+</script>
 </script>

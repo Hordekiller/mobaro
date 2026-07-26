@@ -2,10 +2,18 @@
 
 class AuthController extends BaseController
 {
+    private const PATH_DASHBOARD = '/dashboard';
+    private const PATH_LOGIN = '/login';
+    private const PATH_REGISTER = '/register';
+    private const MSG_CAPTCHA_ERROR = 'کد امنیتی صحیح نیست.';
+
     public function showLogin(): void
     {
         if (Auth::check()) {
-            redirect('/dashboard');
+            redirect(self::PATH_DASHBOARD);
+        }
+        if (!empty($_GET['redirect'])) {
+            $_SESSION['redirect_after_login'] = $_GET['redirect'];
         }
         $_SESSION['captcha_question'] = Captcha::store();
         $captchaQuestion = $_SESSION['captcha_question'];
@@ -15,7 +23,7 @@ class AuthController extends BaseController
     public function showRegister(): void
     {
         if (Auth::check()) {
-            redirect('/dashboard');
+            redirect(self::PATH_DASHBOARD);
         }
         $_SESSION['captcha_question'] = Captcha::store();
         $captchaQuestion = $_SESSION['captcha_question'];
@@ -28,7 +36,7 @@ class AuthController extends BaseController
 
         if (!Captcha::verify($_POST['captcha'] ?? '')) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/login', ['captcha' => 'کد امنیتی اشتباه است.']);
+            $this->redirectWithErrors(self::PATH_LOGIN, ['captcha' => self::MSG_CAPTCHA_ERROR]);
             return;
         }
 
@@ -37,7 +45,7 @@ class AuthController extends BaseController
 
         if (empty($login) || empty($password)) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/login', ['phone' => 'شماره تلفن یا نام کاربری و رمز عبور را وارد کنید.']);
+            $this->redirectWithErrors(self::PATH_LOGIN, ['phone' => 'شماره تلفن یا نام کاربری و رمز عبور را وارد کنید.']);
             return;
         }
 
@@ -45,7 +53,7 @@ class AuthController extends BaseController
         RateLimiter::cleanup();
         if (RateLimiter::isLocked('user_' . $login)) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/login', ['rate_limit' => 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
+            $this->redirectWithErrors(self::PATH_LOGIN, ['rate_limit' => 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
             return;
         }
 
@@ -59,7 +67,7 @@ class AuthController extends BaseController
             if ($remaining <= 2 && $remaining > 0) {
                 $msg .= " ({$remaining} تلاش باقی‌مانده)";
             }
-            $this->redirectWithErrors('/login', ['password' => $msg]);
+            $this->redirectWithErrors(self::PATH_LOGIN, ['password' => $msg]);
             return;
         }
 
@@ -67,7 +75,7 @@ class AuthController extends BaseController
         Auth::login($user['id'], $user);
         $this->syncSessionWishlist();
 
-        $redirect = $_SESSION['redirect_after_login'] ?? '/dashboard';
+        $redirect = $_SESSION['redirect_after_login'] ?? self::PATH_DASHBOARD;
         unset($_SESSION['redirect_after_login']);
         redirect($redirect);
     }
@@ -78,7 +86,7 @@ class AuthController extends BaseController
 
         if (!Captcha::verify($_POST['captcha'] ?? '')) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/register', ['captcha' => 'کد امنیتی اشتباه است.']);
+            $this->redirectWithErrors(self::PATH_REGISTER, ['captcha' => self::MSG_CAPTCHA_ERROR]);
             return;
         }
 
@@ -94,14 +102,14 @@ class AuthController extends BaseController
 
         if (!empty($errors)) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/register', $errors);
+            $this->redirectWithErrors(self::PATH_REGISTER, $errors);
             return;
         }
 
         $existing = Database::fetch("SELECT id FROM users WHERE phone = ?", [$phone]);
         if ($existing) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/register', ['phone' => 'این شماره تلفن قبلاً ثبت شده است.']);
+            $this->redirectWithErrors(self::PATH_REGISTER, ['phone' => 'این شماره تلفن قبلاً ثبت شده است.']);
             return;
         }
 
@@ -127,7 +135,7 @@ class AuthController extends BaseController
         $this->syncSessionWishlist();
 
         flash('success', 'ثبت‌نام با موفقیت انجام شد. خوش آمدید!');
-        redirect('/dashboard');
+        redirect(self::PATH_DASHBOARD);
     }
 
     public function logout(): void
@@ -142,7 +150,7 @@ class AuthController extends BaseController
 
         if (!Captcha::verify($_POST['captcha'] ?? '')) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/login', ['captcha' => 'کد امنیتی اشتباه است.']);
+            $this->redirectWithErrors(self::PATH_LOGIN, ['captcha' => self::MSG_CAPTCHA_ERROR]);
             return;
         }
 
@@ -150,14 +158,14 @@ class AuthController extends BaseController
 
         if (empty($phone)) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/login', ['phone' => 'شماره تلفن را وارد کنید.']);
+            $this->redirectWithErrors(self::PATH_LOGIN, ['phone' => 'شماره تلفن را وارد کنید.']);
             return;
         }
 
         RateLimiter::init();
         if (RateLimiter::isLocked('forgot_' . $phone)) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/login', ['rate_limit' => 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
+            $this->redirectWithErrors(self::PATH_LOGIN, ['rate_limit' => 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
             return;
         }
 
@@ -165,14 +173,14 @@ class AuthController extends BaseController
 
         flash('success', 'اگر این شماره در سیستم ثبت شده باشد، لطفاً با شماره تماس سالن هماهنگ کنید.');
         $_SESSION['captcha_question'] = Captcha::store();
-        redirect('/login');
+        redirect(self::PATH_LOGIN);
     }
 
     public function googleRedirect(): void
     {
         if (!GoogleAuth::isConfigured()) {
             flash('error', 'ورود با گوگل فعال نیست. لطفاً با شماره تلفن وارد شوید.');
-            redirect('/login');
+            redirect(self::PATH_LOGIN);
             return;
         }
         header('Location: ' . GoogleAuth::getAuthUrl());
@@ -186,27 +194,27 @@ class AuthController extends BaseController
 
         if ($error) {
             flash('error', 'ورود با گوگل لغو شد.');
-            redirect('/login');
+            redirect(self::PATH_LOGIN);
             return;
         }
 
         if (empty($code)) {
             flash('error', 'کد تأیید گوگل دریافت نشد.');
-            redirect('/login');
+            redirect(self::PATH_LOGIN);
             return;
         }
 
         $tokenData = GoogleAuth::exchangeCode($code);
         if (!$tokenData) {
             flash('error', 'خطا در احراز هویت گوگل. لطفاً دوباره تلاش کنید.');
-            redirect('/login');
+            redirect(self::PATH_LOGIN);
             return;
         }
 
         $googleUser = GoogleAuth::getUserInfo($tokenData['access_token']);
         if (!$googleUser) {
             flash('error', 'خطا در دریافت اطلاعات کاربر از گوگل.');
-            redirect('/login');
+            redirect(self::PATH_LOGIN);
             return;
         }
 
@@ -215,7 +223,7 @@ class AuthController extends BaseController
         $this->syncSessionWishlist();
 
         flash('success', 'با موفقیت وارد شدید!');
-        $redirect = $_SESSION['redirect_after_login'] ?? '/dashboard';
+        $redirect = $_SESSION['redirect_after_login'] ?? self::PATH_DASHBOARD;
         unset($_SESSION['redirect_after_login']);
         redirect($redirect);
     }

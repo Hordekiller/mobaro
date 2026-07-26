@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-rose-50 flex" dir="rtl">
     <aside class="w-72 bg-white shadow-[0_0_40px_rgba(225,29,72,0.08)] min-h-screen flex flex-col flex-shrink-0">
         <div class="p-6 border-b border-rose-100">
-            <h1 class="text-xl font-extrabold text-rose-600"><i class="fa-solid fa-crown ml-2"></i>مدیریت موبارو</h1>
+            <h1 class="text-xl font-extrabold text-rose-600"><i class="fa-solid fa-crown ml-2"></i>مدیریت <?= e($settings['brand_name'] ?? 'موبارو') ?></h1>
         </div>
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             <?php
@@ -160,6 +160,8 @@
                     'brand_instagram' => 'لینک اینستاگرام',
                     'brand_telegram' => 'لینک تلگرام',
                     'brand_linkedin' => 'لینک لینکدین',
+                    'brand_whatsapp' => 'لینک واتساپ',
+                    'brand_city' => 'شهر',
                 ],
                 'رنگ‌ها' => [
                     'color_primary' => 'رنگ اصلی',
@@ -169,6 +171,7 @@
                 'هدر صفحه اصلی' => [
                     'hero_title' => 'عنوان هدر',
                     'hero_description' => 'توضیحات هدر',
+                    'hero_customers_text' => 'متن تعداد مشتریان (HTML)',
                 ],
                 'رزرو نوبت' => [
                     'booking_phone' => 'تلفن هماهنگی رزرو',
@@ -176,10 +179,18 @@
                 'وبلاگ' => [
                     'blog_posts_per_page' => 'تعداد پست در صفحه وبلاگ',
                     'blog_default_author' => 'نویسنده پیش‌فرض وبلاگ',
+                    'blog_sidebar_about' => 'متن «درباره ما» در سایدبار وبلاگ',
+                    'blog_service_1_name' => 'نام خدمت ۱ سایدبار',
+                    'blog_service_1_price' => 'قیمت خدمت ۱',
+                    'blog_service_2_name' => 'نام خدمت ۲ سایدبار',
+                    'blog_service_2_price' => 'قیمت خدمت ۲',
+                    'blog_service_3_name' => 'نام خدمت ۳ سایدبار',
+                    'blog_service_3_price' => 'قیمت خدمت ۳',
                 ],
                 'تخفیف‌ها' => [
                     'discount_min_order_global' => 'حداقل مبلغ خرید برای اعمال تخفیف',
                     'discount_default_validity_days' => 'مدت اعتبار پیش‌فرض تخفیف (روز)',
+                    'promo_coupon_code' => 'کد تخفیف پروموشن داشبورد',
                 ],
                 'صفحه تماس' => [
                     'contact_email' => 'ایمیل دریافت پیام‌های تماس',
@@ -188,11 +199,38 @@
                 ],
                 'صفحه درباره ما' => [
                     'about_title' => 'عنوان صفحه درباره ما',
+                    'about_subtitle' => 'زیرعنوان صفحه درباره ما',
                     'about_content' => 'محتوای صفحه درباره ما',
                     'about_image' => 'تصویر صفحه درباره ما',
+                    'about_stat_years' => 'آمار: سال تجربه',
+                    'about_stat_clients' => 'آمار: تعداد مشتری',
+                    'about_stat_services' => 'آمار: تعداد خدمات',
+                ],
+                'آکادمی' => [
+                    'academy_instructor_bio' => 'بیوگرافی پیش‌فرض مدرس',
+                ],
+                'سئو (SEO)' => [
+                    'meta_title' => 'عنوان متا (SEO)',
+                    'meta_description' => 'توضیحات متا (SEO)',
+                    'og_title' => 'عنوان Open Graph',
+                    'og_description' => 'توضیحات Open Graph',
+                    'og_image' => 'تصویر Open Graph (مسیر تصویر)',
+                ],
+                'تصاویر هیرو' => [
+                    'hero_bg_image' => 'نام تصویر پس‌زمینه هیرو (مثلاً hero-bg.jpg)',
+                    'hero_model_image' => 'نام تصویر مدل هیرو (مثلاً hero-model.jpg)',
+                ],
+                'صفحات استاتیک' => [
+                    'privacy_content' => 'محتوای حریم خصوصی (HTML)',
+                    'privacy_updated_at' => 'تاریخ آخرین به‌روزرسانی حریم خصوصی',
+                    'terms_content' => 'محتوای شرایط استفاده (HTML)',
+                    'terms_updated_at' => 'تاریخ آخرین به‌روزرسانی شرایط استفاده',
+                ],
+                'فوتر' => [
+                    'footer_description' => 'توضیحات فوتر',
                 ],
             ];
-            $textareaKeys = ['hero_description', 'about_content', 'contact_map_location'];
+            $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'meta_description', 'og_description', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
             ?>
             <form action="/admin/settings/update" method="POST" class="space-y-6">
                 <?= csrf() ?>
@@ -211,7 +249,7 @@
                                 <div class="flex gap-2 items-center">
                                     <input id="setting_<?= e($key) ?>" type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="flex-1 w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="مثال: about.jpg">
                                     <?php if (!empty($value)) : ?>
-                                    <img src="/assets/images/<?= e($value) ?>" alt="" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" onerror="this.style.display='none'"> // NOSONAR
+                                    <img src="/assets/images/<?= e($value) ?>" alt="" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" data-hide-on-error>
                                     <?php endif; ?>
                                 </div>
                             <?php else : ?>
@@ -224,8 +262,6 @@
                 <?php endforeach; ?>
                 <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات</button>
             </form>
-
-            <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)] mt-6">
 
             <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)] mt-6">
                 <h3 class="font-bold text-lg mb-1">تغییر رمز عبور ادمین</h3>
@@ -307,7 +343,7 @@
                             ?>
                         <div class="flex items-center gap-3 p-3 bg-zinc-50 rounded-xl">
                             <span class="w-7 h-7 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"><?= faNum($i) ?></span>
-                            <input id="<?= $key ?>" type="text" name="<?= $key ?>" value="<?= e($val) ?>" placeholder="<?= e('مثال: 5 + 3') ?>" class="flex-1 px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                            <input id="<?= $key ?>" type="text" name="<?= $key ?>" value="<?= e($val) ?>" placeholder="<?= e('مثال: 5 + 3') ?>" aria-label="سوال امنیتی <?= faNum($i) ?>" class="flex-1 px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
                         </div>
                         <?php endfor; ?>
                     </div>
@@ -386,7 +422,7 @@
                                 <?php foreach ($columns as $col) :
                                     $val = $item[$col['key']] ?? '';
                                     if ($col['type'] === 'image') : ?>
-                                        <td class="py-3 px-4"><img src="/assets/images/<?= e($val) ?>" alt="" class="w-12 h-12 rounded-lg object-cover" onerror="this.style.display='none'"> // NOSONAR</td>
+                                        <td class="py-3 px-4"><img src="/assets/images/<?= e($val) ?>" alt="" class="w-12 h-12 rounded-lg object-cover" data-hide-on-error></td>
                                     <?php elseif ($col['type'] === 'price') : ?>
                                         <td class="py-3 px-4 font-bold"><?= priceFormat($val) ?></td>
                                     <?php elseif ($col['type'] === 'status') : ?>
@@ -446,8 +482,8 @@
             </div>
             <?php endif; ?>
 
-            <div id="itemModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" onclick="closeItemModal(event)"> // NOSONAR
-                <div class="bg-white rounded-[20px] p-6 w-full max-w-2xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div id="itemModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
+                <div class="bg-white rounded-[20px] p-6 w-full max-w-2xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
                     <div class="flex justify-between items-center mb-5">
                         <h3 class="text-xl font-bold" id="modalTitle">افزودن جدید</h3>
                         <button onclick="closeItemModal()" class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-all text-sm"><i class="fa-solid fa-xmark"></i></button>
@@ -575,7 +611,7 @@
                                 else {
                                     var html = '';
                                     items.forEach(function(it) {
-                                        var img = it.product_image ? '<img src="/assets/images/' + it.product_image + '" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" onerror="this.style.display=\'none\'">' : '<div class="w-10 h-10 rounded-lg bg-zinc-200 flex items-center justify-center text-xs text-zinc-400 flex-shrink-0"><i class="fa-solid fa-box"></i></div>';
+                                        var img = it.product_image ? '<img src="/assets/images/' + it.product_image + '" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" data-hide-on-error>' : '<div class="w-10 h-10 rounded-lg bg-zinc-200 flex items-center justify-center text-xs text-zinc-400 flex-shrink-0"><i class="fa-solid fa-box"></i></div>';
                                         html += '<div class="flex items-center gap-3 bg-white rounded-lg p-2.5 text-xs">' + img + '<div class="flex-1"><div class="font-medium text-zinc-800">' + (it.product_name || 'محصول') + '</div><div class="text-zinc-400">' + it.quantity + ' عدد × ' + Number(it.price).toLocaleString() + ' تومان</div></div></div>';
                                     });
                                     listEl.innerHTML = html;
@@ -778,7 +814,7 @@ function showEditModal(item) {
     if (window._artistServices && item.id) {
         var assigned = window._artistServices[item.id] || [];
         document.querySelectorAll('.artist-service-cb').forEach(function(cb) {
-            cb.checked = assigned.indexOf(parseInt(cb.value)) !== -1;
+            cb.checked = assigned.indexOf(Number.parseInt(cb.value, 10)) !== -1;
         });
     }
     if (window._productGallery && item.id) {
@@ -822,7 +858,7 @@ function showEditModal(item) {
             if (found) {
                 if (input_price) input_price.value = found.price || '';
                 if (input_duration) input_duration.value = found.duration_modifier || 1.0;
-                if (input_active) input_active.checked = parseInt(found.is_active) === 1;
+                if (input_active) input_active.checked = Number.parseInt(found.is_active, 10) === 1;
             } else {
                 if (input_price) input_price.value = '';
                 if (input_duration) input_duration.value = 1.0;

@@ -2,6 +2,12 @@
 
 class DashboardController extends BaseController
 {
+    private const VIEW_DASHBOARD = 'dashboard/index';
+    private const WHERE_ID = 'id = ?';
+    private const PATH_PASSWORD = '/dashboard/password';
+    private const PATH_WALLET = '/dashboard/wallet';
+    private const MSG_ADDRESS_REQUIRED = 'آدرس تحویل الزامی است.';
+
     public function index(): void
     {
         Auth::requireAuth();
@@ -45,7 +51,7 @@ class DashboardController extends BaseController
             [$user['id'], $user['id'], $user['id']]
         );
 
-        $this->view('dashboard/index', compact('user', 'stats', 'nextAppointment', 'recentActivities') + ['hideFooter' => true]);
+        $this->view(self::VIEW_DASHBOARD, compact('user', 'stats', 'nextAppointment', 'recentActivities') + ['hideFooter' => true]);
     }
 
     public function tab(string $tab): void
@@ -192,10 +198,14 @@ class DashboardController extends BaseController
                     )
                     : [];
                 break;
+
+            default:
+                redirect('/dashboard');
+                break;
         }
 
         $data['hideFooter'] = true;
-        $this->view('dashboard/index', $data);
+        $this->view(self::VIEW_DASHBOARD, $data);
     }
 
     private function tableExists(string $table): bool
@@ -235,13 +245,14 @@ class DashboardController extends BaseController
         $data = ['name' => $name, 'family' => $family, 'email' => $email];
 
         if (!empty($_FILES['avatar']['name'])) {
-            $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar_' . $userId);
+            $oldAvatar = $user['avatar'] ?? null;
+            $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar_' . $userId, $oldAvatar);
             if ($uploaded) {
                 $data['avatar'] = $uploaded;
             }
         }
 
-        Database::update('users', $data, 'id = :id', ['id' => $userId]);
+        Database::update('users', $data, self::WHERE_ID, ['id' => $userId]);
         $_SESSION['user'] = Database::fetch("SELECT * FROM users WHERE id = ?", [$userId]);
 
         flash('success', 'اطلاعات حساب با موفقیت به‌روزرسانی شد.');
@@ -259,27 +270,27 @@ class DashboardController extends BaseController
         $confirm = $_POST['confirm_password'] ?? '';
 
         if (empty($current) || empty($new) || empty($confirm)) {
-            $this->redirectWithErrors('/dashboard/password', ['all' => 'تمام فیلدها را پر کنید.']);
+            $this->redirectWithErrors(self::PATH_PASSWORD, ['all' => 'تمام فیلدها را پر کنید.']);
             return;
         }
 
         $user = Database::fetch("SELECT password FROM users WHERE id = ?", [$userId]);
         if (!Auth::verify($current, $user['password'])) {
-            $this->redirectWithErrors('/dashboard/password', ['current' => 'رمز عبور فعلی اشتباه است.']);
+            $this->redirectWithErrors(self::PATH_PASSWORD, ['current' => 'رمز عبور فعلی اشتباه است.']);
             return;
         }
 
         if ($new !== $confirm) {
-            $this->redirectWithErrors('/dashboard/password', ['confirm' => 'رمز عبور جدید و تکرار آن مطابقت ندارند.']);
+            $this->redirectWithErrors(self::PATH_PASSWORD, ['confirm' => 'رمز عبور جدید و تکرار آن مطابقت ندارند.']);
             return;
         }
 
         if (strlen($new) < 6) {
-            $this->redirectWithErrors('/dashboard/password', ['new' => 'رمز عبور جدید باید حداقل ۶ کاراکتر باشد.']);
+            $this->redirectWithErrors(self::PATH_PASSWORD, ['new' => 'رمز عبور جدید باید حداقل ۶ کاراکتر باشد.']);
             return;
         }
 
-        Database::update('users', ['password' => Auth::hash($new)], 'id = :id', ['id' => $userId]);
+        Database::update('users', ['password' => Auth::hash($new)], self::WHERE_ID, ['id' => $userId]);
         flash('success', 'رمز عبور با موفقیت تغییر یافت.');
         back();
     }
@@ -297,9 +308,9 @@ class DashboardController extends BaseController
 
         if (empty($address)) {
             if (isset($_POST['from_cart']) && $_POST['from_cart'] === '1') {
-                $this->json(['error' => 'آدرس را وارد کنید.'], 400);
+                $this->json(['error' => self::MSG_ADDRESS_REQUIRED], 400);
             } else {
-                $this->redirectWithErrors('/dashboard/addresses', ['address' => 'آدرس را وارد کنید.']);
+                $this->redirectWithErrors('/dashboard/addresses', ['address' => self::MSG_ADDRESS_REQUIRED]);
             }
             return;
         }
@@ -348,7 +359,7 @@ class DashboardController extends BaseController
         $phone = sanitize($_POST['phone'] ?? '');
 
         if (empty($address)) {
-            $this->json(['error' => 'آدرس را وارد کنید.'], 400);
+            $this->json(['error' => self::MSG_ADDRESS_REQUIRED], 400);
             return;
         }
 
@@ -364,7 +375,7 @@ class DashboardController extends BaseController
             'zip_code' => $zipCode,
             'phone' => $phone,
             'is_default' => $isDefault,
-        ], 'id = :id', ['id' => $id]);
+        ], self::WHERE_ID, ['id' => $id]);
 
         if (isset($_POST['from_cart']) && $_POST['from_cart'] === '1') {
             $this->json(['success' => true, 'message' => 'آدرس به‌روزرسانی شد.']);
@@ -406,7 +417,7 @@ class DashboardController extends BaseController
             return;
         }
 
-        Database::update('appointments', ['status' => 'cancelled'], 'id = :id', ['id' => $id]);
+        Database::update('appointments', ['status' => 'cancelled'], self::WHERE_ID, ['id' => $id]);
         $this->json(['success' => true, 'message' => 'نوبت با موفقیت لغو شد.']);
     }
 
@@ -434,7 +445,7 @@ class DashboardController extends BaseController
             return;
         }
 
-        Database::update('orders', ['status' => 'cancelled'], 'id = :id', ['id' => $id]);
+        Database::update('orders', ['status' => 'cancelled'], self::WHERE_ID, ['id' => $id]);
         $this->json(['success' => true, 'message' => 'سفارش با موفقیت لغو شد.']);
     }
 
@@ -468,7 +479,7 @@ class DashboardController extends BaseController
         Database::update('appointments', [
             'appointment_date' => $date,
             'appointment_time' => $time,
-        ], 'id = :id', ['id' => $id]);
+        ], self::WHERE_ID, ['id' => $id]);
 
         $this->json(['success' => true, 'message' => 'نوبت با موفقیت تغییر یافت.']);
     }
@@ -506,7 +517,7 @@ class DashboardController extends BaseController
         );
 
         $user = Auth::user();
-        $this->view('dashboard/index', compact('user', 'order', 'items') + ['tab' => 'order_detail', 'hideFooter' => true]);
+        $this->view(self::VIEW_DASHBOARD, compact('user', 'order', 'items') + ['tab' => 'order_detail', 'hideFooter' => true]);
     }
 
     public function walletTopUp(): void
@@ -547,14 +558,14 @@ class DashboardController extends BaseController
 
         if (!$authority || $status !== 'OK') {
             flash('error', 'پرداخت لغو شد.');
-            redirect('/dashboard/wallet');
+            redirect(self::PATH_WALLET);
             return;
         }
 
         $amount = (int) ($_SESSION['wallet_topup_amount'] ?? 0);
         if (!$amount) {
             flash('error', 'اطلاعات پرداخت نامعتبر است.');
-            redirect('/dashboard/wallet');
+            redirect(self::PATH_WALLET);
             return;
         }
 
@@ -573,7 +584,7 @@ class DashboardController extends BaseController
 
             $current = Database::fetch("SELECT wallet FROM users WHERE id = ?", [Auth::id()]);
             $newBalance = $current['wallet'] + $amount;
-            Database::update('users', ['wallet' => $newBalance], 'id = :id', ['id' => Auth::id()]);
+            Database::update('users', ['wallet' => $newBalance], self::WHERE_ID, ['id' => Auth::id()]);
 
             unset($_SESSION['wallet_topup_amount'], $_SESSION['wallet_topup_authority']);
             flash('success', 'کیف پول شما به مبلغ ' . number_format($amount) . ' تومان افزایش یافت.');
@@ -581,7 +592,7 @@ class DashboardController extends BaseController
             flash('error', 'پرداخت ناموفق بود: ' . $result['message']);
         }
 
-        redirect('/dashboard/wallet');
+        redirect(self::PATH_WALLET);
     }
 
     public function toggleWishlist(): void

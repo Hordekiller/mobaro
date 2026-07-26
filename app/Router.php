@@ -57,6 +57,7 @@ class Router
     private static function renderError(int $code): void
     {
         http_response_code($code);
+        $settings = Settings::all();
         require_once __DIR__ . '/views/layouts/header.php';
 
         $messages = [

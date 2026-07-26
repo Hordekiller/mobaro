@@ -1,6 +1,6 @@
 <div class="page-header mb-6">
     <h1 class="text-2xl font-extrabold">خوش آمدید، <?= e($user['name']) ?> 👋</h1>
-    <p class="text-[#9e9e9e] text-sm">به پنل کاربری موبارو خوش آمدید</p>
+    <p class="text-[#9e9e9e] text-sm">به پنل کاربری <?= e($settings['brand_name'] ?? 'موبارو') ?> خوش آمدید</p>
 </div>
 
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -79,7 +79,7 @@
         <div class="absolute -top-8 -left-8 w-[120px] h-[120px] bg-white/10 rounded-full"></div>
         <h3 class="text-xl font-bold mb-2 relative">تخفیف ویژه 🎉</h3>
         <p class="text-sm opacity-90 mb-4 relative">اولین نوبت شما با ۲۰٪ تخفیف</p>
-        <div class="inline-block bg-white/20 px-4 py-2 rounded-xl font-bold tracking-wider backdrop-blur relative">MOBARO20</div>
+        <div class="inline-block bg-white/20 px-4 py-2 rounded-xl font-bold tracking-wider backdrop-blur relative"><?= e($settings['promo_coupon_code'] ?? 'MOBARO20') ?></div>
     </div>
 </div>
 

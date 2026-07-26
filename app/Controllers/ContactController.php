@@ -2,6 +2,8 @@
 
 class ContactController extends BaseController
 {
+    private const PATH_CONTACT = '/contact';
+
     public function index(): void
     {
         $settings = Settings::all();
@@ -17,7 +19,7 @@ class ContactController extends BaseController
         $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
         if (RateLimiter::isLocked('contact:' . $ip, 5, 15)) {
             flash('error', 'درخواست‌های شما بیش از حد مجاز است. لطفاً چند دقیقه صبر کنید.');
-            redirect('/contact');
+            redirect(self::PATH_CONTACT);
             return;
         }
         RateLimiter::recordAttempt('contact:' . $ip);
@@ -40,7 +42,7 @@ class ContactController extends BaseController
         }
 
         if (!empty($errors)) {
-            $this->redirectWithErrors('/contact', $errors);
+            $this->redirectWithErrors(self::PATH_CONTACT, $errors);
             return;
         }
 
@@ -53,6 +55,6 @@ class ContactController extends BaseController
         ]);
 
         flash('success', 'پیام شما با موفقیت ارسال شد. در اسرع وقت با شما تماس خواهیم گرفت.');
-        redirect('/contact');
+        redirect(self::PATH_CONTACT);
     }
 }

@@ -2,6 +2,28 @@
 
 class AdminController extends BaseController
 {
+    private const PATH_ADMIN = '/admin';
+    private const PATH_ADMIN_LOGIN = '/admin/login';
+    private const PATH_HAIR_PRICES = '/admin/hair-prices';
+    private const PATH_SETTINGS = '/admin/settings';
+    private const VIEW_ADMIN = 'admin/index';
+    private const WHERE_ID = 'id = :id';
+    private const WHERE_ID_PARAM = 'id = ?';
+    private const PLACEHOLDER_PAIR = '(?, ?)';
+    private const LABEL_IMAGE = 'تصویر';
+    private const LABEL_TITLE = 'عنوان';
+    private const LABEL_DESCRIPTION = 'توضیحات';
+    private const LABEL_RATING = 'امتیاز';
+    private const LABEL_USER = 'کاربر';
+    private const LABEL_DATE = 'تاریخ';
+    private const LABEL_EMAIL = 'ایمیل';
+    private const LABEL_COMMENT = 'متن نظر';
+    private const MIME_MOV = 'video/quicktime';
+    private const MIME_MP4 = 'video/mp4';
+    private const MIME_WEBM = 'video/webm';
+    private const MIME_OGG = 'video/ogg';
+    private const EXT_WEBM = '.webm';
+
     private function requireAdmin(): void
     {
         Auth::requireAdmin();
@@ -16,26 +38,27 @@ class AdminController extends BaseController
     public function loginForm(): void
     {
         if (Auth::check() && Auth::isAdmin()) {
-            redirect('/admin');
+            redirect(self::PATH_ADMIN);
         }
         $captchaEnabled = Captcha::isEnabled('admin');
         if ($captchaEnabled) {
             $_SESSION['captcha_question'] = Captcha::store();
         }
         $captchaQuestion = $_SESSION['captcha_question'] ?? '';
-        $this->viewRaw('admin/login', compact('captchaQuestion', 'captchaEnabled'));
+        $settings = Settings::all();
+        $this->viewRaw('admin/login', compact('captchaQuestion', 'captchaEnabled', 'settings'));
     }
 
     public function doLogin(): void
     {
         if (Auth::check() && Auth::isAdmin()) {
-            redirect('/admin');
+            redirect(self::PATH_ADMIN);
         }
         $this->verifyCsrf();
 
         if (Captcha::isEnabled('admin') && !Captcha::verify($_POST['captcha'] ?? '')) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/admin/login', ['admin' => 'کد امنیتی اشتباه است.']);
+            $this->redirectWithErrors(self::PATH_ADMIN_LOGIN, ['admin' => 'کد امنیتی اشتباه است.']);
             return;
         }
 
@@ -44,7 +67,7 @@ class AdminController extends BaseController
 
         if (empty($username) || empty($password)) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/admin/login', ['admin' => 'نام کاربری و رمز عبور را وارد کنید.']);
+            $this->redirectWithErrors(self::PATH_ADMIN_LOGIN, ['admin' => 'نام کاربری و رمز عبور را وارد کنید.']);
             return;
         }
 
@@ -52,7 +75,7 @@ class AdminController extends BaseController
         RateLimiter::cleanup();
         if (RateLimiter::isLocked('admin_' . $username)) {
             $_SESSION['captcha_question'] = Captcha::store();
-            $this->redirectWithErrors('/admin/login', ['rate_limit' => 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
+            $this->redirectWithErrors(self::PATH_ADMIN_LOGIN, ['rate_limit' => 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
             return;
         }
 
@@ -66,14 +89,14 @@ class AdminController extends BaseController
             if ($remaining <= 2 && $remaining > 0) {
                 $msg .= " ({$remaining} تلاش باقی‌مانده)";
             }
-            $this->redirectWithErrors('/admin/login', ['admin' => $msg]);
+            $this->redirectWithErrors(self::PATH_ADMIN_LOGIN, ['admin' => $msg]);
             return;
         }
 
         RateLimiter::recordAttempt('admin_' . $username, true);
         Auth::login($user['id'], $user);
         flash('success', 'خوش آمدید ' . e($user['name']));
-        redirect('/admin');
+        redirect(self::PATH_ADMIN);
     }
 
     public function dashboard(): void
@@ -107,7 +130,7 @@ class AdminController extends BaseController
             );
         }, 'admin');
 
-        $this->view('admin/index', compact('stats', 'recentAppointments', 'recentOrders') + ['section' => 'dashboard']);
+        $this->view(self::VIEW_ADMIN, compact('stats', 'recentAppointments', 'recentOrders') + ['section' => 'dashboard']);
     }
 
     public function section(string $section): void
@@ -116,7 +139,7 @@ class AdminController extends BaseController
         $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices'];
 
         if (!in_array($section, $validSections)) {
-            redirect('/admin');
+            redirect(self::PATH_ADMIN);
         }
 
         $data = ['section' => $section];
@@ -177,117 +200,144 @@ class AdminController extends BaseController
             'hair-prices' => 'hair_prices',
         ];
 
-        $columnsMap = $this->getColumns($section);
-        array_walk($columnsMap, fn(&$col) => $col['required'] = $col['required'] ?? false);
-        $data['columns'] = $columnsMap;
+        $data['columns'] = $this->getColumns($section);
+        array_walk($data['columns'], fn(&$col) => $col['required'] = $col['required'] ?? false);
 
         if ($section === 'products') {
-            $catOptions = Database::fetchAll("SELECT name FROM product_categories WHERE is_active = 1 ORDER BY name");
-            $brandOptions = Database::fetchAll("SELECT name FROM product_brands WHERE is_active = 1 ORDER BY name");
-            foreach ($data['columns'] as &$col) {
-                if ($col['key'] === 'category') {
-                    $col['type'] = 'select';
-                    $col['options'] = array_column($catOptions, 'name');
-                }
-                if ($col['key'] === 'brand') {
-                    $col['type'] = 'select';
-                    $col['options'] = array_column($brandOptions, 'name');
-                }
-            }
-            unset($col);
+            $this->enrichProductColumns($data['columns']);
         }
 
         $table = $tableMap[$section] ?? null;
         if ($table) {
-            $search = trim($_GET['s'] ?? '');
-            $searchable = ['name', 'title', 'email', 'phone', 'category', 'code', 'family', 'teacher', 'subject', 'message'];
-            $searchWhere = '';
-            $searchParams = [];
-            if ($search !== '') {
-                $cols = $this->getColumns($section);
-                $textCols = array_filter($cols, fn($c) => in_array($c['type'], ['text', 'textarea', 'price']) && in_array($c['key'], $searchable));
-                if (!empty($textCols)) {
-                    $conditions = [];
-                    foreach ($textCols as $tc) {
-                        $conditions[] = "{$tc['key']} LIKE ?";
-                        $searchParams[] = likePattern($search);
-                    }
-                    $searchWhere = ' WHERE ' . implode(' OR ', $conditions);
+            $this->loadSectionData($table, $section, $data);
+        }
+
+        $this->loadSectionExtras($section, $data);
+        $this->view(self::VIEW_ADMIN, $data);
+    }
+
+    private function enrichProductColumns(array &$columns): void
+    {
+        $catOptions = Database::fetchAll("SELECT name FROM product_categories WHERE is_active = 1 ORDER BY name");
+        $brandOptions = Database::fetchAll("SELECT name FROM product_brands WHERE is_active = 1 ORDER BY name");
+        foreach ($columns as &$col) {
+            if ($col['key'] === 'category') {
+                $col['type'] = 'select';
+                $col['options'] = array_column($catOptions, 'name');
+            }
+            if ($col['key'] === 'brand') {
+                $col['type'] = 'select';
+                $col['options'] = array_column($brandOptions, 'name');
+            }
+        }
+        unset($col);
+    }
+
+    private function loadSectionData(string $table, string $section, array &$data): void
+    {
+        $search = trim($_GET['s'] ?? '');
+        $searchable = ['name', 'title', 'email', 'phone', 'category', 'code', 'family', 'teacher', 'subject', 'message'];
+        $searchWhere = '';
+        $searchParams = [];
+        if ($search !== '') {
+            $cols = $this->getColumns($section);
+            $textCols = array_filter($cols, fn($c) => in_array($c['type'], ['text', 'textarea', 'price']) && in_array($c['key'], $searchable));
+            if (!empty($textCols)) {
+                $conditions = [];
+                foreach ($textCols as $tc) {
+                    $conditions[] = "{$tc['key']} LIKE ?";
+                    $searchParams[] = likePattern($search);
                 }
+                $searchWhere = ' WHERE ' . implode(' OR ', $conditions);
             }
-            $paged = $this->paginate(
-                "SELECT * FROM {$table}{$searchWhere} ORDER BY id DESC",
-                "SELECT COUNT(*) as cnt FROM {$table}{$searchWhere}",
-                $searchParams
-            );
-            $data['items'] = $paged['items'];
-            $data['page'] = $paged['page'];
-            $data['totalPages'] = $paged['totalPages'];
-            $data['total'] = $paged['total'];
-            $data['search'] = $search;
         }
+        $paged = $this->paginate(
+            "SELECT * FROM {$table}{$searchWhere} ORDER BY id DESC",
+            "SELECT COUNT(*) as cnt FROM {$table}{$searchWhere}",
+            $searchParams
+        );
+        $data['items'] = $paged['items'];
+        $data['page'] = $paged['page'];
+        $data['totalPages'] = $paged['totalPages'];
+        $data['total'] = $paged['total'];
+        $data['search'] = $search;
+    }
 
-        if ($section === 'products') {
-            $productIds = array_column($data['items'] ?? [], 'id');
-            $galleryData = [];
-            if (!empty($productIds)) {
-                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
-                $galleryRows = Database::fetchAll(
-                    "SELECT * FROM product_images WHERE product_id IN ($placeholders) ORDER BY sort_order, id",
-                    $productIds
-                );
-                foreach ($galleryRows as $gr) {
-                    $galleryData[$gr['product_id']][] = $gr;
-                }
-            }
-            $data['productGalleryJson'] = json_encode($galleryData, JSON_HEX_TAG);
+    private function loadSectionExtras(string $section, array &$data): void
+    {
+        match ($section) {
+            'products' => $this->loadProductsExtra($data),
+            'artists' => $this->loadArtistsExtra($data),
+            'services' => $this->loadServicesExtra($data),
+            default => null,
+        };
+    }
+
+    private function loadProductsExtra(array &$data): void
+    {
+        $productIds = array_column($data['items'] ?? [], 'id');
+        if (empty($productIds)) {
+            $data['productGalleryJson'] = '[]';
+            return;
         }
-
-        if ($section === 'artists') {
-            $data['allServices'] = Database::fetchAll("SELECT id, title FROM services ORDER BY id");
-            $assignments = Database::fetchAll("SELECT artist_id, service_id FROM artist_services");
-            $artistServices = [];
-            foreach ($assignments as $as) {
-                $artistServices[$as['artist_id']][] = $as['service_id'];
-            }
-            $data['artistServicesJson'] = json_encode($artistServices, JSON_HEX_TAG);
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $galleryRows = Database::fetchAll(
+            "SELECT * FROM product_images WHERE product_id IN ($placeholders) ORDER BY sort_order, id",
+            $productIds
+        );
+        $galleryData = [];
+        foreach ($galleryRows as $gr) {
+            $galleryData[$gr['product_id']][] = $gr;
         }
+        $data['productGalleryJson'] = json_encode($galleryData, JSON_HEX_TAG);
+    }
 
-        if ($section === 'services') {
-            $data['allHairLengths'] = Database::fetchAll("SELECT id, title, min_cm, max_cm FROM hair_lengths WHERE is_active = 1 ORDER BY sort_order");
-            $allServiceIds = array_column($data['items'] ?? [], 'id');
-            $serviceHairPrices = [];
-            if (!empty($allServiceIds)) {
-                $placeholders = implode(',', array_fill(0, count($allServiceIds), '?'));
-                $priceRows = Database::fetchAll(
-                    "SELECT * FROM service_hair_prices WHERE service_id IN ($placeholders) ORDER BY hair_length_id",
-                    $allServiceIds
-                );
-                foreach ($priceRows as $pr) {
-                    $serviceHairPrices[$pr['service_id']][] = $pr;
-                }
-            }
-            $data['serviceHairPricesJson'] = json_encode($serviceHairPrices, JSON_HEX_TAG);
+    private function loadArtistsExtra(array &$data): void
+    {
+        $data['allServices'] = Database::fetchAll("SELECT id, title FROM services ORDER BY id");
+        $assignments = Database::fetchAll("SELECT artist_id, service_id FROM artist_services");
+        $artistServices = [];
+        foreach ($assignments as $as) {
+            $artistServices[$as['artist_id']][] = $as['service_id'];
         }
+        $data['artistServicesJson'] = json_encode($artistServices, JSON_HEX_TAG);
+    }
 
-        $this->view('admin/index', $data);
+    private function loadServicesExtra(array &$data): void
+    {
+        $data['allHairLengths'] = Database::fetchAll("SELECT id, title, min_cm, max_cm FROM hair_lengths WHERE is_active = 1 ORDER BY sort_order");
+        $allServiceIds = array_column($data['items'] ?? [], 'id');
+        if (empty($allServiceIds)) {
+            $data['serviceHairPricesJson'] = '[]';
+            return;
+        }
+        $placeholders = implode(',', array_fill(0, count($allServiceIds), '?'));
+        $priceRows = Database::fetchAll(
+            "SELECT * FROM service_hair_prices WHERE service_id IN ($placeholders) ORDER BY hair_length_id",
+            $allServiceIds
+        );
+        $serviceHairPrices = [];
+        foreach ($priceRows as $pr) {
+            $serviceHairPrices[$pr['service_id']][] = $pr;
+        }
+        $data['serviceHairPricesJson'] = json_encode($serviceHairPrices, JSON_HEX_TAG);
     }
 
     private function getColumns(string $section): array
     {
         $all = [
             'services' => [
-                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
-                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'image', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
+                ['key' => 'title', 'label' => self::LABEL_TITLE, 'type' => 'text', 'required' => true],
                 ['key' => 'price', 'label' => 'قیمت', 'type' => 'price', 'required' => true],
                 ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
                 ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
-                ['key' => 'description', 'label' => 'توضیحات', 'type' => 'textarea'],
-                ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
+                ['key' => 'description', 'label' => self::LABEL_DESCRIPTION, 'type' => 'textarea'],
+                ['key' => 'rating', 'label' => self::LABEL_RATING, 'type' => 'text'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'artists' => [
-                ['key' => 'avatar', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'avatar', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
                 ['key' => 'name', 'label' => 'نام', 'type' => 'text', 'required' => true],
                 ['key' => 'specialty', 'label' => 'تخصص', 'type' => 'text'],
                 ['key' => 'bio', 'label' => 'بیوگرافی', 'type' => 'textarea'],
@@ -296,24 +346,24 @@ class AdminController extends BaseController
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'appointments' => [
-                ['key' => 'user_name', 'label' => 'کاربر', 'type' => 'text'],
+                ['key' => 'user_name', 'label' => self::LABEL_USER, 'type' => 'text'],
                 ['key' => 'service_title', 'label' => 'خدمت', 'type' => 'text'],
                 ['key' => 'artist_name', 'label' => 'آرایشگر', 'type' => 'text'],
-                ['key' => 'appointment_date', 'label' => 'تاریخ', 'type' => 'text'],
+                ['key' => 'appointment_date', 'label' => self::LABEL_DATE, 'type' => 'text'],
                 ['key' => 'appointment_time', 'label' => 'ساعت', 'type' => 'text'],
                 ['key' => 'status', 'label' => 'وضعیت', 'type' => 'status', 'options' => ['pending', 'confirmed', 'done', 'cancelled']],
                 ['key' => 'notes', 'label' => 'یادداشت', 'type' => 'textarea'],
             ],
             'products' => [
-                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'image', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
                 ['key' => 'name', 'label' => 'نام', 'type' => 'text', 'required' => true],
                 ['key' => 'price', 'label' => 'قیمت', 'type' => 'price', 'required' => true],
                 ['key' => 'old_price', 'label' => 'قیمت قبل', 'type' => 'price'],
                 ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
                 ['key' => 'brand', 'label' => 'برند', 'type' => 'text'],
                 ['key' => 'stock', 'label' => 'موجودی', 'type' => 'text'],
-                ['key' => 'description', 'label' => 'توضیحات', 'type' => 'textarea'],
-                ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
+                ['key' => 'description', 'label' => self::LABEL_DESCRIPTION, 'type' => 'textarea'],
+                ['key' => 'rating', 'label' => self::LABEL_RATING, 'type' => 'text'],
                 ['key' => 'is_new', 'label' => 'جدید', 'type' => 'boolean'],
                 ['key' => 'is_sale', 'label' => 'تخفیف خورده', 'type' => 'boolean'],
                 ['key' => 'video_type', 'label' => 'نوع ویدیو', 'type' => 'select', 'options' => ['upload', 'youtube', 'aparat']],
@@ -321,20 +371,20 @@ class AdminController extends BaseController
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'users' => [
-                ['key' => 'avatar', 'label' => 'تصویر', 'type' => 'image'],
+                ['key' => 'avatar', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
                 ['key' => 'name', 'label' => 'نام', 'type' => 'text'],
                 ['key' => 'family', 'label' => 'نام خانوادگی', 'type' => 'text'],
                 ['key' => 'phone', 'label' => 'تلفن', 'type' => 'text'],
-                ['key' => 'email', 'label' => 'ایمیل', 'type' => 'text'],
+                ['key' => 'email', 'label' => self::LABEL_EMAIL, 'type' => 'text'],
                 ['key' => 'role', 'label' => 'نقش', 'type' => 'select', 'options' => ['user', 'admin']],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
                 ['key' => 'level', 'label' => 'سطح', 'type' => 'text'],
-                ['key' => 'points', 'label' => 'امتیاز', 'type' => 'text'],
+                ['key' => 'points', 'label' => self::LABEL_RATING, 'type' => 'text'],
                 ['key' => 'wallet', 'label' => 'کیف پول', 'type' => 'price'],
             ],
             'courses' => [
-                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
-                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'image', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
+                ['key' => 'title', 'label' => self::LABEL_TITLE, 'type' => 'text', 'required' => true],
                 ['key' => 'slug', 'label' => 'slug', 'type' => 'text'],
                 ['key' => 'teacher', 'label' => 'مدرس', 'type' => 'text'],
                 ['key' => 'type', 'label' => 'نوع', 'type' => 'select', 'options' => ['online', 'offline']],
@@ -342,11 +392,11 @@ class AdminController extends BaseController
                 ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
                 ['key' => 'price', 'label' => 'قیمت', 'type' => 'price'],
                 ['key' => 'old_price', 'label' => 'قیمت قبل', 'type' => 'price'],
-                ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
+                ['key' => 'rating', 'label' => self::LABEL_RATING, 'type' => 'text'],
                 ['key' => 'students', 'label' => 'دانشجو', 'type' => 'text'],
                 ['key' => 'level', 'label' => 'سطح', 'type' => 'select', 'options' => ['مبتدی', 'متوسط', 'پیشرفته', 'همه سطوح']],
                 ['key' => 'is_free', 'label' => 'رایگان', 'type' => 'boolean'],
-                ['key' => 'description', 'label' => 'توضیحات', 'type' => 'textarea'],
+                ['key' => 'description', 'label' => self::LABEL_DESCRIPTION, 'type' => 'textarea'],
                 ['key' => 'curriculum', 'label' => 'برنامه درسی (JSON)', 'type' => 'textarea'],
                 ['key' => 'audience', 'label' => 'مخاطبان (JSON)', 'type' => 'textarea'],
                 ['key' => 'faqs', 'label' => 'سؤالات متداول (JSON)', 'type' => 'textarea'],
@@ -356,39 +406,39 @@ class AdminController extends BaseController
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'enrollments' => [
-                ['key' => 'user_name', 'label' => 'کاربر', 'type' => 'text'],
+                ['key' => 'user_name', 'label' => self::LABEL_USER, 'type' => 'text'],
                 ['key' => 'course_title', 'label' => 'دوره', 'type' => 'text'],
                 ['key' => 'progress', 'label' => 'پیشرفت %', 'type' => 'text'],
                 ['key' => 'created_at', 'label' => 'تاریخ ثبت‌نام', 'type' => 'text'],
             ],
             'testimonials' => [
                 ['key' => 'name', 'label' => 'نام', 'type' => 'text', 'required' => true],
-                ['key' => 'role', 'label' => 'عنوان', 'type' => 'text'],
-                ['key' => 'text', 'label' => 'متن نظر', 'type' => 'textarea', 'required' => true],
-                ['key' => 'avatar', 'label' => 'تصویر', 'type' => 'image'],
-                ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
+                ['key' => 'role', 'label' => self::LABEL_TITLE, 'type' => 'text'],
+                ['key' => 'text', 'label' => self::LABEL_COMMENT, 'type' => 'textarea', 'required' => true],
+                ['key' => 'avatar', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
+                ['key' => 'rating', 'label' => self::LABEL_RATING, 'type' => 'text'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'transactions' => [
-                ['key' => 'user_name', 'label' => 'کاربر', 'type' => 'text'],
+                ['key' => 'user_name', 'label' => self::LABEL_USER, 'type' => 'text'],
                 ['key' => 'type', 'label' => 'نوع', 'type' => 'status'],
                 ['key' => 'amount', 'label' => 'مبلغ', 'type' => 'price'],
-                ['key' => 'description', 'label' => 'توضیحات', 'type' => 'textarea'],
-                ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
+                ['key' => 'description', 'label' => self::LABEL_DESCRIPTION, 'type' => 'textarea'],
+                ['key' => 'created_at', 'label' => self::LABEL_DATE, 'type' => 'text'],
             ],
             'newsletter' => [
-                ['key' => 'email', 'label' => 'ایمیل', 'type' => 'text'],
+                ['key' => 'email', 'label' => self::LABEL_EMAIL, 'type' => 'text'],
                 ['key' => 'created_at', 'label' => 'تاریخ عضویت', 'type' => 'text'],
             ],
             'hair-models' => [
-                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
-                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'image', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
+                ['key' => 'title', 'label' => self::LABEL_TITLE, 'type' => 'text', 'required' => true],
                 ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'tutorials' => [
-                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
-                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'image', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
+                ['key' => 'title', 'label' => self::LABEL_TITLE, 'type' => 'text', 'required' => true],
                 ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
                 ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
                 ['key' => 'views', 'label' => 'بازدید', 'type' => 'text'],
@@ -397,11 +447,11 @@ class AdminController extends BaseController
             ],
             'orders' => [
                 ['key' => 'tracking_code', 'label' => 'کد پیگیری', 'type' => 'text'],
-                ['key' => 'user_name', 'label' => 'کاربر', 'type' => 'text'],
+                ['key' => 'user_name', 'label' => self::LABEL_USER, 'type' => 'text'],
                 ['key' => 'total', 'label' => 'مبلغ', 'type' => 'price'],
                 ['key' => 'address', 'label' => 'آدرس', 'type' => 'text'],
                 ['key' => 'status', 'label' => 'وضعیت', 'type' => 'status', 'options' => ['pending', 'processing', 'shipped', 'delivered', 'cancelled']],
-                ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
+                ['key' => 'created_at', 'label' => self::LABEL_DATE, 'type' => 'text'],
             ],
             'settings' => [
                 ['key' => 'setting_key', 'label' => 'کلید', 'type' => 'text'],
@@ -418,8 +468,8 @@ class AdminController extends BaseController
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'blog' => [
-                ['key' => 'image', 'label' => 'تصویر', 'type' => 'image'],
-                ['key' => 'title', 'label' => 'عنوان', 'type' => 'text', 'required' => true],
+                ['key' => 'image', 'label' => self::LABEL_IMAGE, 'type' => 'image'],
+                ['key' => 'title', 'label' => self::LABEL_TITLE, 'type' => 'text', 'required' => true],
                 ['key' => 'slug', 'label' => 'slug', 'type' => 'text'],
                 ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
                 ['key' => 'author', 'label' => 'نویسنده', 'type' => 'text'],
@@ -434,27 +484,27 @@ class AdminController extends BaseController
             ],
             'reviews' => [
                 ['key' => 'product_name', 'label' => 'محصول', 'type' => 'text'],
-                ['key' => 'user_name', 'label' => 'کاربر', 'type' => 'text'],
-                ['key' => 'rating', 'label' => 'امتیاز', 'type' => 'text'],
-                ['key' => 'text', 'label' => 'متن نظر', 'type' => 'textarea'],
-                ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
+                ['key' => 'user_name', 'label' => self::LABEL_USER, 'type' => 'text'],
+                ['key' => 'rating', 'label' => self::LABEL_RATING, 'type' => 'text'],
+                ['key' => 'text', 'label' => self::LABEL_COMMENT, 'type' => 'textarea'],
+                ['key' => 'created_at', 'label' => self::LABEL_DATE, 'type' => 'text'],
             ],
             'contact-messages' => [
                 ['key' => 'name', 'label' => 'نام', 'type' => 'text'],
-                ['key' => 'email', 'label' => 'ایمیل', 'type' => 'text'],
+                ['key' => 'email', 'label' => self::LABEL_EMAIL, 'type' => 'text'],
                 ['key' => 'phone', 'label' => 'تلفن', 'type' => 'text'],
                 ['key' => 'subject', 'label' => 'موضوع', 'type' => 'text'],
                 ['key' => 'message', 'label' => 'پیام', 'type' => 'textarea'],
                 ['key' => 'is_read', 'label' => 'خوانده شده', 'type' => 'boolean'],
-                ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
+                ['key' => 'created_at', 'label' => self::LABEL_DATE, 'type' => 'text'],
             ],
             'blog-comments' => [
                 ['key' => 'post_title', 'label' => 'پست', 'type' => 'text'],
                 ['key' => 'name', 'label' => 'نام', 'type' => 'text'],
-                ['key' => 'text', 'label' => 'متن نظر', 'type' => 'textarea'],
+                ['key' => 'text', 'label' => self::LABEL_COMMENT, 'type' => 'textarea'],
                 ['key' => 'likes', 'label' => 'لایک', 'type' => 'text'],
                 ['key' => 'is_approved', 'label' => 'تأیید شده', 'type' => 'boolean'],
-                ['key' => 'created_at', 'label' => 'تاریخ', 'type' => 'text'],
+                ['key' => 'created_at', 'label' => self::LABEL_DATE, 'type' => 'text'],
             ],
             'product-categories' => [
                 ['key' => 'name', 'label' => 'نام دسته', 'type' => 'text', 'required' => true],
@@ -500,7 +550,7 @@ class AdminController extends BaseController
         if ($existing) {
             Database::update('media', [
                 'source_id' => $sourceId,
-            ], 'id = :id', ['id' => $existing['id']]);
+            ], self::WHERE_ID, ['id' => $existing['id']]);
         } else {
             $mime = file_exists($fullPath) ? mime_content_type($fullPath) : '';
             $size = file_exists($fullPath) ? filesize($fullPath) : 0;
@@ -633,80 +683,122 @@ class AdminController extends BaseController
         $this->requireAdmin();
         $this->verifyCsrf();
 
-        if ($section === 'settings') {
-            $this->updateSettings();
-            return;
-        }
+        match ($section) {
+            'settings' => $this->updateSettings(),
+            'captcha' => $this->updateCaptchaSettings(),
+            'gallery' => $this->saveGallery(),
+            default => $this->saveGenericSection($section),
+        };
+    }
 
-        if ($section === 'captcha') {
-            $this->updateCaptchaSettings();
-            return;
-        }
-
-        if ($section === 'gallery') {
-            if (!empty($_FILES['file']['name'])) {
-                $uploadDir = __DIR__ . '/../../public/assets/uploads/gallery';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                $allowedImageMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                $allowedVideoMime = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
-                $finfo = new \finfo(FILEINFO_MIME_TYPE);
-                $mimeType = $finfo->file($_FILES['file']['tmp_name']);
-                $isImage = in_array($mimeType, $allowedImageMime);
-                $isVideo = in_array($mimeType, $allowedVideoMime);
-                if (!$isImage && !$isVideo) {
-                    flash('error', 'نوع فایل مجاز نیست. فقط تصاویر (jpg, png, gif, webp) و ویدیو (mp4, webm, ogg, mov)');
-                    redirect('/admin/gallery');
-                    return;
-                }
-                $ext = match ($mimeType) {
-                    'image/jpeg' => '.jpg',
-                    'image/png' => '.png',
-                    'image/gif' => '.gif',
-                    'image/webp' => '.webp',
-                    'video/mp4' => '.mp4',
-                    'video/webm' => '.webm',
-                    'video/ogg' => '.ogv',
-                    'video/quicktime' => '.mov',
-                    default => '.bin',
-                };
-                $originalName = $_FILES['file']['name'];
-                $filename = 'gallery_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
-                $dest = $uploadDir . '/' . $filename;
-                if (move_uploaded_file($_FILES['file']['tmp_name'], $dest)) {
-                    $size = filesize($dest);
-                    $filepath = 'assets/uploads/gallery/' . $filename;
-                    $altText = sanitize($_POST['alt_text'] ?? $originalName);
-                    Database::insert('media', [
-                        'filepath' => $filepath,
-                        'original_name' => $originalName,
-                        'type' => $isImage ? 'image' : 'video',
-                        'mime_type' => $mimeType,
-                        'size' => $size,
-                        'alt_text' => $altText,
-                        'source_type' => 'direct',
-                        'uploaded_by' => Auth::id(),
-                    ]);
-                    $this->clearCache($section);
-                    flash('success', 'فایل با موفقیت آپلود شد.');
-                } else {
-                    flash('error', 'خطا در آپلود فایل.');
-                }
-            } else {
-                flash('error', 'فایلی انتخاب نشده است.');
-            }
+    private function saveGallery(): void
+    {
+        if (empty($_FILES['file']['name'])) {
+            flash('error', 'فایلی انتخاب نشده است.');
             redirect('/admin/gallery');
             return;
         }
 
+        $uploadDir = __DIR__ . '/../../public/assets/uploads/gallery';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $allowedImageMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $allowedVideoMime = [self::MIME_MP4, self::MIME_WEBM, self::MIME_OGG, self::MIME_MOV];
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($_FILES['file']['tmp_name']);
+
+        if (!in_array($mimeType, $allowedImageMime) && !in_array($mimeType, $allowedVideoMime)) {
+            flash('error', 'نوع فایل مجاز نیست. فقط تصاویر (jpg, png, gif, webp) و ویدیو (mp4, webm, ogg, mov)');
+            redirect('/admin/gallery');
+            return;
+        }
+
+        $isImage = in_array($mimeType, $allowedImageMime);
+        $ext = match ($mimeType) {
+            'image/jpeg' => '.jpg',
+            'image/png' => '.png',
+            'image/gif' => '.gif',
+            'image/webp' => '.webp',
+            self::MIME_MP4 => '.mp4',
+            self::MIME_WEBM => self::EXT_WEBM,
+            self::MIME_OGG => '.ogv',
+            self::MIME_MOV => '.mov',
+            default => '.bin',
+        };
+        $filename = 'gallery_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
+        $dest = $uploadDir . '/' . $filename;
+
+        if (move_uploaded_file($_FILES['file']['tmp_name'], $dest)) {
+            $filepath = 'assets/uploads/gallery/' . $filename;
+            $altText = sanitize($_POST['alt_text'] ?? $_FILES['file']['name']);
+            Database::insert('media', [
+                'filepath' => $filepath,
+                'original_name' => $_FILES['file']['name'],
+                'type' => $isImage ? 'image' : 'video',
+                'mime_type' => $mimeType,
+                'size' => filesize($dest),
+                'alt_text' => $altText,
+                'source_type' => 'direct',
+                'uploaded_by' => Auth::id(),
+            ]);
+            $this->clearCache('gallery');
+            flash('success', 'فایل با موفقیت آپلود شد.');
+        } else {
+            flash('error', 'خطا در آپلود فایل.');
+        }
+        redirect('/admin/gallery');
+    }
+
+    private function saveGenericSection(string $section): void
+    {
         $id = (int) ($_POST['id'] ?? 0);
         $table = $this->sectionToTable($section);
 
         if (!$table) {
-            redirect('/admin');
+            redirect(self::PATH_ADMIN);
         }
 
+        $data = $this->collectPostData($section);
+
+        $handled = match ($section) {
+            'orders' => $this->saveOrders($id, $data, $table),
+            'blog-comments' => $this->saveBlogComments($id, $data, $table),
+            'appointments' => $this->saveAppointments($id, $data, $table),
+            'enrollments' => $this->saveEnrollments($id, $data, $table),
+            'users' => $this->saveUsers($id, $data, $table),
+            'artists' => $this->saveArtists($id, $data, $table),
+            'hair-prices' => $this->saveHairPrices($id),
+            default => false,
+        };
+        if ($handled) {
+            return;
+        }
+
+        $this->handleFileUploads($section, $id, $table, $data);
+
+        match ($section) {
+            'products' => $this->handleProductVideo($data, $id),
+            'courses' => $this->handleCourseVideo($data, $id),
+            'blog' => $this->handleBlogContent($id, $data),
+            default => null,
+        };
+
+        if ($id) {
+            Database::update($table, $data, self::WHERE_ID, ['id' => $id]);
+        } else {
+            $id = Database::insert($table, $data);
+        }
+
+        $this->handlePostSave($section, $id, $data);
+        $this->clearCache($section);
+        flash('success', 'با موفقیت ذخیره شد.');
+        redirect('/admin/' . $section);
+    }
+
+    private function collectPostData(string $section): array
+    {
         $allowedFields = array_column($this->getColumns($section), 'key');
         $allowedFields[] = 'description';
         $allowedFields[] = 'bio';
@@ -715,281 +807,186 @@ class AdminController extends BaseController
         $allowedFields[] = 'instagram';
 
         $rawFields = ['description', 'bio', 'text', 'notes', 'content'];
-
         $data = [];
         foreach ($allowedFields as $field) {
             if (isset($_POST[$field])) {
                 $data[$field] = in_array($field, $rawFields) ? $_POST[$field] : sanitize($_POST[$field]);
             }
         }
+        return $data;
+    }
 
-        if ($section === 'orders') {
-            if ($id && isset($data['status'])) {
-                $updateData = ['status' => $data['status']];
-                if (isset($data['payment_status'])) {
-                    $updateData['payment_status'] = $data['payment_status'];
-                }
-                Database::update($table, $updateData, 'id = :id', ['id' => $id]);
-                flash('success', 'وضعیت سفارش به‌روزرسانی شد.');
-            }
-            $this->clearCache($section);
-            redirect('/admin/orders');
-            return;
-        }
-
-        if ($section === 'blog-comments') {
-            if ($id && isset($data['is_approved'])) {
-                Database::update($table, ['is_approved' => (int)$data['is_approved']], 'id = :id', ['id' => $id]);
-                flash('success', 'وضعیت نظر به‌روزرسانی شد.');
-            }
-            $this->clearCache($section);
-            redirect('/admin/blog-comments');
-            return;
-        }
-
-        if ($section === 'appointments') {
-            if ($id) {
-                $updateData = [];
-                if (isset($data['status'])) {
-                    $updateData['status'] = $data['status'];
-                }
-                if (isset($data['notes'])) {
-                    $updateData['notes'] = $data['notes'];
-                }
-                if (!empty($updateData)) {
-                    Database::update($table, $updateData, 'id = :id', ['id' => $id]);
-                    flash('success', 'نوبت با موفقیت به‌روزرسانی شد.');
-                }
-            }
-            $this->clearCache($section);
-            redirect('/admin/appointments');
-            return;
-        }
-
-        if ($section === 'enrollments') {
-            if ($id && isset($data['progress'])) {
-                Database::update($table, ['progress' => (int)$data['progress']], 'id = :id', ['id' => $id]);
-                flash('success', 'پیشرفت دوره به‌روزرسانی شد.');
-            }
-            $this->clearCache($section);
-            redirect('/admin/enrollments');
-            return;
-        }
-
-        if ($section === 'users') {
-            if (!$id) {
-                flash('error', 'ثبت کاربر جدید از طریق پنل ادمین پشتیبانی نمی‌شود.');
-                redirect('/admin/users');
-                return;
-            }
-            unset($data['password'], $data['phone']);
-            if (!empty($_FILES['avatar']['name'])) {
-                $oldAvatar = Database::fetch("SELECT avatar FROM users WHERE id = ?", [$id])['avatar'] ?? null;
-                $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar_' . $id, $oldAvatar);
-                if ($uploaded) {
-                    $data['avatar'] = $uploaded;
-                }
-            }
-            if (!empty($data)) {
-                Database::update($table, $data, 'id = :id', ['id' => $id]);
-            }
-            $this->clearCache($section);
-            flash('success', 'کاربر با موفقیت ذخیره شد.');
-            redirect('/admin/users');
-            return;
-        }
-
-        if ($section === 'artists') {
-            Database::beginTransaction();
-            try {
-                if (!empty($_FILES['avatar']['name'])) {
-                    $oldAvatar = $id ? Database::fetch("SELECT avatar FROM artists WHERE id = ?", [$id])['avatar'] ?? null : null;
-                    $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar', $oldAvatar);
-                    if ($uploaded) {
-                        $data['avatar'] = $uploaded;
-                    }
-                }
-                if ($id) {
-                    Database::update($table, $data, 'id = :id', ['id' => $id]);
-                } else {
-                    $id = Database::insert($table, $data);
-                }
-                $serviceIds = array_map('intval', $_POST['services'] ?? []);
-                Database::query("DELETE FROM artist_services WHERE artist_id = ?", [$id]);
-                foreach ($serviceIds as $svcId) {
-                    if ($svcId > 0) {
-                        Database::query(
-                            "INSERT INTO artist_services (artist_id, service_id) VALUES (?, ?)",
-                            [$id, $svcId]
-                        );
-                    }
-                }
-                Database::commit();
-            } catch (Throwable $e) {
-                Database::rollback();
-                flash('error', 'خطا در ذخیره آرایشگر: ' . $e->getMessage());
-                redirect('/admin/artists');
-                return;
-            }
-            $this->clearCache($section);
-            flash('success', 'آرایشگر با موفقیت ذخیره شد.');
-            redirect('/admin/artists');
-            return;
-        }
-
-        if ($section === 'hair-prices') {
-            $serviceId = (int) ($_POST['service_id'] ?? 0);
-            $hairLengthId = (int) ($_POST['hair_length_id'] ?? 0);
-            $price = (int) ($_POST['price'] ?? 0);
-            $durationModifier = max(0.1, min(9.9, (float) ($_POST['duration_modifier'] ?? 1.0)));
-            $isActive = isset($_POST['is_active']) ? 1 : 0;
-
-            if (!$serviceId || !$hairLengthId || !$price) {
-                flash('error', 'لطفاً تمام فیلدهای ضروری را پر کنید.');
-                redirect('/admin/hair-prices');
-                return;
-            }
-
-            if ($id) {
-                Database::update('service_hair_prices', [
-                    'service_id' => $serviceId,
-                    'hair_length_id' => $hairLengthId,
-                    'price' => $price,
-                    'duration_modifier' => $durationModifier,
-                    'is_active' => $isActive
-                ], 'id = :id', ['id' => $id]);
-            } else {
-                $exists = Database::fetch(
-                    "SELECT id FROM service_hair_prices WHERE service_id = ? AND hair_length_id = ?",
-                    [$serviceId, $hairLengthId]
-                );
-                if ($exists) {
-                    flash('error', 'این ترکیب خدمت و قد مو از قبل وجود دارد.');
-                    redirect('/admin/hair-prices');
-                    return;
-                }
-                Database::insert('service_hair_prices', [
-                    'service_id' => $serviceId,
-                    'hair_length_id' => $hairLengthId,
-                    'price' => $price,
-                    'duration_modifier' => $durationModifier,
-                    'is_active' => $isActive
-                ]);
-            }
-            $this->clearCache('booking');
-            flash('success', 'قیمت با موفقیت ذخیره شد.');
-            redirect('/admin/hair-prices');
-            return;
-        }
-
+    private function handleFileUploads(string $section, int $id, string $table, array &$data): void
+    {
         if (!empty($_FILES['image']['name'])) {
-            $oldImage = null;
-            if ($id) {
-                $row = Database::fetch("SELECT image FROM {$table} WHERE id = ?", [$id]);
-                if ($row) {
-                    $oldImage = $row['image'];
-                }
-            }
+            $oldImage = $id ? (Database::fetch("SELECT image FROM {$table} WHERE id = ?", [$id])['image'] ?? null) : null;
             $uploaded = FileUploader::upload($_FILES['image'], 'product', $oldImage);
             if ($uploaded) {
                 $data['image'] = $uploaded;
             }
         }
         if (!empty($_FILES['avatar']['name'])) {
-            $oldAvatar = null;
-            if ($id) {
-                $row = Database::fetch("SELECT avatar FROM {$table} WHERE id = ?", [$id]);
-                if ($row) {
-                    $oldAvatar = $row['avatar'];
-                }
-            }
+            $oldAvatar = $id ? (Database::fetch("SELECT avatar FROM {$table} WHERE id = ?", [$id])['avatar'] ?? null) : null;
             $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar', $oldAvatar);
             if ($uploaded) {
                 $data['avatar'] = $uploaded;
             }
         }
+    }
 
-        if ($section === 'products') {
-            $videoType = $_POST['video_type'] ?? 'upload';
-            if (!empty($_FILES['video_url']['name'])) {
-                $videoAllowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
-                $finfo = new \finfo(FILEINFO_MIME_TYPE);
-                $mimeType = $finfo->file($_FILES['video_url']['tmp_name']);
-                if (in_array($mimeType, $videoAllowed)) {
-                    $ext = match ($mimeType) {
-                        'video/mp4' => '.mp4',
-                        'video/webm' => '.webm',
-                        'video/ogg' => '.ogv',
-                        'video/quicktime' => '.mov',
-                        default => '.mp4',
-                    };
-                    $name = 'product_video_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
-                    $uploadDir = __DIR__ . '/../../public/assets/uploads/videos';
-                    $dest = $uploadDir . '/' . $name;
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0755, true);
+    private function handlePostSave(string $section, int $id, array $data): void
+    {
+        match ($section) {
+            'services' => $this->saveServiceHairPrices($id),
+            'courses' => $this->syncCourseMedia($data),
+            'products' => $this->syncProductMedia($data, $id),
+            default => null,
+        };
+    }
+
+    private function syncCourseMedia(array $data): void
+    {
+        if (!empty($data['video_url']) && ($data['video_type'] ?? '') === 'upload') {
+            $this->syncMedia($data['video_url'], $_FILES['video_url']['name'] ?? basename($data['video_url']), 'video', 'course_video', null);
+        }
+    }
+
+    private function syncProductMedia(array $data, int $id): void
+    {
+        if (!empty($data['image'])) {
+            $this->syncMedia('assets/images/' . $data['image'], $data['image'], 'image', 'product_image', $id);
+        }
+        if (!empty($data['video_url']) && ($data['video_type'] ?? '') === 'upload') {
+            $this->syncMedia($data['video_url'], $_FILES['video_url']['name'] ?? basename($data['video_url']), 'video', 'product_video', $id);
+        }
+        $deleteIds = trim($_POST['delete_gallery_ids'] ?? '');
+        if ($deleteIds !== '') {
+            foreach (array_map('intval', explode(',', $deleteIds)) as $did) {
+                $gi = Database::fetch("SELECT * FROM product_images WHERE id = ?", [$did]);
+                if ($gi) {
+                    $filePath = __DIR__ . '/../../public/assets/images/' . $gi['image'];
+                    if (file_exists($filePath)) {
+                        @unlink($filePath);
                     }
-                    if (move_uploaded_file($_FILES['video_url']['tmp_name'], $dest)) {
-                        $data['video_url'] = '/assets/uploads/videos/' . $name;
-                        $data['video_type'] = 'upload';
-                    }
+                    Database::delete('product_images', self::WHERE_ID_PARAM, [$did]);
                 }
-            } elseif ($videoType !== 'upload') {
-                $data['video_url'] = sanitize($_POST['video_url'] ?? '');
-                $data['video_type'] = $videoType;
-            } elseif ($id) {
-                unset($data['video_url'], $data['video_type']);
             }
         }
-
-        if ($section === 'courses') {
-            $videoType = $_POST['video_type'] ?? 'upload';
-            if (!empty($_FILES['video_url']['name'])) {
-                $videoAllowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
-                $finfo = new \finfo(FILEINFO_MIME_TYPE);
-                $mimeType = $finfo->file($_FILES['video_url']['tmp_name']);
-                if (in_array($mimeType, $videoAllowed)) {
-                    $ext = match ($mimeType) {
-                        'video/mp4' => '.mp4',
-                        'video/webm' => '.webm',
-                        'video/ogg' => '.ogv',
-                        'video/quicktime' => '.mov',
-                        default => '.mp4',
-                    };
-                    $name = 'course_video_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
-                    $uploadDir = __DIR__ . '/../../public/assets/uploads/videos';
-                    $dest = $uploadDir . '/' . $name;
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0755, true);
-                    }
-                    if (move_uploaded_file($_FILES['video_url']['tmp_name'], $dest)) {
-                        $data['video_url'] = '/assets/uploads/videos/' . $name;
-                        $data['video_type'] = 'upload';
-                    }
+        if (!empty($_FILES['gallery_images']['name'][0])) {
+            foreach ($_FILES['gallery_images']['name'] as $i => $name) {
+                if ($name === '' || $_FILES['gallery_images']['error'][$i] !== UPLOAD_ERR_OK) {
+                    continue;
                 }
-            } elseif ($videoType !== 'upload') {
-                $data['video_url'] = sanitize($_POST['video_url'] ?? '');
-                $data['video_type'] = $videoType;
-            } elseif ($id) {
-                unset($data['video_url'], $data['video_type']);
+                $file = [
+                    'name' => $_FILES['gallery_images']['name'][$i],
+                    'type' => $_FILES['gallery_images']['type'][$i],
+                    'tmp_name' => $_FILES['gallery_images']['tmp_name'][$i],
+                    'error' => $_FILES['gallery_images']['error'][$i],
+                    'size' => $_FILES['gallery_images']['size'][$i],
+                ];
+                $uploaded = FileUploader::upload($file, 'product_gallery');
+                if ($uploaded) {
+                    Database::insert('product_images', [
+                        'product_id' => $id,
+                        'image' => $uploaded,
+                        'sort_order' => $i,
+                    ]);
+                    $this->syncMedia('assets/images/' . $uploaded, $file['name'], 'image', 'product_gallery', $id);
+                }
             }
         }
+    }
 
-        if ($section === 'blog' && isset($_POST['content'])) {
+    private function handleVideoUpload(array &$data, int $id): void
+    {
+        $videoType = $_POST['video_type'] ?? 'upload';
+        if (!empty($_FILES['video_url']['name'])) {
+            $videoAllowed = [self::MIME_MP4, self::MIME_WEBM, self::MIME_OGG, self::MIME_MOV];
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->file($_FILES['video_url']['tmp_name']);
+            if (in_array($mimeType, $videoAllowed)) {
+                $ext = match ($mimeType) {
+                    self::MIME_MP4 => '.mp4',
+                    self::MIME_WEBM => self::EXT_WEBM,
+                    self::MIME_OGG => '.ogv',
+                    self::MIME_MOV => '.mov',
+                    default => '.mp4',
+                };
+                $name = 'product_video_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
+                $uploadDir = __DIR__ . '/../../public/assets/uploads/videos';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                $dest = $uploadDir . '/' . $name;
+                if (move_uploaded_file($_FILES['video_url']['tmp_name'], $dest)) {
+                    $data['video_url'] = '/assets/uploads/videos/' . $name;
+                    $data['video_type'] = 'upload';
+                }
+            }
+        } elseif ($videoType !== 'upload') {
+            $data['video_url'] = sanitize($_POST['video_url'] ?? '');
+            $data['video_type'] = $videoType;
+        } elseif ($id) {
+            unset($data['video_url'], $data['video_type']);
+        }
+    }
+
+    private function handleProductVideo(array &$data, int $id): void
+    {
+        $this->handleVideoUpload($data, $id);
+    }
+
+    private function handleCourseVideo(array &$data, int $id): void
+    {
+        $videoType = $_POST['video_type'] ?? 'upload';
+        if (!empty($_FILES['video_url']['name'])) {
+            $videoAllowed = [self::MIME_MP4, self::MIME_WEBM, self::MIME_OGG, self::MIME_MOV];
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->file($_FILES['video_url']['tmp_name']);
+            if (in_array($mimeType, $videoAllowed)) {
+                $ext = match ($mimeType) {
+                    self::MIME_MP4 => '.mp4',
+                    self::MIME_WEBM => self::EXT_WEBM,
+                    self::MIME_OGG => '.ogv',
+                    self::MIME_MOV => '.mov',
+                    default => '.mp4',
+                };
+                $name = 'course_video_' . time() . '_' . bin2hex(random_bytes(4)) . $ext;
+                $uploadDir = __DIR__ . '/../../public/assets/uploads/videos';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                $dest = $uploadDir . '/' . $name;
+                if (move_uploaded_file($_FILES['video_url']['tmp_name'], $dest)) {
+                    $data['video_url'] = '/assets/uploads/videos/' . $name;
+                    $data['video_type'] = 'upload';
+                }
+            }
+        } elseif ($videoType !== 'upload') {
+            $data['video_url'] = sanitize($_POST['video_url'] ?? '');
+            $data['video_type'] = $videoType;
+        } elseif ($id) {
+            unset($data['video_url'], $data['video_type']);
+        }
+    }
+
+    private function handleBlogContent(int $id, array &$data): void
+    {
+        if (isset($_POST['content'])) {
             $data['content'] = $_POST['content'];
         }
 
-        if ($section === 'blog' && empty($data['slug']) && !empty($data['title'])) {
+        if (empty($data['slug']) && !empty($data['title'])) {
             $baseSlug = slugify($data['title']);
             $slug = $baseSlug;
             $counter = 1;
-            while (Database::fetch("SELECT id FROM blog_posts WHERE slug = ? AND id != ?", [$slug, $id ?? 0])) {
+            while (Database::fetch("SELECT id FROM blog_posts WHERE slug = ? AND id != ?", [$slug, $id ?: 0])) {
                 $slug = $baseSlug . '-' . $counter++;
             }
             $data['slug'] = $slug;
         }
 
-        if ($section === 'blog' && $id) {
+        if ($id) {
             $existing = Database::fetch("SELECT image FROM blog_posts WHERE id = ?", [$id]);
             if (!empty($_FILES['image']['name'])) {
                 $uploaded = FileUploader::upload($_FILES['image'], 'blog');
@@ -1000,71 +997,172 @@ class AdminController extends BaseController
                 $data['image'] = $existing['image'];
             }
         }
+    }
+
+    private function saveOrders(int $id, array $data, string $table): bool
+    {
+        if (!$id || !isset($data['status'])) {
+            $this->clearCache('orders');
+            redirect('/admin/orders');
+            return true;
+        }
+        $updateData = ['status' => $data['status']];
+        if (isset($data['payment_status'])) {
+            $updateData['payment_status'] = $data['payment_status'];
+        }
+        Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+        $this->clearCache('orders');
+        flash('success', 'وضعیت سفارش به‌روزرسانی شد.');
+        redirect('/admin/orders');
+        return true;
+    }
+
+    private function saveBlogComments(int $id, array $data, string $table): bool
+    {
+        if ($id && isset($data['is_approved'])) {
+            Database::update($table, ['is_approved' => (int) $data['is_approved']], self::WHERE_ID, ['id' => $id]);
+            flash('success', 'وضعیت نظر به‌روزرسانی شد.');
+        }
+        $this->clearCache('blog-comments');
+        redirect('/admin/blog-comments');
+        return true;
+    }
+
+    private function saveAppointments(int $id, array $data, string $table): bool
+    {
+        if ($id) {
+            $updateData = [];
+            if (isset($data['status'])) {
+                $updateData['status'] = $data['status'];
+            }
+            if (isset($data['notes'])) {
+                $updateData['notes'] = $data['notes'];
+            }
+            if (!empty($updateData)) {
+                Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+                flash('success', 'نوبت با موفقیت به‌روزرسانی شد.');
+            }
+        }
+        $this->clearCache('appointments');
+        redirect('/admin/appointments');
+        return true;
+    }
+
+    private function saveEnrollments(int $id, array $data, string $table): bool
+    {
+        if ($id && isset($data['progress'])) {
+            Database::update($table, ['progress' => (int) $data['progress']], self::WHERE_ID, ['id' => $id]);
+            flash('success', 'پیشرفت دوره به‌روزرسانی شد.');
+        }
+        $this->clearCache('enrollments');
+        redirect('/admin/enrollments');
+        return true;
+    }
+
+    private function saveUsers(int $id, array $data, string $table): bool
+    {
+        if (!$id) {
+            flash('error', 'ثبت کاربر جدید از طریق پنل ادمین پشتیبانی نمی‌شود.');
+            redirect('/admin/users');
+            return true;
+        }
+        unset($data['password'], $data['phone']);
+        if (!empty($_FILES['avatar']['name'])) {
+            $oldAvatar = Database::fetch("SELECT avatar FROM users WHERE id = ?", [$id])['avatar'] ?? null;
+            $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar_' . $id, $oldAvatar);
+            if ($uploaded) {
+                $data['avatar'] = $uploaded;
+            }
+        }
+        if (!empty($data)) {
+            Database::update($table, $data, self::WHERE_ID, ['id' => $id]);
+        }
+        $this->clearCache('users');
+        flash('success', 'کاربر با موفقیت ذخیره شد.');
+        redirect('/admin/users');
+        return true;
+    }
+
+    private function saveArtists(int $id, array $data, string $table): bool
+    {
+        Database::beginTransaction();
+        try {
+            if (!empty($_FILES['avatar']['name'])) {
+                $oldAvatar = $id ? Database::fetch("SELECT avatar FROM artists WHERE id = ?", [$id])['avatar'] ?? null : null;
+                $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar', $oldAvatar);
+                if ($uploaded) {
+                    $data['avatar'] = $uploaded;
+                }
+            }
+            if ($id) {
+                Database::update($table, $data, self::WHERE_ID, ['id' => $id]);
+            } else {
+                $id = Database::insert($table, $data);
+            }
+            $serviceIds = array_map('intval', $_POST['services'] ?? []);
+            Database::query("DELETE FROM artist_services WHERE artist_id = ?", [$id]);
+            foreach ($serviceIds as $svcId) {
+                if ($svcId > 0) {
+                    Database::query("INSERT INTO artist_services (artist_id, service_id) VALUES (?, ?)", [$id, $svcId]);
+                }
+            }
+            Database::commit();
+        } catch (Throwable $e) {
+            Database::rollback();
+            flash('error', 'خطا در ذخیره آرایشگر: ' . $e->getMessage());
+            redirect('/admin/artists');
+            return true;
+        }
+        $this->clearCache('artists');
+        flash('success', 'آرایشگر با موفقیت ذخیره شد.');
+        redirect('/admin/artists');
+        return true;
+    }
+
+    private function saveHairPrices(int $id): bool
+    {
+        $serviceId = (int) ($_POST['service_id'] ?? 0);
+        $hairLengthId = (int) ($_POST['hair_length_id'] ?? 0);
+        $price = (int) ($_POST['price'] ?? 0);
+        $durationModifier = max(0.1, min(9.9, (float) ($_POST['duration_modifier'] ?? 1.0)));
+        $isActive = isset($_POST['is_active']) ? 1 : 0;
+
+        if (!$serviceId || !$hairLengthId || !$price) {
+            flash('error', 'لطفاً تمام فیلدهای ضروری را پر کنید.');
+            redirect(self::PATH_HAIR_PRICES);
+            return true;
+        }
 
         if ($id) {
-            Database::update($table, $data, 'id = :id', ['id' => $id]);
+            Database::update('service_hair_prices', [
+                'service_id' => $serviceId,
+                'hair_length_id' => $hairLengthId,
+                'price' => $price,
+                'duration_modifier' => $durationModifier,
+                'is_active' => $isActive,
+            ], self::WHERE_ID, ['id' => $id]);
         } else {
-            $id = Database::insert($table, $data);
+            $exists = Database::fetch(
+                "SELECT id FROM service_hair_prices WHERE service_id = ? AND hair_length_id = ?",
+                [$serviceId, $hairLengthId]
+            );
+            if ($exists) {
+                flash('error', 'این ترکیب خدمت و قد مو از قبل وجود دارد.');
+                redirect(self::PATH_HAIR_PRICES);
+                return true;
+            }
+            Database::insert('service_hair_prices', [
+                'service_id' => $serviceId,
+                'hair_length_id' => $hairLengthId,
+                'price' => $price,
+                'duration_modifier' => $durationModifier,
+                'is_active' => $isActive,
+            ]);
         }
-
-        if ($section === 'services') {
-            $this->saveServiceHairPrices($id);
-        }
-
-        if ($section === 'courses') {
-            if (!empty($data['video_url']) && $data['video_type'] === 'upload') {
-                $this->syncMedia($data['video_url'], $_FILES['video_url']['name'] ?? basename($data['video_url']), 'video', 'course_video', $id);
-            }
-        }
-
-        if ($section === 'products') {
-            if (!empty($data['image'])) {
-                $this->syncMedia('assets/images/' . $data['image'], $data['image'], 'image', 'product_image', $id);
-            }
-            if (!empty($data['video_url']) && $data['video_type'] === 'upload') {
-                $this->syncMedia($data['video_url'], $_FILES['video_url']['name'] ?? basename($data['video_url']), 'video', 'product_video', $id);
-            }
-            $deleteIds = trim($_POST['delete_gallery_ids'] ?? '');
-            if ($deleteIds !== '') {
-                foreach (array_map('intval', explode(',', $deleteIds)) as $did) {
-                    $gi = Database::fetch("SELECT * FROM product_images WHERE id = ?", [$did]);
-                    if ($gi) {
-                        $filePath = __DIR__ . '/../../public/assets/images/' . $gi['image'];
-                        if (file_exists($filePath)) {
-                            @unlink($filePath);
-                        }
-                        Database::delete('product_images', 'id = ?', [$did]);
-                    }
-                }
-            }
-            if (!empty($_FILES['gallery_images']['name'][0])) {
-                foreach ($_FILES['gallery_images']['name'] as $i => $name) {
-                    if ($name === '' || $_FILES['gallery_images']['error'][$i] !== UPLOAD_ERR_OK) {
-                        continue;
-                    }
-                    $file = [
-                        'name' => $_FILES['gallery_images']['name'][$i],
-                        'type' => $_FILES['gallery_images']['type'][$i],
-                        'tmp_name' => $_FILES['gallery_images']['tmp_name'][$i],
-                        'error' => $_FILES['gallery_images']['error'][$i],
-                        'size' => $_FILES['gallery_images']['size'][$i],
-                    ];
-                    $uploaded = FileUploader::upload($file, 'product_gallery');
-                    if ($uploaded) {
-                        Database::insert('product_images', [
-                            'product_id' => $id,
-                            'image' => $uploaded,
-                            'sort_order' => $i,
-                        ]);
-                        $this->syncMedia('assets/images/' . $uploaded, $file['name'], 'image', 'product_gallery', $id);
-                    }
-                }
-            }
-        }
-
-        $this->clearCache($section);
-        flash('success', 'با موفقیت ذخیره شد.');
-        redirect('/admin/' . $section);
+        $this->clearCache('booking');
+        flash('success', 'قیمت با موفقیت ذخیره شد.');
+        redirect(self::PATH_HAIR_PRICES);
+        return true;
     }
 
     public function delete(string $section, int $id): void
@@ -1076,7 +1174,7 @@ class AdminController extends BaseController
             Database::query("DELETE FROM service_hair_prices WHERE id = ?", [$id]);
             $this->clearCache('booking');
             flash('success', 'قیمت با موفقیت حذف شد.');
-            redirect('/admin/hair-prices');
+            redirect(self::PATH_HAIR_PRICES);
             return;
         }
 
@@ -1100,7 +1198,7 @@ class AdminController extends BaseController
                 if (file_exists($filePath)) {
                     @unlink($filePath);
                 }
-                Database::delete('media', 'id = ?', [$id]);
+                Database::delete('media', self::WHERE_ID_PARAM, [$id]);
                 if (in_array($media['source_type'], ['product_image', 'product_gallery', 'product_video'])) {
                     Cache::flushByTag('products');
                 }
@@ -1111,7 +1209,7 @@ class AdminController extends BaseController
         }
 
         if ($table) {
-            Database::delete($table, 'id = ?', [$id]);
+            Database::delete($table, self::WHERE_ID_PARAM, [$id]);
         }
 
         $this->clearCache($section);
@@ -1136,7 +1234,7 @@ class AdminController extends BaseController
         $upsertParams = [];
         foreach ($captchaKeys as $key) {
             if (isset($_POST[$key])) {
-                $upserts[] = '(?, ?)';
+                $upserts[] = self::PLACEHOLDER_PAIR;
                 $upsertParams[] = $key;
                 $upsertParams[] = sanitize($_POST[$key]);
             }
@@ -1160,7 +1258,7 @@ class AdminController extends BaseController
         $this->requireAdmin();
         $this->verifyCsrf();
 
-        $htmlKeys = ['about_content', 'contact_map_location'];
+                $htmlKeys = ['about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'hero_customers_text', 'blog_sidebar_about', 'academy_instructor_bio'];
         $toggleKeys = ['sms_enabled'];
 
         $smsEnabled = isset($_POST['setting_sms_enabled']);
@@ -1172,25 +1270,25 @@ class AdminController extends BaseController
         if ($smsEnabled) {
             if ($apiKey === '') {
                 flash('error', 'کلید API کاوه‌نگار نمی‌تواند خالی باشد.');
-                redirect('/admin/settings');
+                redirect(self::PATH_SETTINGS);
                 return;
             }
             if ($sender === '') {
                 flash('error', 'شماره فرستنده نمی‌تواند خالی باشد.');
-                redirect('/admin/settings');
+                redirect(self::PATH_SETTINGS);
                 return;
             }
         }
 
         if ($otpTtl !== '' && (!ctype_digit($otpTtl) || (int)$otpTtl < 60 || (int)$otpTtl > 600)) {
             flash('error', 'مدت اعتبار کد تأیید باید عددی بین ۶۰ تا ۶۰۰ ثانیه باشد.');
-            redirect('/admin/settings');
+            redirect(self::PATH_SETTINGS);
             return;
         }
 
         if ($otpLength !== '' && (!ctype_digit($otpLength) || (int)$otpLength < 4 || (int)$otpLength > 6)) {
             flash('error', 'طول کد تأیید باید عددی بین ۴ تا ۶ رقم باشد.');
-            redirect('/admin/settings');
+            redirect(self::PATH_SETTINGS);
             return;
         }
 
@@ -1200,7 +1298,7 @@ class AdminController extends BaseController
             if (str_starts_with($key, 'setting_')) {
                 $settingKey = substr($key, 8);
                 $value = in_array($settingKey, $htmlKeys) ? $value : sanitize($value);
-                $upserts[] = '(?, ?)';
+                $upserts[] = self::PLACEHOLDER_PAIR;
                 $upsertParams[] = $settingKey;
                 $upsertParams[] = $value;
             }
@@ -1208,7 +1306,7 @@ class AdminController extends BaseController
 
         foreach ($toggleKeys as $toggleKey) {
             if (!isset($_POST['setting_' . $toggleKey])) {
-                $upserts[] = '(?, ?)';
+                $upserts[] = self::PLACEHOLDER_PAIR;
                 $upsertParams[] = $toggleKey;
                 $upsertParams[] = '0';
             }
@@ -1227,7 +1325,7 @@ class AdminController extends BaseController
         Cache::flushByTag('homepage');
         Cache::forget('home_data');
         flash('success', 'تنظیمات با موفقیت ذخیره شد.');
-        redirect('/admin/settings');
+        redirect(self::PATH_SETTINGS);
     }
 
     // Specific section handlers
@@ -1262,7 +1360,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('appointments');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionUsers(array &$data): void
@@ -1285,7 +1383,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('users');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionCaptcha(array &$data): void
@@ -1295,7 +1393,7 @@ class AdminController extends BaseController
         foreach ($rows as $row) {
             $data['captcha_settings'][$row['setting_key']] = $row['setting_value'];
         }
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionSettings(array &$data): void
@@ -1306,7 +1404,7 @@ class AdminController extends BaseController
             $data['settings'][$row['setting_key']] = $row['setting_value'];
         }
         $data['columns'] = $this->getColumns('settings');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionOrders(array &$data): void
@@ -1367,7 +1465,7 @@ class AdminController extends BaseController
         }
 
         $data['columns'] = $this->getColumns('orders');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionEnrollments(array &$data): void
@@ -1399,7 +1497,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('enrollments');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionTransactions(array &$data): void
@@ -1429,7 +1527,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('transactions');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionCoupons(array &$data): void
@@ -1452,7 +1550,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('coupons');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionBlog(array &$data): void
@@ -1475,7 +1573,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('blog');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionReviews(array &$data): void
@@ -1502,7 +1600,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('reviews');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionContactMessages(array &$data): void
@@ -1525,7 +1623,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('contact-messages');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionBlogComments(array &$data): void
@@ -1553,7 +1651,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('blog-comments');
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function sectionGallery(array &$data): void
@@ -1590,7 +1688,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['filter'] = $filter;
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 
     public function changePassword(): void
@@ -1604,32 +1702,32 @@ class AdminController extends BaseController
 
         if (empty($current) || empty($new) || empty($confirm)) {
             flash('error', 'تمام فیلدها را پر کنید.');
-            redirect('/admin/settings');
+            redirect(self::PATH_SETTINGS);
             return;
         }
 
         if ($new !== $confirm) {
             flash('error', 'رمز عبور جدید و تکرار آن مطابقت ندارند.');
-            redirect('/admin/settings');
+            redirect(self::PATH_SETTINGS);
             return;
         }
 
         if (strlen($new) < 6) {
             flash('error', 'رمز عبور جدید باید حداقل ۶ کاراکتر باشد.');
-            redirect('/admin/settings');
+            redirect(self::PATH_SETTINGS);
             return;
         }
 
         $user = Database::fetch("SELECT password FROM users WHERE id = ?", [Auth::id()]);
         if (!Auth::verify($current, $user['password'])) {
             flash('error', 'رمز عبور فعلی اشتباه است.');
-            redirect('/admin/settings');
+            redirect(self::PATH_SETTINGS);
             return;
         }
 
-        Database::update('users', ['password' => Auth::hash($new)], 'id = :id', ['id' => Auth::id()]);
+        Database::update('users', ['password' => Auth::hash($new)], self::WHERE_ID, ['id' => Auth::id()]);
         flash('success', 'رمز عبور با موفقیت تغییر یافت.');
-        redirect('/admin/settings');
+        redirect(self::PATH_SETTINGS);
     }
 
     private function sectionToTable(string $section): ?string
@@ -1705,6 +1803,6 @@ class AdminController extends BaseController
         $data['totalPages'] = $totalPages;
         $data['total'] = $total;
         $data['search'] = $search;
-        $this->view('admin/index', $data);
+        $this->view(self::VIEW_ADMIN, $data);
     }
 }

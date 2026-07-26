@@ -7,6 +7,9 @@ class BaseController
     protected function view(string $view, array $data = []): void
     {
         $hideFooter = $data['hideFooter'] ?? false;
+        if (!isset($data['settings'])) {
+            $data['settings'] = Settings::all();
+        }
         $safe = array_diff_key($data, array_flip(self::$protectedVars));
         extract($safe);
         require_once __DIR__ . '/../views/layouts/header.php';
@@ -37,24 +40,36 @@ class BaseController
         foreach ($rules as $field => $ruleSet) {
             $ruleList = explode('|', $ruleSet);
             foreach ($ruleList as $rule) {
-                if ($rule === 'required' && (!isset($data[$field]) || $data[$field] === '')) {
-                    $errors[$field] = 'این فیلد الزامی است.';
-                }
-                if (str_starts_with($rule, 'min:') && isset($data[$field])) {
-                    $min = (int) explode(':', $rule)[1];
-                    if (mb_strlen($data[$field]) < $min) {
-                        $errors[$field] = "حداقل {$min} کاراکتر وارد کنید.";
-                    }
-                }
-                if (str_starts_with($rule, 'max:') && isset($data[$field])) {
-                    $max = (int) explode(':', $rule)[1];
-                    if (mb_strlen($data[$field]) > $max) {
-                        $errors[$field] = "حداکثر {$max} کاراکتر مجاز است.";
-                    }
+                $error = $this->validateField($field, $rule, $data);
+                if ($error) {
+                    $errors[$field] = $error;
                 }
             }
         }
         return $errors;
+    }
+
+    private function validateField(string $field, string $rule, array $data): ?string
+    {
+        if ($rule === 'required' && (!isset($data[$field]) || $data[$field] === '')) {
+            return 'این فیلد الزامی است.';
+        }
+
+        if (str_starts_with($rule, 'min:') && isset($data[$field])) {
+            $min = (int) explode(':', $rule)[1];
+            if (mb_strlen($data[$field]) < $min) {
+                return "حداقل {$min} کاراکتر وارد کنید.";
+            }
+        }
+
+        if (str_starts_with($rule, 'max:') && isset($data[$field])) {
+            $max = (int) explode(':', $rule)[1];
+            if (mb_strlen($data[$field]) > $max) {
+                return "حداکثر {$max} کاراکتر مجاز است.";
+            }
+        }
+
+        return null;
     }
 
     protected function redirectWithErrors(string $url, array $errors): void

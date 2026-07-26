@@ -294,7 +294,7 @@ function updateShopQuantity(productId, delta, btn)
     if (!qtySpan) {
         return;
     }
-    const currentQty = parseInt(qtySpan.textContent.replace(/,/g, '')) || 1;
+    const currentQty = Number.parseInt(qtySpan.textContent.replace(/,/g, ''), 10) || 1;
     const newQty = Math.max(1, currentQty + delta);
     const body = 'product_id=' + productId + '&qty=' + newQty + '&' + csrfParam();
     fetch('/shop/cart/update', {
@@ -411,19 +411,18 @@ function renderWishlist()
             return;
         }
         container.innerHTML = items.map(function (item) {
-            return `
-            < div class = "flex items-center gap-4 mb-4 pb-4 border-b border-zinc-100" >
-                < img src = "${item.image}" alt = "${item.name}" class = "w-20 h-20 rounded-lg object-cover" >
-                < div class = "flex-1" >
-                    < h4 class = "font-medium text-zinc-800" > ${item.name} < / h4 >
-                    < p class = "text-sm text-zinc-500" > ${item.brand} < / p >
-                    < span class = "font-bold text-rose-500" > ${formatPrice(item.price)} < / span >
-                <  / div >
-                < div class = "flex flex-col gap-2" >
-                    < button onclick = "addToCart(${item.id})" class = "bg-rose-600 text-white px-3 py-2 rounded-lg text-sm" > < i class = "fa-solid fa-bag-shopping" > < / i > < / button >
-                    < button onclick = "toggleWishlistItem(${item.id})" class = "text-red-400 hover:text-red-500" > < i class = "fa-solid fa-trash-can" > < / i > < / button >
-                <  / div >
-            <  / div > `;
+            return '<div class="flex items-center gap-4 mb-4 pb-4 border-b border-zinc-100">' +
+                '<img src="' + item.image + '" alt="' + item.name + '" class="w-20 h-20 rounded-lg object-cover">' +
+                '<div class="flex-1">' +
+                    '<h4 class="font-medium text-zinc-800">' + item.name + '</h4>' +
+                    '<p class="text-sm text-zinc-500">' + item.brand + '</p>' +
+                    '<span class="font-bold text-rose-500">' + formatPrice(item.price) + '</span>' +
+                '</div>' +
+                '<div class="flex flex-col gap-2">' +
+                    '<button onclick="addToCart(' + item.id + ')" class="bg-rose-600 text-white px-3 py-2 rounded-lg text-sm" aria-label="افزودن به سبد"><i class="fa-solid fa-bag-shopping"></i></button>' +
+                    '<button onclick="toggleWishlistItem(' + item.id + ')" class="text-red-400 hover:text-red-500" aria-label="حذف از علاقه‌مندی‌ها"><i class="fa-solid fa-trash-can"></i></button>' +
+                '</div>' +
+            '</div>';
         }).join('');
     })
     .catch(function () {
@@ -447,39 +446,38 @@ function openQuickView(productId)
     if (!modal || !content) {
         return;
     }
-    content.innerHTML = `
-        < div > < img src = "${product.image}" alt = "${product.name}" class = "w-full rounded-2xl" > < / div >
-        < div >
-            < span class = "text-rose-500 font-medium" > ${product.brand} < / span >
-            < h2 class = "text-2xl font-bold text-zinc-800 mt-2 mb-4" > ${product.name} < / h2 >
-            < div class = "flex items-center gap-3 mb-4" >
-                < div class = "star-rating text-amber-400 text-lg" > ${generateStars(product.rating)} < / div >
-                < span class = "text-zinc-500" > (${product.reviews.toLocaleString('fa-IR')} نظر) < / span >
-            <  / div >
-            < p class = "text-zinc-600 mb-6" > ${product.description} < / p >
-            < div class = "mb-6" >
-                ${product.old_price ? '<span class="text-zinc-400 text-lg line-through ml-3">' + formatPrice(product.old_price) + '</span>' : ''}
-                < span class = "text-3xl font-bold text-rose-500" > ${formatPrice(product.price)} < / span >
-            <  / div >
-            < div class = "flex items-center gap-4 mb-6" >
-                < div class = "flex items-center border-2 border-zinc-200 rounded-xl" >
-                    < button onclick = "qvChangeQty(-1)" class = "px-4 py-3 text-zinc-500 hover:text-rose-500 text-lg" > - < / button >
-                    < span id = "qvQty" class = "px-4 py-3 border-x-2 border-zinc-200 font-medium" > ۱ < / span >
-                    < button onclick = "qvChangeQty(1)" class = "px-4 py-3 text-zinc-500 hover:text-rose-500 text-lg" > + < / button >
-                <  / div >
-                < button onclick = "addToCart(${product.id}); closeQuickView();" class = "flex-1 bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-xl font-medium text-lg transition-all" >
-                    < i class = "fa-solid fa-bag-shopping ml-2" > < / i > افزودن به سبد خرید
-                <  / button >
-            <  / div >
-            < div class = "flex items-center gap-4 text-zinc-500" >
-                < button onclick = "toggleWishlistItem(${product.id})" class = "flex items-center gap-2 hover:text-rose-500 transition" >
-                    < i class = "fa-regular fa-heart" > < / i > افزودن به علاقه‌مندی‌ها
-                <  / button >
-                < button class = "flex items-center gap-2 hover:text-rose-500 transition" >
-                    < i class = "fa-solid fa-share-nodes" > < / i > اشتراک‌گذاری
-                <  / button >
-            <  / div >
-        <  / div > `;
+    content.innerHTML = '<div><img src="' + product.image + '" alt="' + product.name + '" class="w-full rounded-2xl"></div>' +
+        '<div>' +
+            '<span class="text-rose-500 font-medium">' + product.brand + '</span>' +
+            '<h2 class="text-2xl font-bold text-zinc-800 mt-2 mb-4">' + product.name + '</h2>' +
+            '<div class="flex items-center gap-3 mb-4">' +
+                '<div class="star-rating text-amber-400 text-lg">' + generateStars(product.rating) + '</div>' +
+                '<span class="text-zinc-500">(' + product.reviews.toLocaleString('fa-IR') + ' نظر)</span>' +
+            '</div>' +
+            '<p class="text-zinc-600 mb-6">' + product.description + '</p>' +
+            '<div class="mb-6">' +
+                (product.old_price ? '<span class="text-zinc-400 text-lg line-through ml-3">' + formatPrice(product.old_price) + '</span>' : '') +
+                '<span class="text-3xl font-bold text-rose-500">' + formatPrice(product.price) + '</span>' +
+            '</div>' +
+            '<div class="flex items-center gap-4 mb-6">' +
+                '<div class="flex items-center border-2 border-zinc-200 rounded-xl">' +
+                    '<button onclick="qvChangeQty(-1)" class="px-4 py-3 text-zinc-500 hover:text-rose-500 text-lg" aria-label="کاهش تعداد">-</button>' +
+                    '<span id="qvQty" class="px-4 py-3 border-x-2 border-zinc-200 font-medium">\u06F1</span>' +
+                    '<button onclick="qvChangeQty(1)" class="px-4 py-3 text-zinc-500 hover:text-rose-500 text-lg" aria-label="افزایش تعداد">+</button>' +
+                '</div>' +
+                '<button onclick="addToCart(' + product.id + '); closeQuickView();" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-xl font-medium text-lg transition-all">' +
+                    '<i class="fa-solid fa-bag-shopping ml-2"></i> افزودن به سبد خرید' +
+                '</button>' +
+            '</div>' +
+            '<div class="flex items-center gap-4 text-zinc-500">' +
+                '<button onclick="toggleWishlistItem(' + product.id + ')" class="flex items-center gap-2 hover:text-rose-500 transition" aria-label="افزودن به علاقه‌مندی‌ها">' +
+                    '<i class="fa-regular fa-heart"></i> افزودن به علاقه\u200Cمندی\u200Cها' +
+                '</button>' +
+                '<button class="flex items-center gap-2 hover:text-rose-500 transition" aria-label="اشتراک‌گذاری محصول">' +
+                    '<i class="fa-solid fa-share-nodes"></i> اشتراک\u200Cگذاری' +
+                '</button>' +
+            '</div>' +
+        '</div>';
     modal.classList.add('active');
     qvQty = 1;
     }
@@ -558,9 +556,9 @@ function openQuickView(productId)
         var now = new Date();
         var dateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Tehran' });
         var parts = dateStr.split('-');
-        var y = parseInt(parts[0]);
-        var m = parseInt(parts[1]);
-        var d = parseInt(parts[2]);
+        var y = Number.parseInt(parts[0], 10);
+        var m = Number.parseInt(parts[1], 10);
+        var d = Number.parseInt(parts[2], 10);
         var ts = Date.UTC(y, m - 1, d + (offset || 0));
         var result = new Date(ts);
         return result.getUTCFullYear() + '-' +
@@ -572,7 +570,7 @@ function openQuickView(productId)
     {
         var dateStr = getTehranDateStr(offset);
         var parts = dateStr.split('-');
-        return new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0));
+        return new Date(Date.UTC(Number.parseInt(parts[0], 10), Number.parseInt(parts[1], 10) - 1, Number.parseInt(parts[2], 10), 12, 0, 0));
     }
 
     var currentBookingStep = 0;
@@ -692,7 +690,7 @@ var hairLengths = window._mobaroHairLengths || [];
                 for (var i = 0; i < hairLengths.length; i++) {
                     var hl = hairLengths[i];
                     var isSelected = selectedHairLengthId === hl.id;
-                    hairLengthHTML += '<div onclick="selectHairLength(' + hl.id + ', this)" class="cursor-pointer p-3 border ' + (isSelected ? selectedBorder + ' ' + selectedBg : baseBorder) + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center">' +
+                    hairLengthHTML += '<div onclick="selectHairLength(' + hl.id + ', this)" role="button" tabindex="0" aria-label="انتخاب ' + hl.title + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \')selectHairLength(' + hl.id + ', this)" class="cursor-pointer p-3 border ' + (isSelected ? selectedBorder + ' ' + selectedBg : baseBorder) + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center">' +
                         '<div class="font-medium ' + textPrimary + '">' + hl.title + '</div>' +
                         '<div class="text-xs ' + textMuted + ' mt-1">' + hl.min_cm + '-' + hl.max_cm + ' سانتیمتر</div>' +
                         '</div>';
@@ -743,7 +741,7 @@ var hairLengths = window._mobaroHairLengths || [];
                 var month = parts.month;
                 var dateStr = getTehranDateStr(d);
                 var isSelected = selectedDate === dateStr;
-                dateHTML += '<div onclick="selectDate(\'' + dateStr + '\', this)" class="cursor-pointer text-center min-w-[70px] ' + (isDark ? 'bg-white/5 border-white/10 hover:border-white/40' : 'bg-zinc-50 border-zinc-200 hover:border-zinc-300') + ' border transition-colors rounded-3xl py-4 ' + (isSelected ? 'ring-2 ring-rose-400' : '') + '">' +
+                dateHTML += '<div onclick="selectDate(\'' + dateStr + '\', this)" role="button" tabindex="0" aria-label="انتخاب ' + dateStr + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \')selectDate(\'' + dateStr + '\', this)" class="cursor-pointer text-center min-w-[70px] ' + (isDark ? 'bg-white/5 border-white/10 hover:border-white/40' : 'bg-zinc-50 border-zinc-200 hover:border-zinc-300') + ' border transition-colors rounded-3xl py-4 ' + (isSelected ? 'ring-2 ring-rose-400' : '') + '">' +
                 '<div class="text-xs ' + (isDark ? 'text-white/60' : 'text-zinc-400') + '">' + label + '</div>' +
                 '<div class="font-semibold text-xl ' + textPrimary + '">' + day + '</div>' +
                 '<div class="' + priceClass + ' text-xs">' + month + '</div>' +
@@ -769,7 +767,7 @@ var hairLengths = window._mobaroHairLengths || [];
                 var isPast = selectedDate === tehranNow.date && slot.minutes <= tehranNow.totalMinutes;
                 var isTimeSelected = selectedTime === slot.display;
                 var cls = isPast ? 'opacity-30 pointer-events-none ' + slotBg : (isTimeSelected ? 'bg-emerald-900 text-emerald-400 border-emerald-400' : slotBg);
-                timeHTML += '<div onclick="' + (isPast ? '' : 'selectTimeSlot(\'' + slot.display + '\', this)') + '" class="' + cls + ' border transition-all text-center py-5 rounded-3xl' + (isPast ? '' : ' cursor-pointer') + '">' + slot.display + '</div>';
+                timeHTML += '<div onclick="' + (isPast ? '' : 'selectTimeSlot(\'' + slot.display + '\', this)') + '" role="button" tabindex="0" aria-label="انتخاب ساعت ' + slot.display + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \')' + (isPast ? '' : 'selectTimeSlot(\'' + slot.display + '\', this)') + '" class="' + cls + ' border transition-all text-center py-5 rounded-3xl' + (isPast ? '' : ' cursor-pointer') + '">' + slot.display + '</div>';
             }
 
             container.innerHTML =
@@ -795,7 +793,7 @@ var hairLengths = window._mobaroHairLengths || [];
             var displayDate = '';
             if (selectedDate) {
                 var dtParts = selectedDate.split('-');
-                var dt = new Date(Date.UTC(parseInt(dtParts[0]), parseInt(dtParts[1]) - 1, parseInt(dtParts[2]), 12, 0, 0));
+                var dt = new Date(Date.UTC(Number.parseInt(dtParts[0], 10), Number.parseInt(dtParts[1], 10) - 1, Number.parseInt(dtParts[2], 10), 12, 0, 0));
                 displayDate = getPersianDateStr(dt, 'Asia/Tehran');
             }
             var captchaQ = window._mobaroCaptchaQuestion || '۵ + ۳';
@@ -826,7 +824,7 @@ var hairLengths = window._mobaroHairLengths || [];
                     '<div class="flex-1">' +
                         '<div class="flex items-center gap-3">' +
                             '<span class="text-lg font-bold ' + textPrimary + '" id="captcha-question">' + captchaQ + ' = ?</span>' +
-                            '<button onclick="refreshCaptcha()" class="text-xs ' + priceClass + ' hover:underline" type="button">تغییر</button>' +
+                            '<button onclick="refreshCaptcha()" class="text-xs ' + priceClass + ' hover:underline" type="button" aria-label="بازیابی کد امنیتی">تغییر</button>' +
                         '</div>' +
                         '<input type="text" id="captcha-input" placeholder="پاسخ را وارد کنید" class="mt-3 w-full px-4 py-3 ' + (isDark ? 'bg-zinc-800 text-white border-white/20' : 'bg-white text-zinc-800 border-zinc-200') + ' border-2 rounded-xl focus:border-rose-400 focus:ring-0 outline-none transition-all text-center text-lg font-bold" inputmode="numeric">' +
                     '</div>' +
@@ -834,7 +832,7 @@ var hairLengths = window._mobaroHairLengths || [];
             '</div>'
             ) : '') +
             '<button onclick="finishBooking()" class="mt-6 w-full py-7 bg-emerald-500 text-white font-bold rounded-3xl" id="bookingConfirmBtn">تأیید و ذخیره نوبت</button>' +
-            '<div onclick="prevBookingStep()" class="text-center text-xs ' + (isDark ? 'text-white/60' : 'text-zinc-400') + ' mt-6 cursor-pointer">ویرایش نوبت</div>';
+            '<div onclick="prevBookingStep()" role="button" tabindex="0" aria-label="ویرایش نوبت" onkeydown="if(event.key===\'Enter\'||event.key===\' \')prevBookingStep()" class="text-center text-xs ' + (isDark ? 'text-white/60' : 'text-zinc-400') + ' mt-6 cursor-pointer">ویرایش نوبت</div>';
         }
     }
 
@@ -1069,7 +1067,7 @@ function updateServicePrice()
         var displayDate = '';
         if (data.date) {
             var cParts = data.date.split('-');
-            var dt = new Date(Date.UTC(parseInt(cParts[0]), parseInt(cParts[1]) - 1, parseInt(cParts[2]), 12, 0, 0));
+            var dt = new Date(Date.UTC(Number.parseInt(cParts[0], 10), Number.parseInt(cParts[1], 10) - 1, Number.parseInt(cParts[2], 10), 12, 0, 0));
             displayDate = getPersianDateStr(dt, 'Asia/Tehran');
         }
         container.innerHTML =
@@ -1086,7 +1084,7 @@ function updateServicePrice()
                 '</div>' +
                 '<p class="text-amber-700 text-sm leading-relaxed">برای تأیید نهایی نوبت خود، لطفاً با شماره زیر تماس بگیرید:</p>' +
                 '<a href="tel:' + (data.booking_phone || '02122884267').replace(/[^0-9]/g, '') + '" class="inline-block mt-3 bg-amber-500 text-white px-8 py-3 rounded-2xl font-bold text-lg hover:bg-amber-600 transition-colors">' +
-                    '<i class="fa-solid fa-phone ml-2"></i>' + (data.booking_phone || '۰۲۱-۲۲۸۸۴۲۶۷') +
+                    '<i class="fa-solid fa-phone ml-2"></i>' + (data.booking_phone || '۰۳۱-۳۶۶۶۲۱۲۲') +
                 '</a>' +
             '</div>' +
             '<button onclick="resetBookingForm()" class="text-rose-500 text-sm hover:underline">رزرو نوبت جدید</button>' +

@@ -1,4 +1,4 @@
-<?php $title = 'مدل‌های مو | موبارo'; ?>
+<?php $title = 'مدل‌های مو | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 
 <section class="relative overflow-hidden bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 text-white">
     <div class="absolute inset-0 opacity-10">
@@ -47,8 +47,9 @@
         <div class="model-card bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
             <div class="relative">
                 <img src="/assets/images/<?= e($model['image']) ?>"
+                     alt="<?= e($model['title']) ?>"
                      class="w-full h-48 sm:h-56 md:h-72 object-cover"
-                     onerror="this.src='/media/400/520/<?= e($model['id']) ?>'">
+                     data-fallback="/media/400/520/<?= e($model['id']) ?>">
                 <div class="absolute top-4 right-4 text-[10px] bg-white/90 backdrop-blur px-4 py-1 rounded-3xl font-medium"><?= e($model['category']) ?></div>
             </div>
             <div class="px-5 py-6 relative">
@@ -58,22 +59,22 @@
         <?php endforeach; ?>
     </div>
 
-    <?php if ($totalPages > 1) : ?>
+        <?php if ($totalPages > 1) : ?>
     <div class="flex justify-center items-center gap-2 mt-10">
-        <?php if ($page > 1) : ?>
+            <?php if ($page > 1) : ?>
         <a href="/models?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
             <i class="fa-solid fa-chevron-right"></i>
         </a>
-        <?php endif; ?>
-        <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+            <?php endif; ?>
+            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
         <a href="/models?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>" class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition <?= $i === $page ? 'bg-rose-600 text-white' : 'border border-zinc-200 text-zinc-600 hover:border-rose-400 hover:text-rose-500' ?>"><?= $i ?></a>
-        <?php endfor; ?>
-        <?php if ($page < $totalPages) : ?>
+            <?php endfor; ?>
+            <?php if ($page < $totalPages) : ?>
         <a href="/models?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
             <i class="fa-solid fa-chevron-left"></i>
         </a>
-        <?php endif; ?>
+            <?php endif; ?>
     </div>
-    <?php endif; ?>
+        <?php endif; ?>
     <?php endif; ?>
 </div>

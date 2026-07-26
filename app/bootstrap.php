@@ -68,6 +68,7 @@ set_exception_handler(function (Throwable $e) {
         return;
     }
     http_response_code(500);
+    $settings = Settings::all();
     require_once __DIR__ . '/views/layouts/header.php';
     $errorMessage = 'خطایی غیرمنتظره رخ داده است. لطفاً دوباره تلاش کنید.';
     require_once __DIR__ . '/views/errors/500.php';

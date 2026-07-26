@@ -1,5 +1,5 @@
 <?php
-$title = e($product['name']) . ' | موبارو';
+$title = e($product['name']) . ' | ' . ($settings['brand_name'] ?? 'موبارو');
 $discount = 0;
 if (!empty($product['old_price']) && $product['old_price'] > $product['price']) {
     $discount = round((($product['old_price'] - $product['price']) / $product['old_price']) * 100);
@@ -30,7 +30,7 @@ $inWishlist = Auth::check()
                 <!-- Image Gallery -->
                 <div>
                     <div class="relative rounded-2xl overflow-hidden bg-zinc-50 mb-4 product-image">
-                        <img id="mainImage" src="/assets/images/<?= e($product['image']) ?>" alt="<?= e($product['name']) ?>" class="w-full h-96 md:h-[500px] object-cover" onerror="this.src='/media/600/600/<?= e($product['id']) ?>'">
+                        <img id="mainImage" src="/assets/images/<?= e($product['image']) ?>" alt="<?= e($product['name']) ?>" class="w-full h-96 md:h-[500px] object-cover" data-fallback="/media/600/600/<?= e($product['id']) ?>">
                         <?php if ($discount > 0) : ?>
                         <span class="absolute top-4 right-4 bg-gradient-to-l from-red-500 to-red-600 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg"><?= $discount ?>% تخفیف</span>
                         <?php endif; ?>
@@ -39,10 +39,10 @@ $inWishlist = Auth::check()
                         <?php endif; ?>
                     </div>
                     <div class="flex gap-3 overflow-x-auto" id="thumbnails">
-                        <img src="/assets/images/<?= e($product['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-rose-500 opacity-100 hover:opacity-80 transition-all thumb-img" onclick="changeImage(this)" onerror="this.src='/media/200/200/<?= e($product['id']) ?>'" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')changeImage(this)">
+                        <img src="/assets/images/<?= e($product['image']) ?>" alt="<?= e($product['name']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-rose-500 opacity-100 hover:opacity-80 transition-all thumb-img" onclick="changeImage(this)" data-fallback="/media/200/200/<?= e($product['id']) ?>" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')changeImage(this)">
                         <?php if (!empty($gallery)) : ?>
                             <?php foreach ($gallery as $gi) : ?>
-                        <img src="/assets/images/<?= e($gi['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" onerror="this.style.display='none'" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')changeImage(this)">
+                        <img src="/assets/images/<?= e($gi['image']) ?>" class="w-20 h-20 rounded-xl object-cover cursor-pointer border-2 border-transparent opacity-70 hover:opacity-100 hover:border-rose-300 transition-all thumb-img" onclick="changeImage(this)" data-hide-on-error tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')changeImage(this)">
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
@@ -104,9 +104,9 @@ $inWishlist = Auth::check()
                     <!-- Qty + Add to Cart -->
                     <div class="flex items-center gap-4 mb-8">
                         <div class="flex items-center border-2 border-zinc-200 rounded-xl">
-                            <button onclick="detailQtyChg(-1)" class="px-5 py-3 text-zinc-500 hover:text-rose-500 text-lg transition">-</button>
+                            <button onclick="detailQtyChg(-1)" class="px-5 py-3 text-zinc-500 hover:text-rose-500 text-lg transition" aria-label="کاهش تعداد">-</button>
                             <span id="qtyDisplay" class="px-5 py-3 border-x-2 border-zinc-200 font-bold text-zinc-800 min-w-[60px] text-center">۱</span>
-                            <button onclick="detailQtyChg(1)" class="px-5 py-3 text-zinc-500 hover:text-rose-500 text-lg transition">+</button>
+                            <button onclick="detailQtyChg(1)" class="px-5 py-3 text-zinc-500 hover:text-rose-500 text-lg transition" aria-label="افزایش تعداد">+</button>
                         </div>
                         <button onclick="addToCartDetail(<?= $product['id'] ?>)" class="flex-1 bg-rose-600 hover:bg-rose-700 transition-all text-white py-4 rounded-xl font-medium text-lg shadow-lg shadow-rose-200">
                             <i class="fa-solid fa-bag-shopping ml-2"></i>افزودن به سبد خرید
@@ -115,11 +115,11 @@ $inWishlist = Auth::check()
 
                     <!-- Actions -->
                     <div class="flex items-center gap-6 text-zinc-500">
-                        <button onclick="toggleWishlistItem(<?= $product['id'] ?>)" class="heart-btn-detail flex items-center gap-2 hover:text-rose-500 transition <?= $inWishlist ? 'active text-rose-500' : '' ?>">
+                        <button onclick="toggleWishlistItem(<?= $product['id'] ?>)" class="heart-btn-detail flex items-center gap-2 hover:text-rose-500 transition <?= $inWishlist ? 'active text-rose-500' : '' ?>" aria-label="<?= $inWishlist ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها' ?>">
                             <i class="<?= $inWishlist ? 'fa-solid' : 'fa-regular' ?> fa-heart"></i>
                             <span class="text-sm"><?= $inWishlist ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها' ?></span>
                         </button>
-                        <button class="flex items-center gap-2 hover:text-rose-500 transition" onclick="shareProduct()">
+                        <button class="flex items-center gap-2 hover:text-rose-500 transition" onclick="shareProduct()" aria-label="اشتراک‌گذاری محصول">
                             <i class="fa-solid fa-share-nodes"></i>
                             <span class="text-sm">اشتراک‌گذاری</span>
                         </button>
@@ -198,16 +198,16 @@ $inWishlist = Auth::check()
                 <h3 class="font-bold text-zinc-800 mb-4">ثبت نظر شما</h3>
                 <form onsubmit="submitReview(event, <?= $product['id'] ?>)" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-700 mb-2">امتیاز شما</label>
-                        <div class="flex gap-1 text-2xl text-zinc-300" id="star-rating">
+                        <label for="star-rating" class="block text-sm font-semibold text-zinc-700 mb-2">امتیاز شما</label>
+                        <div class="flex gap-1 text-2xl text-zinc-300" id="star-rating" role="radiogroup" aria-label="امتیازدهی">
                             <?php for ($i = 1; $i <= 5; $i++) : ?>
-                            <i class="fa-regular fa-star cursor-pointer hover:text-amber-400 transition-colors star-select" data-value="<?= $i ?>" onclick="setRating(<?= $i ?>)"></i>
+                            <i class="fa-regular fa-star cursor-pointer hover:text-amber-400 transition-colors star-select" role="radio" tabindex="0" aria-label="<?= $i ?> ستاره" data-value="<?= $i ?>" onclick="setRating(<?= $i ?>)" onkeydown="if(event.key==='Enter'||event.key===' ')setRating(<?= $i ?>)"></i>
                             <?php endfor; ?>
                         </div>
                         <input type="hidden" name="rating" id="rating-value" value="0">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-700 mb-2">متن نظر</label>
+                        <label for="review-text" class="block text-sm font-semibold text-zinc-700 mb-2">متن نظر</label>
                         <textarea name="text" id="review-text" rows="3" class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="نظر خود را بنویسید..." required></textarea>
                     </div>
                     <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ثبت نظر</button>
@@ -238,7 +238,7 @@ $inWishlist = Auth::check()
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300">
                     <div class="relative product-image overflow-hidden">
                         <a href="/product/<?= $rel['id'] ?>">
-                            <img src="/assets/images/<?= e($rel['image']) ?>" class="w-full h-52 object-cover transition-transform duration-500" onerror="this.src='/media/400/400/<?= $rel['id'] ?>'">
+                            <img src="/assets/images/<?= e($rel['image']) ?>" alt="<?= e($rel['name']) ?>" class="w-full h-52 object-cover transition-transform duration-500" data-fallback="/media/400/400/<?= $rel['id'] ?>">
                         </a>
                         <?php if ($relDiscount > 0) : ?>
                         <span class="absolute top-3 right-3 bg-gradient-to-l from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-full"><?= $relDiscount ?>%</span>
@@ -249,7 +249,7 @@ $inWishlist = Auth::check()
                         <h3 class="font-bold text-zinc-800 mt-1"><a href="/product/<?= $rel['id'] ?>" class="hover:text-rose-500 transition-colors"><?= e($rel['name']) ?></a></h3>
                         <div class="flex items-center justify-between mt-3">
                             <span class="font-bold text-rose-500"><?= number_format($rel['price']) ?> تومان</span>
-                            <button onclick="addToCart(<?= $rel['id'] ?>)" class="w-9 h-9 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-600 hover:text-white transition-all">
+                            <button onclick="addToCart(<?= $rel['id'] ?>)" class="w-9 h-9 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-600 hover:text-white transition-all" aria-label="افزودن <?= e($rel['name']) ?> به سبد خرید">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
                         </div>
@@ -309,7 +309,7 @@ function shareProduct() {
 function setRating(val) {
     document.getElementById('rating-value').value = val;
     document.querySelectorAll('.star-select').forEach(function(el) {
-        var starVal = parseInt(el.dataset.value);
+        var starVal = Number.parseInt(el.dataset.value, 10);
         el.className = (starVal <= val ? 'fa-solid' : 'fa-regular') + ' fa-star cursor-pointer hover:text-amber-400 transition-colors star-select' + (starVal <= val ? ' text-amber-400' : ' text-zinc-300');
     });
 }

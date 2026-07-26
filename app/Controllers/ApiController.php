@@ -2,9 +2,11 @@
 
 class ApiController extends BaseController
 {
+    private const CACHE_HEADER = 'Cache-Control: public, max-age=300, stale-while-revalidate=60';
+
     public function services(): void
     {
-        header('Cache-Control: public, max-age=300, stale-while-revalidate=60');
+        header(self::CACHE_HEADER);
         $services = Cache::remember('api_services', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll(
                 "SELECT s.*, a.id as artist_id, a.name as artist_name,
@@ -20,7 +22,7 @@ class ApiController extends BaseController
 
     public function artists(): void
     {
-        header('Cache-Control: public, max-age=300, stale-while-revalidate=60');
+        header(self::CACHE_HEADER);
         $artists = Cache::remember('api_artists', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll("SELECT * FROM artists WHERE is_active = 1");
         }, 'homepage');
@@ -29,7 +31,7 @@ class ApiController extends BaseController
 
     public function products(): void
     {
-        header('Cache-Control: public, max-age=300, stale-while-revalidate=60');
+        header(self::CACHE_HEADER);
         $products = Cache::remember('api_products', Config::get('cache.ttl.page', 600), function () {
             return Database::fetchAll("SELECT * FROM products WHERE is_active = 1");
         }, 'products');

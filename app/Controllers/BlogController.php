@@ -196,6 +196,7 @@ class BlogController extends BaseController
 
         if (!$post) {
             http_response_code(404);
+            $settings = Settings::all();
             require_once __DIR__ . '/../views/layouts/header.php';
             require_once __DIR__ . '/../views/errors/404.php';
             require_once __DIR__ . '/../views/layouts/footer.php';

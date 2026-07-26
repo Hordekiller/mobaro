@@ -59,7 +59,7 @@ $total = $total ?? 0;
         <div class="group relative bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100 hover:shadow-lg hover:border-rose-200 transition-all">
             <div class="aspect-square bg-zinc-100 flex items-center justify-center overflow-hidden">
                 <?php if ($isImage) : ?>
-                <img src="<?= e($src) ?>" alt="<?= e($item['alt_text'] ?: $item['original_name']) ?>" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-image text-3xl text-zinc-300\'></i>'"> // NOSONAR
+                <img src="<?= e($src) ?>" alt="<?= e($item['alt_text'] ?: $item['original_name']) ?>" class="w-full h-full object-cover" loading="lazy" data-fallback-icon="<i class='fa-solid fa-image text-3xl text-zinc-300'></i>">
                 <?php else : ?>
                 <div class="flex flex-col items-center gap-2 text-zinc-400">
                     <i class="fa-solid fa-video text-4xl"></i>
@@ -74,10 +74,10 @@ $total = $total ?? 0;
                 <div class="flex items-center justify-between mt-1.5">
                     <span class="text-[10px] px-1.5 py-0.5 rounded-full <?= $iconColor ?>"><?= e($sourceLabel) ?></span>
                     <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button type="button" onclick="copyMediaLink(<?= $item['id'] ?>)" class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 text-xs flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all" title="کپی لینک">
+                        <button type="button" onclick="copyMediaLink(<?= $item['id'] ?>)" class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 text-xs flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all" title="کپی لینک" aria-label="کپی لینک">
                             <i class="fa-solid fa-link"></i>
                         </button>
-                        <button type="button" onclick="deleteMedia(<?= $item['id'] ?>)" class="w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs flex items-center justify-center hover:bg-red-600 hover:text-white transition-all" title="حذف">
+                        <button type="button" onclick="deleteMedia(<?= $item['id'] ?>)" class="w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs flex items-center justify-center hover:bg-red-600 hover:text-white transition-all" title="حذف" aria-label="حذف رسانه">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -104,8 +104,8 @@ $total = $total ?? 0;
 </div>
 
 <!-- Upload Modal -->
-    <div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" onclick="if(event.target===this)closeUploadModal()" onkeydown="if(event.key==='Escape')closeUploadModal()"> // NOSONAR
-    <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl" onclick="event.stopPropagation()">
+    <div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold">آپلود رسانه جدید</h3>
             <button onclick="closeUploadModal()" class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-all text-sm"><i class="fa-solid fa-xmark"></i></button>
@@ -130,8 +130,8 @@ $total = $total ?? 0;
 </div>
 
 <!-- Delete Confirmation Modal -->
-    <div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" onclick="if(event.target===this)closeDeleteModal()" onkeydown="if(event.key==='Escape')closeDeleteModal()"> // NOSONAR
-    <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl" onclick="event.stopPropagation()">
+    <div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl">
         <div class="text-center">
             <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i>
             <h3 class="text-xl font-bold mb-2">حذف فایل</h3>

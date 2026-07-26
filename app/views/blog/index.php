@@ -50,7 +50,7 @@
 <section class="pt-28 pb-16 bg-gradient-to-b from-rose-50 to-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
-            <span class="inline-block px-4 py-1 rounded-full bg-rose-100 text-rose-700 text-sm font-medium mb-4">مجله زیبایی موبارو</span>
+            <span class="inline-block px-4 py-1 rounded-full bg-rose-100 text-rose-700 text-sm font-medium mb-4">مجله زیبایی <?= e($settings['brand_name'] ?? 'موبارو') ?></span>
             <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
                 رازهای <span class="gradient-text">زیبایی و سلامت</span><br>
                 را با ما کشف کنید
@@ -191,7 +191,7 @@
                         <div class="text-center">
                             <img src="/assets/images/cache/400x300_1562322140.svg" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-rose-100" alt="Salon">
                             <p class="text-gray-600 text-sm leading-relaxed mb-4">
-                                سالن زیبایی موبارو با بیش از ۱۰ سال تجربه، ارائه دهنده خدمات تخصصی آرایش و زیبایی با جدیدترین متدهای روز دنیا.
+                                <?= e($settings['blog_sidebar_about'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بیش از ۱۰ سال تجربه، ارائه دهنده خدمات تخصصی آرایش و زیبایی با جدیدترین متدهای روز دنیا.') ?>
                             </p>
                             <div class="flex justify-center gap-3">
                                 <a href="<?= e($settings['brand_instagram'] ?? '#') ?>" class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors">
@@ -200,7 +200,7 @@
                                 <a href="<?= e($settings['brand_telegram'] ?? '#') ?>" class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors">
                                     <i class="fab fa-telegram"></i>
                                 </a>
-                                <a href="#" class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors">
+                                <a href="<?= e($settings['brand_whatsapp'] ?? '#') ?>" class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors">
                                     <i class="fab fa-whatsapp"></i>
                                 </a>
                             </div>
@@ -251,7 +251,7 @@
                     <div class="bg-white rounded-2xl p-6 shadow-lg border border-rose-50">
                         <h4 class="text-lg font-bold text-gray-900 mb-4" style="border-right:4px solid #e11d48;padding-right:12px;">جدیدترین دوره آموزشی</h4>
                         <a href="/course/<?= e($latestCourse['slug'] ?? $latestCourse['id']) ?>" class="block group">
-                            <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-40 rounded-xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" onerror="this.src='/media/400/200/<?= e($latestCourse['id']) ?>'"> // NOSONAR
+                             <img src="/assets/images/<?= e($latestCourse['image'] ?? 'placeholder.svg') ?>" class="w-full h-40 rounded-xl object-cover mb-3" alt="<?= e($latestCourse['title']) ?>" data-fallback="/media/400/200/<?= e($latestCourse['id']) ?>">
                             <h5 class="font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1"><?= e($latestCourse['title']) ?></h5>
                             <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                 <span><?= e($latestCourse['teacher']) ?></span>

@@ -8,16 +8,17 @@
         <?php foreach ($wishlist as $item) : ?>
         <div class="bg-white rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(183,110,121,0.06)] hover:-translate-y-1 hover:shadow-lg transition-all relative">
             <img src="/assets/images/<?= e($item['image']) ?>"
+                 alt="<?= e($item['name']) ?>"
                  class="w-full h-44 object-cover"
-                 onerror="this.src='/media/280/280/<?= e($item['product_id']) ?>'">
-            <button onclick="removeWishlist(<?= $item['product_id'] ?>)" class="absolute top-2.5 left-2.5 w-8 h-8 bg-white rounded-full flex items-center justify-center text-red-400 shadow hover:bg-red-400 hover:text-white transition-all">
+                  data-fallback="/media/280/280/<?= e($item['product_id']) ?>">
+            <button onclick="removeWishlist(<?= $item['product_id'] ?>)" class="absolute top-2.5 left-2.5 w-8 h-8 bg-white rounded-full flex items-center justify-center text-red-400 shadow hover:bg-red-400 hover:text-white transition-all" aria-label="حذف <?= e($item['name']) ?> از علاقه‌مندی‌ها">
                 <i class="fa-solid fa-heart"></i>
             </button>
             <div class="p-3.5">
                 <h4 class="font-semibold text-sm"><?= e($item['name']) ?></h4>
                 <div class="text-[#B76E79] font-bold mt-2"><?= priceFormat($item['price']) ?></div>
                 <button onclick="quickAddToCart(<?= $item['product_id'] ?>, '<?= e($item['name']) ?>', <?= $item['price'] ?>, '/assets/images/<?= e($item['image']) ?>', '<?= e($item['category']) ?>')"
-                        class="w-full mt-3 py-2.5 bg-[#FDF6F0] text-[#B76E79] rounded-xl font-semibold text-sm hover:bg-[#B76E79] hover:text-white transition-all">
+                        class="w-full mt-3 py-2.5 bg-[#FDF6F0] text-[#B76E79] rounded-xl font-semibold text-sm hover:bg-[#B76E79] hover:text-white transition-all" aria-label="افزودن <?= e($item['name']) ?> به سبد">
                     افزودن به سبد
                 </button>
             </div>

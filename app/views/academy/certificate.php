@@ -50,7 +50,7 @@ $title = 'گواهی پایان دوره | ' . e($course['title']); ?>
                 <div class="w-10 h-10 bg-rose-600 rounded-xl flex items-center justify-center">
                     <i class="fa-solid fa-spa text-white text-lg"></i>
                 </div>
-                <span class="text-2xl font-bold text-rose-600" style="font-family: 'Playfair Display', serif;">MOBARO</span>
+                <span class="text-2xl font-bold text-rose-600" style="font-family: 'Playfair Display', serif;"><?= e($settings['brand_name'] ?? 'موبارو') ?></span>
             </div>
 
             <!-- Title -->

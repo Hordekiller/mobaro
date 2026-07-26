@@ -12,13 +12,14 @@
             <div class="model-card bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer">
                 <div class="relative">
                     <img src="/assets/images/<?= e($model['image']) ?>"
+                         alt="<?= e($model['title']) ?>"
                          class="w-full h-48 sm:h-56 md:h-72 object-cover hair-model"
-                         onerror="this.src='/media/400/520/<?= e($model['id']) ?>'">
+                         data-fallback="/media/400/520/<?= e($model['id']) ?>">
                     <div class="absolute top-4 right-4 text-[10px] bg-white/90 backdrop-blur px-4 py-1 rounded-3xl font-medium"><?= e($model['category']) ?></div>
                 </div>
                 <div class="px-5 py-6 relative">
                     <div class="font-semibold"><?= e($model['title']) ?></div>
-                    <div onclick="likeModel(<?= $model['id'] ?>)" class="absolute bottom-6 left-6 text-rose-400 text-xl">
+                    <div onclick="likeModel(<?= $model['id'] ?>)" role="button" tabindex="0" aria-label="پسندیدن <?= e($model['title']) ?>" onkeydown="if(event.key==='Enter'||event.key===' ')likeModel(<?= $model['id'] ?>)" class="absolute bottom-6 left-6 text-rose-400 text-xl">
                         <i class="fa-solid fa-heart"></i>
                     </div>
                 </div>

@@ -2,6 +2,7 @@
 
     <footer id="about" class="bg-zinc-950 text-zinc-400">
         <div class="max-w-screen-2xl mx-auto px-8 pt-20">
+            <?php $settings = $settings ?? []; ?>
             <div class="grid grid-cols-2 md:grid-cols-5 gap-y-8 md:gap-y-12">
                 <div>
                     <div class="flex items-center gap-x-3 text-white mb-6">
@@ -13,12 +14,12 @@
                         </span>
                     </div>
                     <p class="text-xs leading-relaxed max-w-xs">
-                        سالن زیبایی و مرکز آرایشی حرفه‌ای با ۱۲ سال سابقه در تهران
+                        <?= e($settings['footer_description'] ?? 'سالن زیبایی و مرکز آرایشی حرفه‌ای با ۱۲ سال سابقه در تهران') ?>
                     </p>
                     <div class="flex gap-x-5 mt-10">
-                        <a href="<?= e($settings['brand_instagram'] ?? '#') ?>" class="fa-brands fa-instagram text-2xl cursor-pointer hover:text-rose-400 transition-colors"></a>
-                        <a href="<?= e($settings['brand_telegram'] ?? '#') ?>" class="fa-brands fa-telegram text-2xl cursor-pointer hover:text-rose-400 transition-colors"></a>
-                        <a href="<?= e($settings['brand_linkedin'] ?? '#') ?>" class="fa-brands fa-linkedin text-2xl cursor-pointer hover:text-rose-400 transition-colors"></a>
+                        <a href="<?= e($settings['brand_instagram'] ?? '#') ?>" class="fa-brands fa-instagram text-2xl cursor-pointer hover:text-rose-400 transition-colors" aria-label="اینستاگرام"></a>
+                        <a href="<?= e($settings['brand_telegram'] ?? '#') ?>" class="fa-brands fa-telegram text-2xl cursor-pointer hover:text-rose-400 transition-colors" aria-label="تلگرام"></a>
+                        <a href="<?= e($settings['brand_linkedin'] ?? '#') ?>" class="fa-brands fa-linkedin text-2xl cursor-pointer hover:text-rose-400 transition-colors" aria-label="لینکدین"></a>
                     </div>
                 </div>
 
@@ -46,7 +47,7 @@
                                 } $i++; ?>
                             <div class="flex gap-x-4">
                                 <img src="<?= $artist['avatar'] ? '/assets/images/' . e($artist['avatar']) : '/avatar/' . urlencode($artist['name']) . '/72' ?>"
-                                     class="w-9 h-9 object-cover rounded-2xl" alt="">
+                                     alt="<?= e($artist['name']) ?>" class="w-9 h-9 object-cover rounded-2xl">
                                 <div class="text-xs">
                                     <div class="font-medium text-white"><?= e($artist['name']) ?></div>
                                     <div class="text-zinc-500"><?= e($artist['specialty']) ?></div>
@@ -62,7 +63,7 @@
                     <div class="text-sm space-y-6">
                         <div class="flex items-center gap-x-3">
                             <i class="fa-solid fa-phone text-rose-400"></i>
-                            <span><?= e($settings['brand_phone'] ?? '۰۲۱-۲۲۸۸۴۲۶۷') ?></span>
+                            <span><?= e($settings['brand_phone'] ?? '۰۳۱-۳۶۶۶۲۱۲۲') ?></span>
                         </div>
                         <div class="flex items-center gap-x-3">
                             <i class="fa-solid fa-location-dot text-rose-400"></i>
@@ -79,19 +80,19 @@
                         <div class="text-white text-sm font-medium mb-4">خبرنامه ما</div>
                         <p class="text-xs mb-6 leading-tight">جدیدترین مدل‌ها، تخفیف‌ها و آموزش‌ها را زودتر از همه دریافت کنید</p>
                         <div class="relative">
-                            <input id="newsletter-input" type="text" placeholder="ایمیل یا شماره تماس"
+                            <input id="newsletter-input" type="text" placeholder="ایمیل یا شماره تماس" aria-label="ایمیل یا شماره تماس"
                                    class="w-full bg-zinc-800 border-none focus:ring-2 focus:ring-rose-400 rounded-3xl py-6 px-7 text-sm placeholder:text-zinc-500">
                             <?php $newsletterCaptcha = Captcha::isEnabled('newsletter'); ?>
                             <?php if ($newsletterCaptcha) : ?>
                             <div class="flex items-center gap-2 mt-3" id="newsletter-captcha-row">
-                                <input id="newsletter-captcha" type="text" inputmode="numeric" placeholder="کد امنیتی"
+                                <input id="newsletter-captcha" type="text" inputmode="numeric" placeholder="کد امنیتی" aria-label="کد امنیتی خبرنامه"
                                        class="flex-1 bg-zinc-800 border-none focus:ring-2 focus:ring-rose-400 rounded-3xl py-4 px-5 text-sm placeholder:text-zinc-500 text-center">
                                 <span class="text-zinc-400 text-xs whitespace-nowrap" id="newsletter-captcha-q"><?= e($_SESSION['captcha_question'] ?? Captcha::store()) ?> = ?</span>
-                                <button type="button" onclick="refreshNewsletterCaptcha()" class="text-zinc-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-rotate"></i></button>
+                                <button type="button" onclick="refreshNewsletterCaptcha()" class="text-zinc-500 hover:text-rose-400 text-xs" aria-label="بازیابی کد امنیتی"><i class="fa-solid fa-rotate"></i></button>
                             </div>
                             <?php endif; ?>
                             <button onclick="subscribeNewsletter()"
-                                    class="mt-3 w-full bg-white text-zinc-900 py-5 text-xs font-bold rounded-3xl hover:bg-rose-50 transition-colors">عضویت در خبرنامه</button>
+                                    class="mt-3 w-full bg-white text-zinc-900 py-5 text-xs font-bold rounded-3xl hover:bg-rose-50 transition-colors" aria-label="عضویت در خبرنامه">عضویت در خبرنامه</button>
                         </div>
                     </div>
                 </div>
@@ -113,7 +114,7 @@
             </div>
 
             <div class="pt-10 mt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs md:text-[10px]">
-                <div>© ۱۴۰۴ <?= e($settings['brand_name'] ?? 'موبارو') ?>. تمامی حقوق محفوظ است.</div>
+                <div>© <?= date('Y') ?> <?= e($settings['brand_name'] ?? 'موبارو') ?>. تمامی حقوق محفوظ است.</div>
                 <div class="flex items-center gap-x-6 text-xs md:text-[10px] mt-6 md:mt-0">
                     <?php if (Auth::check()) : ?>
                         <a href="/dashboard" class="cursor-pointer hover:text-white">پنل کاربری</a>
@@ -223,6 +224,29 @@
         <?php if ($msg = flash('error')) : ?>
         setTimeout(() => showToast('<?= e($msg) ?>', 'error'), 500);
         <?php endif; ?>
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('img[data-fallback]').forEach(function(img) {
+                img.addEventListener('error', function() { this.src = this.dataset.fallback; });
+            });
+            document.querySelectorAll('img[data-fallback-icon]').forEach(function(img) {
+                img.addEventListener('error', function() { this.outerHTML = this.dataset.fallbackIcon; });
+            });
+            document.querySelectorAll('img[data-hide-on-error]').forEach(function(img) {
+                img.addEventListener('error', function() { this.style.display = 'none'; });
+            });
+            document.addEventListener('click', function(e) {
+                var backdrop = e.target.closest('[data-modal-backdrop]');
+                if (backdrop && e.target === backdrop) backdrop.classList.add('hidden');
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    var open = document.querySelector('[data-modal-backdrop]:not(.hidden)');
+                    if (open) open.classList.add('hidden');
+                }
+            });
+        });
     </script>
 </body>
 </html>

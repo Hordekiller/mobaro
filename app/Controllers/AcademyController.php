@@ -2,6 +2,9 @@
 
 class AcademyController extends BaseController
 {
+    private const COURSE_QUERY = 'SELECT c.* FROM courses c WHERE (c.slug = ? OR c.id = ?) AND c.is_active = 1';
+    private const COURSE_PREFIX = '/course/';
+
     private function getSidebar(): array
     {
         return Cache::remember('academy_sidebar', Config::get('cache.ttl.page', 600), function () {
@@ -17,6 +20,9 @@ class AcademyController extends BaseController
     {
         $tab = sanitize($_GET['tab'] ?? 'newest');
         $category = sanitize($_GET['category'] ?? 'all');
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 12;
+        $offset = ($page - 1) * $perPage;
 
         $where = "WHERE c.is_active = 1";
         $params = [];
@@ -36,13 +42,21 @@ class AcademyController extends BaseController
             $where .= " AND c.is_free = 1";
         }
 
-        $cacheKey = 'academy_list_' . hash('sha256', serialize([$tab, $category]));
-        $courses = Cache::remember($cacheKey, Config::get('cache.ttl.page', 600), function () use ($where, $params, $orderBy) {
-            return Database::fetchAll(
-                "SELECT c.* FROM courses c {$where} ORDER BY {$orderBy}",
-                $params
+        $cacheKey = 'academy_list_' . hash('sha256', serialize([$tab, $category, $page]));
+        $cached = Cache::remember($cacheKey, Config::get('cache.ttl.page', 600), function () use ($where, $params, $orderBy, $perPage, $offset) {
+            $countRow = Database::fetch("SELECT COUNT(*) as cnt FROM courses c {$where}", $params);
+            $totalCourses = (int) ($countRow['cnt'] ?? 0);
+            $totalPages = max(1, (int) ceil($totalCourses / $perPage));
+            $courses = Database::fetchAll(
+                "SELECT c.* FROM courses c {$where} ORDER BY {$orderBy} LIMIT ? OFFSET ?",
+                array_merge($params, [$perPage, $offset])
             );
+            return compact('courses', 'totalCourses', 'totalPages');
         }, 'academy');
+
+        $courses = $cached['courses'];
+        $totalCourses = $cached['totalCourses'];
+        $totalPages = $cached['totalPages'];
 
         $featuredCourse = Cache::remember('academy_featured', Config::get('cache.ttl.page', 600), function () {
             return Database::fetch(
@@ -55,6 +69,7 @@ class AcademyController extends BaseController
 
         $this->view('academy/index', [
             'courses' => $courses, 'tab' => $tab, 'category' => $category,
+            'page' => $page, 'totalPages' => $totalPages, 'totalCourses' => $totalCourses,
             'settings' => $settings, 'featuredCourse' => $featuredCourse,
         ] + $sidebar);
     }
@@ -63,7 +78,7 @@ class AcademyController extends BaseController
     {
         $course = Cache::remember('course_' . $slug, 600, function () use ($slug) {
             $c = Database::fetch(
-                "SELECT c.* FROM courses c WHERE (c.slug = ? OR c.id = ?) AND c.is_active = 1",
+                self::COURSE_QUERY,
                 [$slug, (int) $slug]
             );
             if ($c) {
@@ -74,6 +89,7 @@ class AcademyController extends BaseController
 
         if (!$course) {
             http_response_code(404);
+            $settings = Settings::all();
             require_once __DIR__ . '/../views/layouts/header.php';
             require_once __DIR__ . '/../views/errors/404.php';
             require_once __DIR__ . '/../views/layouts/footer.php';
@@ -113,7 +129,7 @@ class AcademyController extends BaseController
         }
 
         if (!$course['is_free']) {
-            redirect('/course/' . $slug);
+            redirect(self::COURSE_PREFIX . $slug);
             return;
         }
 
@@ -147,7 +163,7 @@ class AcademyController extends BaseController
 
         $course = Cache::remember('course_' . $slug, Config::get('cache.ttl.page', 600), function () use ($slug) {
             $c = Database::fetch(
-                "SELECT c.* FROM courses c WHERE (c.slug = ? OR c.id = ?) AND c.is_active = 1",
+                self::COURSE_QUERY,
                 [$slug, (int) $slug]
             );
             if ($c) {
@@ -158,6 +174,7 @@ class AcademyController extends BaseController
 
         if (!$course) {
             http_response_code(404);
+            $settings = Settings::all();
             require_once __DIR__ . '/../views/layouts/header.php';
             require_once __DIR__ . '/../views/errors/404.php';
             require_once __DIR__ . '/../views/layouts/footer.php';
@@ -171,7 +188,7 @@ class AcademyController extends BaseController
         );
 
         if (!$enrollment) {
-            redirect('/course/' . $slug);
+            redirect(self::COURSE_PREFIX . $slug);
             return;
         }
 
@@ -284,7 +301,7 @@ class AcademyController extends BaseController
         }
 
         $course = Database::fetch(
-            "SELECT c.* FROM courses c WHERE (c.slug = ? OR c.id = ?) AND c.is_active = 1",
+            self::COURSE_QUERY,
             [$slug, (int) $slug]
         );
 
@@ -300,13 +317,14 @@ class AcademyController extends BaseController
         );
 
         if (!$enrollment || $enrollment['progress'] < 100) {
-            redirect('/course/' . $slug . '/watch');
+            redirect(self::COURSE_PREFIX . $slug . '/watch');
             return;
         }
 
         $user = $_SESSION['user'];
         $certificateDate = jdate('Y/m/d', strtotime($enrollment['created_at']));
+        $settings = Settings::all();
 
-        $this->view('academy/certificate', compact('course', 'user', 'enrollment', 'certificateDate'));
+        $this->view('academy/certificate', compact('course', 'user', 'enrollment', 'certificateDate', 'settings'));
     }
 }

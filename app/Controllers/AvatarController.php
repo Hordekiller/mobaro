@@ -20,7 +20,7 @@ class AvatarController
 
         if (file_exists($cacheFile)) {
             header('Content-Type: image/svg+xml');
-            header('Cache-Control: public, max-age=604800');
+            header('Cache-Control: public, max-age=3600');
             readfile($cacheFile);
             return;
         }
@@ -38,7 +38,7 @@ class AvatarController
         file_put_contents($cacheFile, $svg);
 
         header('Content-Type: image/svg+xml');
-        header('Cache-Control: public, max-age=604800');
+        header('Cache-Control: public, max-age=3600');
         echo $svg;
         exit;
     }

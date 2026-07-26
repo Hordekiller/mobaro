@@ -32,7 +32,7 @@
                         <div class="w-7 h-7 bg-white rounded-2xl border-2 border-rose-500 flex items-center justify-center text-[10px] font-bold text-rose-600">۲</div>
                         <div class="w-7 h-7 bg-white rounded-2xl border-2 border-rose-500 flex items-center justify-center text-[10px] font-bold text-rose-600">۳</div>
                     </div>
-                    <span class="mr-4 text-white/80 text-xs leading-tight">بیش از ۴۲۰ مشتری<br>راضی امروز</span>
+                    <span class="mr-4 text-white/80 text-xs leading-tight"><?= e($settings['hero_customers_text'] ?? 'بیش از ۴۲۰ مشتری<br>راضی امروز') ?></span>
                 </div>
                 <div class="h-10 w-px bg-white/30"></div>
                 <div>
@@ -53,9 +53,9 @@
                         </div>
                     </div>
                 </div>
-                <img src="/assets/images/hero-model.jpg" alt="مدل مو"
+                <img src="/assets/images/<?= e($settings['hero_model_image'] ?? 'hero-model.jpg') ?>" alt="مدل مو"
                      class="w-80 h-[520px] object-cover rounded-[4rem] shadow-2xl ring-8 ring-white/60"
-                     onerror="this.src='/media/520/620/1005'">
+                     data-fallback="/media/520/620/1005">
                 <div class="absolute -bottom-4 -right-4 bg-white rounded-3xl px-6 py-4 shadow-2xl flex items-center gap-x-3">
                     <div class="text-rose-500"><i class="fa-solid fa-heart text-3xl"></i></div>
                     <div class="text-xs leading-tight">

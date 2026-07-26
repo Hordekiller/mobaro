@@ -69,10 +69,10 @@ foreach ($statusTabs as $k => $label) {
                     if (empty($img)) {
                         continue;
                     } ?>
-                    <img src="/assets/images/<?= e($img) ?>"
-                         class="w-[60px] h-[60px] rounded-xl object-cover border-2 border-[#efe5dc]"
-                         onerror="this.src='/avatar/P/120'"
-                         alt="product">
+                     <img src="/assets/images/<?= e($img) ?>"
+                          class="w-[60px] h-[60px] rounded-xl object-cover border-2 border-[#efe5dc]"
+                          data-fallback="/avatar/P/120"
+                          alt="product">
                 <?php endforeach; ?>
             <?php elseif (!empty($order['items_list'])) : ?>
                 <p class="text-sm text-[#9e9e9e]"><?= e($order['items_list']) ?></p>

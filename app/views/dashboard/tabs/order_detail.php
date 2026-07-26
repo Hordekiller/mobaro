@@ -54,7 +54,7 @@
     <h3 class="font-bold text-lg mb-4">اقلام سفارش</h3>
         <?php foreach ($items as $item) : ?>
     <div class="flex items-center gap-4 py-3 border-b border-[#efe5dc] last:border-b-0">
-        <img src="/assets/images/<?= e($item['image'] ?? '') ?>" class="w-16 h-16 rounded-xl object-cover" onerror="this.src='/media/80/80/<?= $item['product_id'] ?>'">
+         <img src="/assets/images/<?= e($item['image'] ?? '') ?>" alt="<?= e($item['name'] ?? 'محصول') ?>" class="w-16 h-16 rounded-xl object-cover" data-fallback="/media/80/80/<?= $item['product_id'] ?>">
         <div class="flex-1">
             <div class="font-semibold"><?= e($item['product_name']) ?></div>
             <div class="text-[#9e9e9e] text-sm">تعداد: <?= $item['quantity'] ?></div>

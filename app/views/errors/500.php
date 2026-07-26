@@ -1,6 +1,7 @@
 <?php
 
-$title = 'خطا | موبارو';
+$brandName = isset($settings) ? ($settings['brand_name'] ?? 'موبارو') : 'موبارو';
+$title = 'خطا | ' . $brandName;
 $errorMessage = $errorMessage ?? 'خطایی غیرمنتظره رخ داده است. لطفاً دوباره تلاش کنید.';
 ?>
 <div class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);">

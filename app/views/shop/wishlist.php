@@ -1,4 +1,4 @@
-<?php $title = 'علاقه‌مندی‌ها | موبارو'; ?>
+<?php $title = 'علاقه‌مندی‌ها | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 
 <div class="max-w-screen-2xl mx-auto px-8 py-10">
     <div class="mb-8">
@@ -12,9 +12,9 @@
         <div class="bg-white rounded-[18px] overflow-hidden shadow-[0_4px_20px_rgba(183,110,121,0.06)] hover:-translate-y-1 hover:shadow-lg transition-all group">
             <div class="relative">
                 <a href="/product/<?= $product['id'] ?>">
-                    <img src="/assets/images/<?= e($product['image']) ?>" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='/media/400/300/<?= $product['id'] ?>'">
+                    <img src="/assets/images/<?= e($product['image']) ?>" alt="<?= e($product['name']) ?>" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500" data-fallback="/media/400/300/<?= $product['id'] ?>">
                 </a>
-                <button onclick="removeWishlist(<?= $product['id'] ?>)" class="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                <button onclick="removeWishlist(<?= $product['id'] ?>)" class="absolute top-3 left-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm" aria-label="حذف <?= e($product['name']) ?> از علاقه‌مندی‌ها">
                     <i class="fa-solid fa-heart text-sm"></i>
                 </button>
                 <?php if ($product['is_sale']) : ?>
@@ -31,7 +31,7 @@
                         <?php endif; ?>
                         <span class="font-bold text-sm"><?= number_format($product['price']) ?> <span class="text-xs text-zinc-400">تومان</span></span>
                     </div>
-                    <button onclick="quickAddToCart(<?= $product['id'] ?>)" class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all">
+                    <button onclick="quickAddToCart(<?= $product['id'] ?>)" class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all" aria-label="افزودن <?= e($product['name']) ?> به سبد خرید">
                         <i class="fa-solid fa-cart-plus text-sm"></i>
                     </button>
                 </div>

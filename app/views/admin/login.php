@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ورود ادمین | موبارو</title>
+    <title>ورود ادمین | <?= e($settings['brand_name'] ?? 'موبارو') ?></title>
     <meta name="csrf" content="<?= $_SESSION['_csrf'] ?? '' ?>">
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="/assets/libs/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/assets/fonts/google-fonts-woff2.css">
     <link rel="stylesheet" href="/assets/fonts/vazirmatn-font-face.css">
+    <link rel="stylesheet" href="/assets/css/frontend.css?v=2.2">
     <style>
         body { font-family: 'Vazirmatn', system-ui, sans-serif; }
     </style>
@@ -17,11 +18,11 @@
     <div class="w-full max-w-sm">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div class="p-8 text-center">
-                <div class="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-200 overflow-hidden" role="img" aria-label="لوگوی موبارو">
-                    <img src="/assets/images/logo.png" alt="لوگوی موبارو" class="w-full h-full object-cover" onerror="this.innerHTML='<i class=\'fa-solid fa-shield-halved text-white text-3xl\'></i>'"> // NOSONAR
+                <div class="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-200 overflow-hidden" role="img" aria-label="لوگوی <?= e($settings['brand_name'] ?? 'موبارو') ?>">
+                    <img src="/assets/images/logo.png" alt="لوگوی <?= e($settings['brand_name'] ?? 'موبارو') ?>" class="w-full h-full object-cover" data-fallback-icon="<i class='fa-solid fa-shield-halved text-white text-3xl'></i>">
                 </div>
                 <h1 class="text-2xl font-bold mb-1">پنل مدیریت</h1>
-                <p class="text-zinc-500 text-sm">موبارو</p>
+                <p class="text-zinc-500 text-sm"><?= e($settings['brand_name'] ?? 'موبارو') ?></p>
             </div>
             <form method="POST" action="/admin/login" class="px-8 pb-8 space-y-5">
                 <?= csrf() ?>
@@ -62,7 +63,7 @@
                 </div>
             </form>
         </div>
-        <p class="text-center text-xs text-zinc-600 mt-6">© ۱۴۰۴ موبارو. پنل مدیریت</p>
+        <p class="text-center text-xs text-zinc-600 mt-6">© <?= date('Y') ?> <?= e($settings['brand_name'] ?? 'موبارو') ?>. پنل مدیریت</p>
     </div>
     <script>
     function refreshAdminCaptcha() {

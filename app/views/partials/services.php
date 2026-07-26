@@ -5,7 +5,7 @@
                 <span class="px-5 py-1.5 text-xs font-semibold bg-rose-100 text-rose-600 rounded-3xl">خدمات ما</span>
                 <h2 class="text-5xl font-semibold tracking-tighter mt-3">خدمات زیبایی حرفه‌ای</h2>
             </div>
-            <a href="/#booking" class="hidden md:flex items-center gap-x-3 text-sm font-medium group">
+            <a href="/#booking" class="hidden md:flex items-center gap-x-3 text-sm font-medium group" aria-label="مشاهده همه خدمات">
                 <span class="group-hover:underline">همه خدمات</span>
                 <div class="w-8 h-8 bg-rose-100 text-rose-500 rounded-2xl flex items-center justify-center">→</div>
             </a>
@@ -13,7 +13,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <?php foreach ($services as $index => $service) : ?>
-            <div onclick="selectService(<?= $service['id'] ?>)" class="service-card bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer">
+            <div onclick="selectService(<?= $service['id'] ?>)" role="button" tabindex="0" aria-label="انتخاب <?= e($service['title']) ?>" onkeydown="if(event.key==='Enter'||event.key===' ')selectService(<?= $service['id'] ?>)" class="service-card bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer">
                 <div class="h-48 md:h-64 bg-cover bg-center relative"
                      style="background-image: url('/assets/images/<?= e($service['image'] ?? '') ?>')">
                     <div class="absolute top-4 right-4 bg-white text-xs font-bold px-4 py-2 rounded-3xl shadow"><?= e($service['category']) ?></div>

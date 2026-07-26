@@ -2,6 +2,12 @@
 
 class ShopController extends BaseController
 {
+    private const WISHLIST_QUERY = 'SELECT product_id as id FROM wishlist WHERE user_id = ?';
+    private const LAYOUT_HEADER = '/../views/layouts/header.php';
+    private const LAYOUT_FOOTER = '/../views/layouts/footer.php';
+    private const WHERE_ID = 'id = ?';
+    private const CURRENCY_SUFFIX = ' تومان';
+
     private function getFacets(): array
     {
         return Cache::remember('shop_facets', Config::get('cache.ttl.page', 600), function () {
@@ -106,7 +112,7 @@ class ShopController extends BaseController
         $facets = $this->getFacets();
         $cart = $_SESSION['cart'] ?? [];
         if (Auth::check()) {
-            $wRows = Database::fetchAll("SELECT product_id as id FROM wishlist WHERE user_id = ?", [Auth::id()]);
+            $wRows = Database::fetchAll(self::WISHLIST_QUERY, [Auth::id()]);
             $wishlist = array_column($wRows, 'id');
         } else {
             $wishlist = $_SESSION['wishlist'] ?? [];
@@ -135,9 +141,10 @@ class ShopController extends BaseController
         });
         if (!$product) {
             http_response_code(404);
-            require_once __DIR__ . '/../views/layouts/header.php';
+            $settings = Settings::all();
+            require_once __DIR__ . self::LAYOUT_HEADER;
             require_once __DIR__ . '/../views/errors/404.php';
-            require_once __DIR__ . '/../views/layouts/footer.php';
+            require_once __DIR__ . self::LAYOUT_FOOTER;
             return;
         }
 
@@ -240,7 +247,7 @@ class ShopController extends BaseController
             "SELECT COUNT(*) as cnt FROM reviews WHERE product_id = ?",
             [$productId]
         )['cnt'];
-        Database::update('products', ['rating' => round($avg, 1), 'reviews' => $cnt], 'id = :id', ['id' => $productId]);
+        Database::update('products', ['rating' => round($avg, 1), 'reviews' => $cnt], self::WHERE_ID, ['id' => $productId]);
 
         Cache::forget('product_' . $productId);
         Cache::flushByTag('products');
@@ -298,7 +305,7 @@ class ShopController extends BaseController
     {
         if (Auth::check()) {
             $rows = Database::fetchAll(
-                "SELECT product_id as id FROM wishlist WHERE user_id = ?",
+                self::WISHLIST_QUERY,
                 [Auth::id()]
             );
             $ids = array_column($rows, 'id');
@@ -320,7 +327,7 @@ class ShopController extends BaseController
     {
         if (Auth::check()) {
             $rows = Database::fetchAll(
-                "SELECT product_id as id FROM wishlist WHERE user_id = ?",
+                self::WISHLIST_QUERY,
                 [Auth::id()]
             );
             $ids = array_column($rows, 'id');
@@ -355,7 +362,7 @@ class ShopController extends BaseController
         $this->json([
             'cart_count' => array_sum(array_column($_SESSION['cart'] ?? [], 'qty')),
             'total' => $total,
-            'total_formatted' => number_format($total) . ' تومان',
+            'total_formatted' => number_format($total) . self::CURRENCY_SUFFIX,
         ]);
     }
 
@@ -477,51 +484,19 @@ class ShopController extends BaseController
         }
 
         $total = array_sum(array_map(fn($item) => $item['price'] * $item['qty'], $cart));
-        $couponDiscount = 0;
-        $couponCode = '';
-
-        if (!empty($_POST['coupon_code'])) {
-            $couponCode = sanitize($_POST['coupon_code']);
-            $coupon = Database::fetch("SELECT * FROM coupons WHERE code = ? AND is_active = 1", [$couponCode]);
-            if ($coupon) {
-                $expires = $coupon['expires_at'];
-                if ($expires && strtotime($expires) < time()) {
-                    $this->json(['error' => 'کد تخفیف منقضی شده است.'], 400);
-                    return;
-                }
-                if ($coupon['max_uses'] > 0 && $coupon['used_count'] >= $coupon['max_uses']) {
-                    $this->json(['error' => 'کد تخفیف به حداکثر تعداد استفاده رسیده است.'], 400);
-                    return;
-                }
-                if ($coupon['min_order'] > 0 && $total < $coupon['min_order']) {
-                    $this->json(['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format($coupon['min_order']) . ' تومان است.'], 400);
-                    return;
-                }
-                if ($coupon['discount_type'] === 'percentage') {
-                    $couponDiscount = (int) min($total * $coupon['discount_value'] / 100, $total);
-                } else {
-                    $couponDiscount = (int) min($coupon['discount_value'], $total);
-                }
-            } else {
-                $this->json(['error' => 'کد تخفیف نامعتبر است.'], 400);
-                return;
-            }
+        $couponResult = $this->validateCoupon($total);
+        if ($couponResult['error']) {
+            $this->json(['error' => $couponResult['error']], 400);
+            return;
         }
 
+        $couponDiscount = $couponResult['discount'];
+        $couponCode = $couponResult['code'];
         $finalTotal = $total - $couponDiscount;
         $trackingCode = 'MB-' . date('Ymd') . '-' . str_pad((string) random_int(1000, 99999), 5, '0', STR_PAD_LEFT);
         $user = Auth::user();
 
-        $addressId = (int) ($_POST['address_id'] ?? 0);
-        $addressText = '';
-        $postalCode = '';
-        if ($addressId) {
-            $addr = Database::fetch("SELECT * FROM addresses WHERE id = ? AND user_id = ?", [$addressId, $user['id']]);
-            if ($addr) {
-                $addressText = $addr['address'] . '، ' . ($addr['city'] ?? '');
-                $postalCode = $addr['zip_code'] ?? '';
-            }
-        }
+        $addressResult = $this->resolveAddress($cart, $user['id']);
 
         $useWallet = !empty($_POST['use_wallet']);
         $walletBalance = (int) ($user['wallet'] ?? 0);
@@ -546,8 +521,8 @@ class ShopController extends BaseController
                 'payment_status' => $paymentStatus,
                 'payment_method' => $paymentMethod,
                 'tracking_code' => $trackingCode,
-                'address' => $addressText ?: null,
-                'postal_code' => $postalCode ?: null,
+                'address' => $addressResult['text'] ?: null,
+                'postal_code' => $addressResult['postal'] ?: null,
             ]);
 
             $courseItems = [];
@@ -569,47 +544,7 @@ class ShopController extends BaseController
             }
 
             if ($paymentMethod === 'wallet') {
-                Database::update('users', ['wallet' => $walletBalance - $finalTotal], 'id = :id', ['id' => $user['id']]);
-                Database::insert('transactions', [
-                    'user_id' => $user['id'],
-                    'type' => 'wallet_withdraw',
-                    'amount' => $finalTotal,
-                    'description' => "پرداخت سفارش {$trackingCode}",
-                    'payment_status' => 'paid',
-                ]);
-
-                $pointsEarned = floor($finalTotal / 10000);
-                if ($pointsEarned > 0) {
-                    Database::insert('transactions', [
-                        'user_id' => $user['id'],
-                        'type' => 'points_earn',
-                        'amount' => $pointsEarned,
-                        'description' => "امتیاز خرید سفارش {$trackingCode}",
-                    ]);
-                    Database::query("UPDATE users SET points = points + ? WHERE id = ?", [$pointsEarned, $user['id']]);
-                }
-
-                $newCourseIds = array_map(fn($c) => $c['id'], $courseItems);
-                if (!empty($newCourseIds)) {
-                    $uniqueIds = array_values(array_unique($newCourseIds));
-                    $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
-                    $existingEnrollments = Database::fetchAll(
-                        "SELECT course_id FROM course_enrollments WHERE user_id = ? AND course_id IN ({$placeholders})",
-                        array_merge([$user['id']], $uniqueIds)
-                    );
-                    $existingIds = array_column($existingEnrollments, 'course_id');
-                    foreach ($courseItems as $course) {
-                        if (in_array($course['id'], $existingIds)) {
-                            continue;
-                        }
-                        Database::insert('course_enrollments', [
-                            'user_id' => $user['id'],
-                            'course_id' => $course['id'],
-                            'progress' => 0,
-                        ]);
-                        Database::query("UPDATE courses SET students = students + 1 WHERE id = ?", [$course['id']]);
-                    }
-                }
+                $this->processWalletPayment($user, $finalTotal, $trackingCode, $courseItems);
             }
 
             Database::commit();
@@ -630,15 +565,126 @@ class ShopController extends BaseController
             return;
         }
 
+        $this->processZarinPalPayment($orderId, $finalTotal, $trackingCode, $user);
+    }
+
+    private function validateCoupon(int $total): array
+    {
+        if (empty($_POST['coupon_code'])) {
+            return ['error' => null, 'discount' => 0, 'code' => ''];
+        }
+
+        $couponCode = sanitize($_POST['coupon_code']);
+        $coupon = Database::fetch("SELECT * FROM coupons WHERE code = ? AND is_active = 1", [$couponCode]);
+
+        if (!$coupon) {
+            return ['error' => 'کد تخفیف نامعتبر است.', 'discount' => 0, 'code' => ''];
+        }
+
+        $expires = $coupon['expires_at'];
+        if ($expires && strtotime($expires) < time()) {
+            return ['error' => 'کد تخفیف منقضی شده است.', 'discount' => 0, 'code' => ''];
+        }
+
+        if ($coupon['max_uses'] > 0 && $coupon['used_count'] >= $coupon['max_uses']) {
+            return ['error' => 'کد تخفیف به حداکثر تعداد استفاده رسیده است.', 'discount' => 0, 'code' => ''];
+        }
+
+        if ($coupon['min_order'] > 0 && $total < $coupon['min_order']) {
+            return ['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format($coupon['min_order']) . ' تومان است.', 'discount' => 0, 'code' => ''];
+        }
+
+        $discount = $coupon['discount_type'] === 'percentage'
+            ? (int) min($total * $coupon['discount_value'] / 100, $total)
+            : (int) min($coupon['discount_value'], $total);
+
+        return ['error' => null, 'discount' => $discount, 'code' => $couponCode];
+    }
+
+    private function resolveAddress(array $cart, int $userId): array
+    {
+        $addressId = (int) ($_POST['address_id'] ?? 0);
+        $hasPhysicalProducts = !empty(array_filter($cart, fn($item) => ($item['type'] ?? 'product') === 'product'));
+
+        if ($hasPhysicalProducts && !$addressId) {
+            $this->json(['error' => 'آدرس تحویل برای محصولات فیزیکی الزامی است.'], 422);
+            exit;
+        }
+
+        $addressText = '';
+        $postalCode = '';
+        if ($addressId) {
+            $addr = Database::fetch("SELECT * FROM addresses WHERE id = ? AND user_id = ?", [$addressId, $userId]);
+            if ($addr) {
+                $addressText = $addr['address'] . '، ' . ($addr['city'] ?? '');
+                $postalCode = $addr['zip_code'] ?? '';
+            }
+        }
+
+        return ['text' => $addressText, 'postal' => $postalCode];
+    }
+
+    private function processWalletPayment(array $user, int $finalTotal, string $trackingCode, array $courseItems): void
+    {
+        Database::update('users', ['wallet' => (int) $user['wallet'] - $finalTotal], self::WHERE_ID, ['id' => $user['id']]);
+        Database::insert('transactions', [
+            'user_id' => $user['id'],
+            'type' => 'wallet_withdraw',
+            'amount' => $finalTotal,
+            'description' => "پرداخت سفارش {$trackingCode}",
+            'payment_status' => 'paid',
+        ]);
+
+        $pointsEarned = floor($finalTotal / 10000);
+        if ($pointsEarned > 0) {
+            Database::insert('transactions', [
+                'user_id' => $user['id'],
+                'type' => 'points_earn',
+                'amount' => $pointsEarned,
+                'description' => "امتیاز خرید سفارش {$trackingCode}",
+            ]);
+            Database::query("UPDATE users SET points = points + ? WHERE id = ?", [$pointsEarned, $user['id']]);
+        }
+
+        $this->enrollCourseItems($user['id'], $courseItems);
+    }
+
+    private function enrollCourseItems(int $userId, array $courseItems): void
+    {
+        $courseIds = array_map(fn($c) => $c['id'], $courseItems);
+        if (empty($courseIds)) {
+            return;
+        }
+
+        $uniqueIds = array_values(array_unique($courseIds));
+        $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
+        $existingEnrollments = Database::fetchAll(
+            "SELECT course_id FROM course_enrollments WHERE user_id = ? AND course_id IN ({$placeholders})",
+            array_merge([$userId], $uniqueIds)
+        );
+        $existingIds = array_column($existingEnrollments, 'course_id');
+
+        foreach ($courseItems as $course) {
+            if (in_array($course['id'], $existingIds)) {
+                continue;
+            }
+            Database::insert('course_enrollments', [
+                'user_id' => $userId,
+                'course_id' => $course['id'],
+                'progress' => 0,
+            ]);
+            Database::query("UPDATE courses SET students = students + 1 WHERE id = ?", [$course['id']]);
+        }
+    }
+
+    private function processZarinPalPayment(int $orderId, int $finalTotal, string $trackingCode, array $user): void
+    {
         $zpl = new ZarinPal();
         $callbackUrl = Config::get('app.url') . '/shop/payment/callback?order_id=' . $orderId;
         $result = $zpl->requestPayment($finalTotal, "سفارش {$trackingCode}", $callbackUrl, null, $user['phone'] ?? null);
 
         if ($result['status']) {
-            Database::update('orders', [
-                'payment_id' => $result['authority'],
-            ], 'id = :id', ['id' => $orderId]);
-
+            Database::update('orders', ['payment_id' => $result['authority']], self::WHERE_ID, ['id' => $orderId]);
             $this->json([
                 'success' => true,
                 'payment_required' => true,
@@ -664,19 +710,13 @@ class ShopController extends BaseController
         $orderId = (int) ($_GET['order_id'] ?? 0);
 
         if (!$orderId || !$authority) {
-            http_response_code(400);
-            require_once __DIR__ . '/../views/layouts/header.php';
-            echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت ناموفق</h2><p class="text-zinc-600">درخواست نامعتبر است.</p></div>';
-            require_once __DIR__ . '/../views/layouts/footer.php';
+            $this->renderPaymentResult('error', 'درخواست نامعتبر است.', null);
             return;
         }
 
         $order = Database::fetch("SELECT * FROM orders WHERE id = ? AND user_id = ?", [$orderId, Auth::id()]);
         if (!$order) {
-            http_response_code(404);
-            require_once __DIR__ . '/../views/layouts/header.php';
-            echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت ناموفق</h2><p class="text-zinc-600">سفارش یافت نشد.</p></div>';
-            require_once __DIR__ . '/../views/layouts/footer.php';
+            $this->renderPaymentResult('error', 'سفارش یافت نشد.', null);
             return;
         }
 
@@ -686,10 +726,8 @@ class ShopController extends BaseController
         }
 
         if ($status !== 'OK') {
-            Database::update('orders', ['payment_status' => 'failed'], 'id = :id', ['id' => $orderId]);
-            require_once __DIR__ . '/../views/layouts/header.php';
-            echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت لغو شد</h2><p class="text-zinc-600 mb-6">پرداخت شما لغو شد. می‌توانید مجدداً اقدام کنید.</p><a href="/orders/' . $orderId . '" class="px-6 py-3 bg-rose-600 text-white rounded-xl">تلاش مجدد</a></div>';
-            require_once __DIR__ . '/../views/layouts/footer.php';
+            Database::update('orders', ['payment_status' => 'failed'], self::WHERE_ID, ['id' => $orderId]);
+            $this->renderPaymentResult('cancelled', null, $orderId);
             return;
         }
 
@@ -701,41 +739,13 @@ class ShopController extends BaseController
                 'payment_status' => 'paid',
                 'payment_method' => 'zarinpal',
                 'status' => 'processing',
-            ], 'id = :id', ['id' => $orderId]);
+            ], self::WHERE_ID, ['id' => $orderId]);
 
             $cartItems = Database::fetchAll("SELECT * FROM order_items WHERE order_id = ?", [$orderId]);
-
-            $productIds = array_filter(array_map(fn($i) => $i['product_id'] ?? 0, $cartItems));
-            $courseIds = [];
-            if (!empty($productIds)) {
-                $uniqueIds = array_values(array_unique($productIds));
-                $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
-                $courseRows = Database::fetchAll("SELECT id FROM courses WHERE id IN ({$placeholders})", $uniqueIds);
-                $courseIds = array_column($courseRows, 'id');
-            }
+            $courseIds = $this->extractCourseIds($cartItems);
             $courseItems = array_filter($cartItems, fn($i) => in_array($i['product_id'], $courseIds));
 
-            $newCourseIds = array_map(fn($c) => $c['product_id'], $courseItems);
-            if (!empty($newCourseIds)) {
-                $uniqueProductIds = array_values(array_unique($newCourseIds));
-                $placeholders = implode(',', array_fill(0, count($uniqueProductIds), '?'));
-                $existingEnrollments = Database::fetchAll(
-                    "SELECT course_id FROM course_enrollments WHERE user_id = ? AND course_id IN ({$placeholders})",
-                    array_merge([Auth::id()], $uniqueProductIds)
-                );
-                $existingIds = array_column($existingEnrollments, 'course_id');
-                foreach ($courseItems as $course) {
-                    if (in_array($course['product_id'], $existingIds)) {
-                        continue;
-                    }
-                    Database::insert('course_enrollments', [
-                        'user_id' => Auth::id(),
-                        'course_id' => $course['product_id'],
-                        'progress' => 0,
-                    ]);
-                    Database::query("UPDATE courses SET students = students + 1 WHERE id = ?", [$course['product_id']]);
-                }
-            }
+            $this->enrollCourseItems(Auth::id(), array_map(fn($i) => ['id' => $i['product_id']], $courseItems));
 
             $pointsEarned = floor($order['total'] / 10000);
             Database::insert('transactions', [
@@ -748,18 +758,44 @@ class ShopController extends BaseController
 
             $_SESSION['cart'] = [];
 
-            require_once __DIR__ . '/../views/layouts/header.php';
-            echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-green-600 mb-4">پرداخت موفق</h2>
-            <div class="bg-green-50 rounded-2xl p-6 mb-6"><p class="text-green-700">کد رهگیری پرداخت: <strong>' . e($result['ref_id']) . '</strong></p>
-            <p class="text-green-700 mt-2">کد پیگیری سفارش: <strong>' . e($order['tracking_code']) . '</strong></p></div>
-            <a href="/dashboard/orders" class="px-6 py-3 bg-rose-600 text-white rounded-xl font-semibold">مشاهده سفارشات</a></div>';
-            require_once __DIR__ . '/../views/layouts/footer.php';
+            $this->renderPaymentResult('success', null, null, $result['ref_id'], $order['tracking_code']);
         } else {
-            Database::update('orders', ['payment_status' => 'failed'], 'id = :id', ['id' => $orderId]);
-            require_once __DIR__ . '/../views/layouts/header.php';
-            echo '<div class="max-w-lg mx-auto px-4 py-20 text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت ناموفق</h2><p class="text-zinc-600">' . e($result['message']) . '</p></div>';
-            require_once __DIR__ . '/../views/layouts/footer.php';
+            Database::update('orders', ['payment_status' => 'failed'], self::WHERE_ID, ['id' => $orderId]);
+            $this->renderPaymentResult('error', $result['message'], null);
         }
+    }
+
+    private function extractCourseIds(array $cartItems): array
+    {
+        $productIds = array_filter(array_map(fn($i) => $i['product_id'] ?? 0, $cartItems));
+        if (empty($productIds)) {
+            return [];
+        }
+        $uniqueIds = array_values(array_unique($productIds));
+        $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
+        $courseRows = Database::fetchAll("SELECT id FROM courses WHERE id IN ({$placeholders})", $uniqueIds);
+        return array_column($courseRows, 'id');
+    }
+
+    private function renderPaymentResult(string $type, ?string $message, ?int $orderId, ?int $refId = null, ?string $trackingCode = null): void
+    {
+        require_once __DIR__ . self::LAYOUT_HEADER;
+
+        $content = match ($type) {
+            'success' => '<h2 class="text-2xl font-bold text-green-600 mb-4">پرداخت موفق</h2>'
+                . '<div class="bg-green-50 rounded-2xl p-6 mb-6">'
+                . '<p class="text-green-700">کد رهگیری پرداخت: <strong>' . e($refId) . '</strong></p>'
+                . '<p class="text-green-700 mt-2">کد پیگیری سفارش: <strong>' . e($trackingCode) . '</strong></p></div>'
+                . '<a href="/dashboard/orders" class="px-6 py-3 bg-rose-600 text-white rounded-xl font-semibold">مشاهده سفارشات</a>',
+            'cancelled' => '<h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت لغو شد</h2>'
+                . '<p class="text-zinc-600 mb-6">پرداخت شما لغو شد. می‌توانید مجدداً اقدام کنید.</p>'
+                . '<a href="/orders/' . $orderId . '" class="px-6 py-3 bg-rose-600 text-white rounded-xl">تلاش مجدد</a>',
+            default => '<h2 class="text-2xl font-bold text-red-600 mb-4">' . ($message ? 'پرداخت ناموفق' : 'پرداخت ناموفق') . '</h2>'
+                . '<p class="text-zinc-600">' . e($message) . '</p>',
+        };
+
+        echo '<div class="max-w-lg mx-auto px-4 py-20 text-center">' . $content . '</div>';
+        require_once __DIR__ . self::LAYOUT_FOOTER;
     }
 
     public function verifyCoupon(): void
@@ -803,9 +839,9 @@ class ShopController extends BaseController
         $this->json([
             'success' => true,
             'discount' => $discount,
-            'discount_formatted' => number_format($discount) . ' تومان',
+            'discount_formatted' => number_format($discount) . self::CURRENCY_SUFFIX,
             'total_after' => $total - $discount,
-            'total_after_formatted' => number_format($total - $discount) . ' تومان',
+            'total_after_formatted' => number_format($total - $discount) . self::CURRENCY_SUFFIX,
             'message' => 'کد تخفیف اعمال شد.',
         ]);
     }

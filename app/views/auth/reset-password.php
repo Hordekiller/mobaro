@@ -1,4 +1,4 @@
-<?php $title = 'تغییر رمز عبور | موبارو'; ?>
+<?php $title = 'تغییر رمز عبور | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen bg-gradient-to-br from-rose-50 to-white flex items-center justify-center px-4">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">

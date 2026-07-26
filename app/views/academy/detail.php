@@ -1,5 +1,5 @@
 <?php
-$title = e($course['title']) . ' | موبارو';
+$title = e($course['title']) . ' | ' . ($settings['brand_name'] ?? 'موبارو');
 $curriculum = json_decode($course['curriculum'] ?? '[]', true) ?: [];
 $audience = json_decode($course['audience'] ?? '[]', true) ?: [];
 $faqs = json_decode($course['faqs'] ?? '[]', true) ?: [];
@@ -128,7 +128,7 @@ if (isset($_SESSION['user'])) {
                 <img src="/avatar/<?= e($course['teacher']) ?>/88" alt="<?= e($course['teacher']) ?>" class="w-20 h-20 rounded-2xl border-2 border-rose-100 flex-shrink-0">
                 <div>
                     <h3 class="font-bold text-lg"><?= e($course['teacher']) ?></h3>
-                    <p class="text-sm text-zinc-500 mt-1">مدرس <?= e($course['category']) ?> با بیش از ۱۰ سال سابقه تدریس و فعالیت حرفه‌ای در سالن‌های زیبایی معتبر.</p>
+                    <p class="text-sm text-zinc-500 mt-1"><?= e($settings['academy_instructor_bio'] ?? 'مدرس ' . $course['category'] . ' با بیش از ۱۰ سال سابقه تدریس و فعالیت حرفه‌ای در سالن‌های زیبایی معتبر.') ?></p>
                     <div class="flex flex-wrap gap-2 mt-3">
                         <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-star text-amber-400 ml-1"></i>امتیاز <?= number_format($course['rating'], 1) ?></span>
                         <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-user-group text-rose-400 ml-1"></i><?= number_format($course['students']) ?> دانشجو</span>
@@ -200,7 +200,7 @@ if (isset($_SESSION['user'])) {
                 <img src="/assets/images/<?= e($course['image']) ?>"
                      alt="<?= e($course['title'] ?? '') ?>"
                      class="w-full h-48 object-cover"
-                     onerror="this.src='/media/400/300/<?= e($course['id']) ?>'"> // NOSONAR
+                     data-fallback="/media/400/300/<?= e($course['id']) ?>">
                 <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <?php if (($course['video_type'] ?? 'upload') === 'youtube') : ?>
                     <a href="https://www.youtube.com/watch?v=<?= e(getYoutubeId($course['video_url'])) ?>" target="_blank" class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center text-rose-600 text-2xl hover:bg-white hover:scale-110 transition-all shadow-lg">
@@ -296,7 +296,7 @@ if (isset($_SESSION['user'])) {
                     <img src="/assets/images/<?= e($rel['image']) ?>"
                          alt="<?= e($rel['title'] ?? '') ?>"
                          class="w-16 h-16 rounded-xl object-cover flex-shrink-0"
-                         onerror="this.src='/media/100/100/<?= e($rel['id']) ?>'"> // NOSONAR
+                         data-fallback="/media/100/100/<?= e($rel['id']) ?>">
                     <div class="min-w-0">
                         <div class="text-sm font-medium line-clamp-1 group-hover:text-rose-600 transition-colors"><?= e($rel['title']) ?></div>
                         <div class="text-xs text-zinc-400 mt-0.5"><?= e($rel['teacher']) ?></div>

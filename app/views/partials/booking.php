@@ -8,16 +8,16 @@
 
         <div class="border border-white/10 rounded-3xl p-8 bg-white/5">
             <div class="flex items-center justify-between mb-8">
-                <div onclick="setBookingStep(0)"
+                <div onclick="setBookingStep(0)" role="button" tabindex="0" aria-label="مرحله یک" onkeydown="if(event.key==='Enter'||event.key===' ')setBookingStep(0)"
                      class="booking-step cursor-pointer w-9 h-9 rounded-2xl border-2 flex items-center justify-center text-xs font-bold">۱</div>
                 <div class="flex-1 h-px bg-white/10 mx-3"></div>
-                <div onclick="setBookingStep(1)"
+                <div onclick="setBookingStep(1)" role="button" tabindex="0" aria-label="مرحله دو" onkeydown="if(event.key==='Enter'||event.key===' ')setBookingStep(1)"
                      class="booking-step cursor-pointer w-9 h-9 rounded-2xl border-2 flex items-center justify-center text-xs font-bold">۲</div>
                 <div class="flex-1 h-px bg-white/10 mx-3"></div>
-                <div onclick="setBookingStep(2)"
+                <div onclick="setBookingStep(2)" role="button" tabindex="0" aria-label="مرحله سه" onkeydown="if(event.key==='Enter'||event.key===' ')setBookingStep(2)"
                      class="booking-step cursor-pointer w-9 h-9 rounded-2xl border-2 flex items-center justify-center text-xs font-bold">۳</div>
                 <div class="flex-1 h-px bg-white/10 mx-3"></div>
-                <div onclick="setBookingStep(3)"
+                <div onclick="setBookingStep(3)" role="button" tabindex="0" aria-label="مرحله چهار" onkeydown="if(event.key==='Enter'||event.key===' ')setBookingStep(3)"
                      class="booking-step cursor-pointer w-9 h-9 rounded-2xl border-2 flex items-center justify-center text-xs font-bold">۴</div>
             </div>
             <div id="booking-form-content" data-theme="dark">

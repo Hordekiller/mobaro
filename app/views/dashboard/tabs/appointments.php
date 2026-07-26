@@ -8,9 +8,9 @@
 </a>
 
 <div class="flex gap-2 bg-white p-1.5 rounded-xl shadow-[0_4px_20px_rgba(225,29,72,0.06)] mb-5 overflow-x-auto" id="appointment-tabs">
-    <button onclick="filterApts(this, 'future')" class="tab-btn active px-5 py-2.5 rounded-lg bg-[#e11d48] text-white font-medium text-sm whitespace-nowrap transition-all">نوبت‌های آینده</button>
-    <button onclick="filterApts(this, 'past')" class="tab-btn px-5 py-2.5 rounded-lg bg-transparent text-[#9e9e9e] font-medium text-sm whitespace-nowrap transition-all">نوبت‌های گذشته</button>
-    <button onclick="filterApts(this, 'cancelled')" class="tab-btn px-5 py-2.5 rounded-lg bg-transparent text-[#9e9e9e] font-medium text-sm whitespace-nowrap transition-all">لغو شده</button>
+    <button onclick="filterApts(this, 'future')" class="tab-btn active px-5 py-2.5 rounded-lg bg-[#e11d48] text-white font-medium text-sm whitespace-nowrap transition-all" aria-label="نوبت‌های آینده">نوبت‌های آینده</button>
+    <button onclick="filterApts(this, 'past')" class="tab-btn px-5 py-2.5 rounded-lg bg-transparent text-[#9e9e9e] font-medium text-sm whitespace-nowrap transition-all" aria-label="نوبت‌های گذشته">نوبت‌های گذشته</button>
+    <button onclick="filterApts(this, 'cancelled')" class="tab-btn px-5 py-2.5 rounded-lg bg-transparent text-[#9e9e9e] font-medium text-sm whitespace-nowrap transition-all" aria-label="نوبت‌های لغو شده">لغو شده</button>
 </div>
 
 <div id="appointments-list">
@@ -69,8 +69,8 @@
     <?php endif; ?>
 </div>
 
-<div id="rescheduleModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" onclick="closeRescheduleModal(event)">
-    <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl" onclick="event.stopPropagation()">
+<div id="rescheduleModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" data-modal-backdrop>
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold">تغییر زمان نوبت</h3>
             <button onclick="closeRescheduleModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm">
@@ -80,11 +80,11 @@
         <div class="space-y-4">
             <input type="hidden" id="reschedule-id">
             <div>
-                <label class="block text-sm font-semibold mb-1.5">تاریخ جدید</label>
+                <label for="reschedule-date" class="block text-sm font-semibold mb-1.5">تاریخ جدید</label>
                 <input type="date" id="reschedule-date" min="<?= date('Y-m-d') ?>" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#e11d48] focus:ring-0 outline-none transition-all" required>
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-1.5">ساعت جدید</label>
+                <label for="reschedule-time" class="block text-sm font-semibold mb-1.5">ساعت جدید</label>
                 <input type="time" id="reschedule-time" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#e11d48] focus:ring-0 outline-none transition-all" required>
             </div>
             <button onclick="submitReschedule()" class="w-full py-3.5 bg-gradient-to-l from-[#e11d48] to-[#be123c] text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">ذخیره تغییر</button>

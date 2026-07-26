@@ -1,4 +1,4 @@
-<?php $title = e($pageTitle ?? 'تماس با ما') . ' | موبارو'; ?>
+<?php $title = e($pageTitle ?? 'تماس با ما') . ' | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 
 <div class="min-h-screen bg-gradient-to-br from-rose-50 via-white to-rose-50/30">
     <div class="relative bg-gradient-to-r from-rose-600 to-rose-800 py-20">
@@ -15,7 +15,7 @@
                     <i class="fa-solid fa-phone text-rose-600 text-xl"></i>
                 </div>
                 <h3 class="font-bold mb-2">تلفن تماس</h3>
-                <p class="text-zinc-500 text-sm"><?= e($settings['brand_phone'] ?? '۰۲۱-۲۲۸۸۴۲۶۷') ?></p>
+                <p class="text-zinc-500 text-sm"><?= e($settings['brand_phone'] ?? '۰۳۱-۳۶۶۶۲۱۲۲') ?></p>
             </div>
             <div class="bg-white rounded-2xl p-6 shadow-lg text-center">
                 <div class="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -98,7 +98,7 @@
                         </div>
                         <div>
                             <h4 class="font-semibold">تلفن</h4>
-                            <p class="text-zinc-500 text-sm"><?= e($settings['brand_phone'] ?? '۰۲۱-۲۲۸۸۴۲۶۷') ?></p>
+                            <p class="text-zinc-500 text-sm"><?= e($settings['brand_phone'] ?? '۰۳۱-۳۶۶۶۲۱۲۲') ?></p>
                         </div>
                     </div>
                     <div class="flex items-start gap-4">

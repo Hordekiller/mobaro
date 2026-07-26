@@ -6,14 +6,14 @@
 <form action="/dashboard/password/change" method="POST" class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(183,110,121,0.06)] max-w-lg">
     <?= csrf() ?>
     <div class="mb-4">
-        <label class="block text-sm font-semibold mb-1.5">رمز عبور فعلی</label>
+        <label for="current_password" class="block text-sm font-semibold mb-1.5">رمز عبور فعلی</label>
         <div class="relative">
-            <input type="password" name="current_password" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all pl-10" required>
+            <input type="password" name="current_password" id="current_password" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all pl-10" required>
             <i class="fa-regular fa-eye absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9e9e9e] cursor-pointer"></i>
         </div>
     </div>
     <div class="mb-4">
-        <label class="block text-sm font-semibold mb-1.5">رمز عبور جدید</label>
+        <label for="new_password" class="block text-sm font-semibold mb-1.5">رمز عبور جدید</label>
         <div class="relative">
             <input type="password" name="new_password" id="new_password" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all pl-10" required minlength="6" oninput="checkPasswordStrength(this.value)">
             <i class="fa-regular fa-eye absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9e9e9e] cursor-pointer"></i>
@@ -27,9 +27,9 @@
         <p class="mt-1 text-xs text-[#9e9e9e]" id="pwd-label">حداقل ۶ کاراکتر</p>
     </div>
     <div class="mb-5">
-        <label class="block text-sm font-semibold mb-1.5">تکرار رمز عبور جدید</label>
+        <label for="confirm_password" class="block text-sm font-semibold mb-1.5">تکرار رمز عبور جدید</label>
         <div class="relative">
-            <input type="password" name="confirm_password" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all pl-10" required minlength="6">
+            <input type="password" name="confirm_password" id="confirm_password" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-[#B76E79] focus:ring-0 outline-none transition-all pl-10" required minlength="6">
             <i class="fa-regular fa-eye absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9e9e9e] cursor-pointer"></i>
         </div>
     </div>

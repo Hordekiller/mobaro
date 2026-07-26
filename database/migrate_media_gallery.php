@@ -5,6 +5,27 @@
 
 require_once __DIR__ . '/../app/bootstrap.php';
 
+function insertMediaItem(string $filepath, string $originalName, string $type, string $defaultMime, string $altText, string $sourceType, ?int $sourceId): void
+{
+    $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
+    if ($existing) {
+        return;
+    }
+    $fullPath = __DIR__ . '/../public/' . $filepath;
+    $mime = file_exists($fullPath) ? mime_content_type($fullPath) : $defaultMime;
+    $size = file_exists($fullPath) ? filesize($fullPath) : 0;
+    Database::insert('media', [
+        'filepath' => $filepath,
+        'original_name' => $originalName,
+        'type' => $type,
+        'mime_type' => $mime,
+        'size' => $size,
+        'alt_text' => $altText,
+        'source_type' => $sourceType,
+        'source_id' => $sourceId,
+    ]);
+}
+
 try {
     // 1. Create media table
     Database::query("
@@ -36,19 +57,7 @@ try {
         $filepath = 'assets/images/' . $p['image'];
         $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
         if (!$existing) {
-            $fullPath = __DIR__ . '/../public/' . $filepath;
-            $mime = file_exists($fullPath) ? mime_content_type($fullPath) : 'image/jpeg';
-            $size = file_exists($fullPath) ? filesize($fullPath) : 0;
-            Database::insert('media', [
-                'filepath' => $filepath,
-                'original_name' => $p['image'],
-                'type' => 'image',
-                'mime_type' => $mime,
-                'size' => $size,
-                'alt_text' => $p['name'],
-                'source_type' => 'product_image',
-                'source_id' => $p['id'],
-            ]);
+            insertMediaItem($filepath, $p['image'], 'image', 'image/jpeg', $p['name'], 'product_image', (int) $p['id']);
             $count++;
         }
     }
@@ -66,19 +75,7 @@ try {
         $filepath = 'assets/images/' . $gi['image'];
         $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
         if (!$existing) {
-            $fullPath = __DIR__ . '/../public/' . $filepath;
-            $mime = file_exists($fullPath) ? mime_content_type($fullPath) : 'image/jpeg';
-            $size = file_exists($fullPath) ? filesize($fullPath) : 0;
-            Database::insert('media', [
-                'filepath' => $filepath,
-                'original_name' => $gi['image'],
-                'type' => 'image',
-                'mime_type' => $mime,
-                'size' => $size,
-                'alt_text' => $gi['pname'] . ' (گالری)',
-                'source_type' => 'product_gallery',
-                'source_id' => $gi['pid'],
-            ]);
+            insertMediaItem($filepath, $gi['image'], 'image', 'image/jpeg', $gi['pname'] . ' (گالری)', 'product_gallery', (int) $gi['pid']);
             $count++;
         }
     }
@@ -94,23 +91,8 @@ try {
     $count = 0;
     foreach ($productVids as $pv) {
         $filepath = ltrim($pv['video_url'], '/');
-        $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
-        if (!$existing) {
-            $fullPath = __DIR__ . '/../public/' . $filepath;
-            $mime = file_exists($fullPath) ? mime_content_type($fullPath) : 'video/mp4';
-            $size = file_exists($fullPath) ? filesize($fullPath) : 0;
-            Database::insert('media', [
-                'filepath' => $filepath,
-                'original_name' => basename($pv['video_url']),
-                'type' => 'video',
-                'mime_type' => $mime,
-                'size' => $size,
-                'alt_text' => $pv['name'] . ' (ویدیو)',
-                'source_type' => 'product_video',
-                'source_id' => $pv['id'],
-            ]);
-            $count++;
-        }
+        insertMediaItem($filepath, basename($pv['video_url']), 'video', 'video/mp4', $pv['name'] . ' (ویدیو)', 'product_video', (int) $pv['id']);
+        $count++;
     }
     echo "✓ Seeded {$count} product videos\n";
 
@@ -124,23 +106,8 @@ try {
     $count = 0;
     foreach ($courseVids as $cv) {
         $filepath = ltrim($cv['video_url'], '/');
-        $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
-        if (!$existing) {
-            $fullPath = __DIR__ . '/../public/' . $filepath;
-            $mime = file_exists($fullPath) ? mime_content_type($fullPath) : 'video/mp4';
-            $size = file_exists($fullPath) ? filesize($fullPath) : 0;
-            Database::insert('media', [
-                'filepath' => $filepath,
-                'original_name' => basename($cv['video_url']),
-                'type' => 'video',
-                'mime_type' => $mime,
-                'size' => $size,
-                'alt_text' => $cv['title'] . ' (ویدیو دوره)',
-                'source_type' => 'course_video',
-                'source_id' => $cv['id'],
-            ]);
-            $count++;
-        }
+        insertMediaItem($filepath, basename($cv['video_url']), 'video', 'video/mp4', $cv['title'] . ' (ویدیو دوره)', 'course_video', (int) $cv['id']);
+        $count++;
     }
     echo "✓ Seeded {$count} course videos\n";
 
@@ -154,23 +121,8 @@ try {
     $count = 0;
     foreach ($tutorialVids as $tv) {
         $filepath = ltrim($tv['video_url'], '/');
-        $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
-        if (!$existing) {
-            $fullPath = __DIR__ . '/../public/' . $filepath;
-            $mime = file_exists($fullPath) ? mime_content_type($fullPath) : 'video/mp4';
-            $size = file_exists($fullPath) ? filesize($fullPath) : 0;
-            Database::insert('media', [
-                'filepath' => $filepath,
-                'original_name' => basename($tv['video_url']),
-                'type' => 'video',
-                'mime_type' => $mime,
-                'size' => $size,
-                'alt_text' => $tv['title'] . ' (ویدیو آموزش)',
-                'source_type' => 'tutorial_video',
-                'source_id' => $tv['id'],
-            ]);
-            $count++;
-        }
+        insertMediaItem($filepath, basename($tv['video_url']), 'video', 'video/mp4', $tv['title'] . ' (ویدیو آموزش)', 'tutorial_video', (int) $tv['id']);
+        $count++;
     }
     echo "✓ Seeded {$count} tutorial videos\n";
 

@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($title ?? 'موبارو | سالن زیبایی حرفه‌ای') ?></title>
-    <meta name="description" content="سالن زیبایی موبارو با بهترین آرایشگران و محصولات حرفه‌ای">
-    <meta property="og:title" content="موبارو | سالن زیبایی حرفه‌ای">
-    <meta property="og:description" content="سالن زیبایی موبارو با بهترین آرایشگران و محصولات حرفه‌ای">
-    <meta property="og:image" content="/favicon/og-image.png">
+    <?php $settings = $settings ?? []; ?>
+    <title><?= e($title ?? ($settings['meta_title'] ?? ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای')) ?></title>
+    <meta name="description" content="<?= e($settings['meta_description'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای') ?>">
+    <meta property="og:title" content="<?= e($settings['og_title'] ?? ($title ?? ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای')) ?>">
+    <meta property="og:description" content="<?= e($settings['og_description'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای') ?>">
+    <meta property="og:image" content="<?= e($settings['og_image'] ?? '/favicon/og-image.png') ?>">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <?php $_csrf_token = $_SESSION['_csrf'] ?? ''; ?>
@@ -27,6 +28,7 @@
             --primary: <?= e($settings['color_primary'] ?? '#e11d48') ?>;
             --primary-dark: <?= e($settings['color_primary_dark'] ?? '#be185d') ?>;
             --gold: <?= e($settings['color_gold'] ?? '#D4AF37') ?>;
+            --hero-bg: url('/assets/images/<?= e($settings['hero_bg_image'] ?? 'hero-bg.jpg') ?>');
         }
         body { font-family: 'Vazirmatn', system-ui, sans-serif; }
         .logo-font { font-family: 'Playfair Display', serif; }
@@ -40,7 +42,7 @@
             <div class="px-8 py-5 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-x-3">
                     <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner overflow-hidden">
-                        <img src="/assets/images/logo.png" alt="موبارو" class="w-full h-full object-cover" onerror="this.innerHTML='<i class=\'fa-solid fa-spa text-white text-3xl\'></i>'">
+                        <img src="/assets/images/logo.png" alt="<?= e($settings['brand_name'] ?? 'موبارو') ?>" class="w-full h-full object-cover" data-fallback-icon="<i class='fa-solid fa-spa text-white text-3xl'></i>">
                     </div>
                     <span class="logo-font text-4xl font-bold tracking-tighter text-rose-600">
                         <?= e($settings['brand_name'] ?? 'موبارو') ?>

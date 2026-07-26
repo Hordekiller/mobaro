@@ -32,10 +32,10 @@
                 </div>
             </div>
             <div class="flex gap-1.5 flex-shrink-0">
-                <button onclick="editAddress(<?= $addr['id'] ?>)" class="w-8 h-8 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center hover:bg-blue-400 hover:text-white transition-all">
+                <button onclick="editAddress(<?= $addr['id'] ?>)" class="w-8 h-8 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center hover:bg-blue-400 hover:text-white transition-all" aria-label="ویرایش آدرس">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button onclick="deleteAddress(<?= $addr['id'] ?>)" class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-400 hover:text-white transition-all">
+                <button onclick="deleteAddress(<?= $addr['id'] ?>)" class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-400 hover:text-white transition-all" aria-label="حذف آدرس">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
@@ -49,11 +49,11 @@
     <?php endif; ?>
 </div>
 
-<div id="addressModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" onclick="closeAddressModal()">
-    <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl" onclick="event.stopPropagation()">
+<div id="addressModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" data-modal-backdrop>
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold" id="addressModalTitle">آدرس جدید</h3>
-            <button onclick="closeAddressModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm">
+            <button onclick="closeAddressModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm" aria-label="بستن">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>

@@ -2,6 +2,8 @@
 
 class RateLimiter
 {
+    private const DEFAULT_IP = '127.0.0.1';
+
     private static string $table = 'login_attempts';
 
     public static function init(): void
@@ -21,7 +23,7 @@ class RateLimiter
 
     public static function isLocked(string $identifier, int $maxAttempts = 5, int $windowMinutes = 15): bool
     {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $ip = $_SERVER['REMOTE_ADDR'] ?? self::DEFAULT_IP;
         $since = date('Y-m-d H:i:s', strtotime("-{$windowMinutes} minutes"));
 
         $result = Database::fetch(
@@ -36,7 +38,7 @@ class RateLimiter
 
     public static function recordAttempt(string $identifier, bool $success = false): void
     {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $ip = $_SERVER['REMOTE_ADDR'] ?? self::DEFAULT_IP;
 
         Database::insert(self::$table, [
             'identifier' => $identifier,
@@ -59,7 +61,7 @@ class RateLimiter
 
     public static function remainingAttempts(string $identifier, int $maxAttempts = 5, int $windowMinutes = 15): int
     {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $ip = $_SERVER['REMOTE_ADDR'] ?? self::DEFAULT_IP;
         $since = date('Y-m-d H:i:s', strtotime("-{$windowMinutes} minutes"));
 
         $result = Database::fetch(

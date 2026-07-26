@@ -85,7 +85,7 @@ button { cursor: pointer; font-family: inherit; border: none; }
 .logo-font { font-family: 'Playfair Display', sans-serif; }
 .tail-container { font-family: 'Vazirmatn', system-ui, sans-serif; }
 .hero-bg {
-    background: linear-gradient(135deg, rgba(225, 29, 72, 0.85), rgba(190, 24, 93, 0.85)), url('/assets/images/hero-bg.jpg') center/cover no-repeat;
+    background: linear-gradient(135deg, rgba(225, 29, 72, 0.85), rgba(190, 24, 93, 0.85)), var(--hero-bg) center/cover no-repeat;
 }
 
 /* ========== AUTH PAGES ========== */
@@ -385,6 +385,19 @@ html {
 * {
     -webkit-mask-composite: source-out;
     mask-composite: exclude;
+}
+
+.prose-content {
+    line-height: 1.8;
+}
+.prose-content h2,
+.prose-content h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+.prose-content p {
+    margin-bottom: 1rem;
 }
 
 body {

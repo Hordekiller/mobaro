@@ -2,19 +2,25 @@
 
 class ImageController
 {
+    private const COLOR_WHITE = '#ffffff';
+    private const COLOR_ROSE = '#e11d48';
+    private const SVG_HEIGHT = '" height="';
+    private const SVG_FILL = '" fill="';
+    private const SVG_OPACITY = '" opacity="';
+
     private static int $_rngState = 0;
 
     private static array $palettes = [
-        'beauty'  => ['bg' => '#e11d48', 'fg' => '#ffffff', 'accent' => '#fda4af'],
+        'beauty'  => ['bg' => self::COLOR_ROSE, 'fg' => self::COLOR_WHITE, 'accent' => '#fda4af'],
         'gold'    => ['bg' => '#D4AF37', 'fg' => '#1a1a1a', 'accent' => '#f5d76e'],
         'skin'    => ['bg' => '#FDF6F0', 'fg' => '#8b5c41', 'accent' => '#e8d5c4'],
-        'nail'    => ['bg' => '#ec4899', 'fg' => '#ffffff', 'accent' => '#f9a8d4'],
-        'makeup'  => ['bg' => '#9333ea', 'fg' => '#ffffff', 'accent' => '#c084fc'],
-        'salon'   => ['bg' => '#374151', 'fg' => '#e11d48', 'accent' => '#6b7280'],
-        'rose'    => ['bg' => '#fda4af', 'fg' => '#1a1a1a', 'accent' => '#e11d48'],
-        'dark'    => ['bg' => '#18181b', 'fg' => '#e11d48', 'accent' => '#3f3f46'],
+        'nail'    => ['bg' => '#ec4899', 'fg' => self::COLOR_WHITE, 'accent' => '#f9a8d4'],
+        'makeup'  => ['bg' => '#9333ea', 'fg' => self::COLOR_WHITE, 'accent' => '#c084fc'],
+        'salon'   => ['bg' => '#374151', 'fg' => self::COLOR_ROSE, 'accent' => '#6b7280'],
+        'rose'    => ['bg' => '#fda4af', 'fg' => '#1a1a1a', 'accent' => self::COLOR_ROSE],
+        'dark'    => ['bg' => '#18181b', 'fg' => self::COLOR_ROSE, 'accent' => '#3f3f46'],
         'cream'   => ['bg' => '#fef3c7', 'fg' => '#92400e', 'accent' => '#fbbf24'],
-        'teal'    => ['bg' => '#0d9488', 'fg' => '#ffffff', 'accent' => '#5eead4'],
+        'teal'    => ['bg' => '#0d9488', 'fg' => self::COLOR_WHITE, 'accent' => '#5eead4'],
     ];
 
     private static array $patterns = ['circle', 'diamond', 'wave', 'dots', 'cross'];
@@ -109,8 +115,8 @@ class ImageController
         $fg = $palette['fg'];
         $accent = $palette['accent'];
 
-        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $w . '" height="' . $h . '" viewBox="0 0 ' . $w . ' ' . $h . '">';
-        $svg .= '<rect width="' . $w . '" height="' . $h . '" fill="' . $bg . '"/>';
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $w . self::SVG_HEIGHT . $h . '" viewBox="0 0 ' . $w . ' ' . $h . '">';
+        $svg .= '<rect width="' . $w . self::SVG_HEIGHT . $h . self::SVG_FILL . $bg . '"/>';
 
         switch ($pattern) {
             case 'circle':
@@ -120,7 +126,7 @@ class ImageController
                     $r = self::rngInt(intdiv($w, 8), intdiv($w, 2));
                     $opacity = self::rngInt(10, 30) / 100;
                     $color = $i % 2 === 0 ? $fg : $accent;
-                    $svg .= '<circle cx="' . $cx . '" cy="' . $cy . '" r="' . $r . '" fill="' . $color . '" opacity="' . $opacity . '"/>';
+                    $svg .= '<circle cx="' . $cx . '" cy="' . $cy . '" r="' . $r . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
                 }
                 break;
 
@@ -135,7 +141,7 @@ class ImageController
                               ($cx + $size) . ',' . $cy . ' ' .
                               ($cx) . ',' . ($cy + $size) . ' ' .
                               ($cx - $size) . ',' . $cy;
-                    $svg .= '<polygon points="' . $points . '" fill="' . $color . '" opacity="' . $opacity . '"/>';
+                    $svg .= '<polygon points="' . $points . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
                 }
                 break;
 
@@ -152,7 +158,7 @@ class ImageController
                         $d .= ' L' . $x . ' ' . $y;
                     }
                     $d .= ' L' . $w . ' ' . $h . ' L0 ' . $h . ' Z';
-                    $svg .= '<path d="' . $d . '" fill="' . $color . '" opacity="' . $opacity . '"/>';
+                    $svg .= '<path d="' . $d . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
                 }
                 break;
 
@@ -165,7 +171,7 @@ class ImageController
                     for ($y = $oy; $y < $h; $y += $spacing) {
                         $r = $radius + self::rngInt(-1, 1);
                         $opacity = self::rngInt(15, 40) / 100;
-                        $svg .= '<circle cx="' . $x . '" cy="' . $y . '" r="' . $r . '" fill="' . $fg . '" opacity="' . $opacity . '"/>';
+                        $svg .= '<circle cx="' . $x . '" cy="' . $y . '" r="' . $r . self::SVG_FILL . $fg . self::SVG_OPACITY . $opacity . '"/>';
                     }
                 }
                 break;
@@ -178,9 +184,12 @@ class ImageController
                     $thickness = self::rngInt(2, 8);
                     $opacity = self::rngInt(10, 30) / 100;
                     $color = $i % 2 === 0 ? $fg : $accent;
-                    $svg .= '<rect x="' . ($cx - $thickness) . '" y="' . ($cy - $size) . '" width="' . ($thickness * 2) . '" height="' . ($size * 2) . '" fill="' . $color . '" opacity="' . $opacity . '" rx="2"/>';
-                    $svg .= '<rect x="' . ($cx - $size) . '" y="' . ($cy - $thickness) . '" width="' . ($size * 2) . '" height="' . ($thickness * 2) . '" fill="' . $color . '" opacity="' . $opacity . '" rx="2"/>';
+                    $svg .= '<rect x="' . ($cx - $thickness) . '" y="' . ($cy - $size) . '" width="' . ($thickness * 2) . self::SVG_HEIGHT . ($size * 2) . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '" rx="2"/>';
+                    $svg .= '<rect x="' . ($cx - $size) . '" y="' . ($cy - $thickness) . '" width="' . ($size * 2) . self::SVG_HEIGHT . ($thickness * 2) . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '" rx="2"/>';
                 }
+                break;
+
+            default:
                 break;
         }
 

@@ -9,8 +9,9 @@
         <div class="bg-white rounded-[18px] overflow-hidden shadow-[0_4px_20px_rgba(183,110,121,0.06)] hover:-translate-y-1 hover:shadow-lg transition-all">
             <div class="relative">
                 <img src="/assets/images/<?= e($enrollment['image']) ?>"
+                     alt="<?= e($enrollment['title']) ?>"
                      class="w-full h-40 object-cover"
-                     onerror="this.src='/media/400/200/<?= e($enrollment['course_id']) ?>'">
+                      data-fallback="/media/400/200/<?= e($enrollment['course_id']) ?>">
                 <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white <?= ($enrollment['type'] ?? '') === 'online' ? 'bg-purple-500/90' : 'bg-rose-500/90' ?>">
                     <?= ($enrollment['type'] ?? '') === 'online' ? 'آنلاین' : 'حضوری' ?>
                 </span>

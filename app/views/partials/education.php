@@ -10,7 +10,7 @@
                         <div class="w-16 h-16 bg-rose-600 text-white rounded-3xl flex items-center justify-center text-4xl shadow-inner group-active:scale-95 transition-transform">▶</div>
                         <div class="text-left">
                             <div class="font-medium">مشاهده دوره‌ها</div>
-                            <div class="text-xs text-zinc-500">ورود به آکادمی موبارو</div>
+                            <div class="text-xs text-zinc-500">ورود به آکادمی <?= e($settings['brand_name'] ?? 'موبارو') ?></div>
                         </div>
                     </a>
                 </div>
@@ -21,8 +21,9 @@
                     <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>" class="group bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden">
                         <div class="relative">
                             <img src="/assets/images/<?= e($course['image']) ?>"
+                                 alt="<?= e($course['title']) ?>"
                                  class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
-                                 onerror="this.src='/media/600/340/<?= e($course['id']) ?>'">
+                                 data-fallback="/media/600/340/<?= e($course['id']) ?>">
                             <div class="absolute bottom-4 left-4 bg-black/70 text-white text-[10px] px-3 py-1 rounded-3xl flex items-center gap-x-2">
                                 <i class="fa-solid fa-clock"></i>
                                 <span><?= e($course['duration']) ?></span>

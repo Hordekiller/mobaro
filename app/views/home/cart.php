@@ -1,4 +1,4 @@
-<?php $title = 'سبد خرید | موبارو'; ?>
+<?php $title = 'سبد خرید | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen bg-gradient-to-br from-rose-50 to-white pt-24">
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="flex items-center gap-3 mb-8">
@@ -39,7 +39,7 @@
                     ?>
                 <div class="bg-white rounded-2xl p-5 shadow-lg border border-zinc-100 flex items-center gap-5 cart-item" data-id="<?= $item['id'] ?>">
                     <div class="w-20 h-20 rounded-xl bg-zinc-50 flex-shrink-0 overflow-hidden">
-                        <img src="/assets/images/<?= e($item['image'] ?? '') ?>" class="w-full h-full object-cover" onerror="this.src='/media/200/200/<?= $item['id'] ?>'">
+                         <img src="/assets/images/<?= e($item['image'] ?? '') ?>" alt="<?= e($item['name']) ?>" class="w-full h-full object-cover" data-fallback="/media/200/200/<?= $item['id'] ?>">
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
@@ -73,7 +73,7 @@
 
                 <div class="bg-white rounded-2xl p-6 shadow-lg border border-zinc-100 cart-summary">
                 <div class="mb-4">
-                    <label class="text-sm font-semibold text-zinc-600 mb-2 block">کد تخفیف</label>
+                    <label for="coupon-input" class="text-sm font-semibold text-zinc-600 mb-2 block">کد تخفیف</label>
                     <div class="flex gap-2">
                         <input type="text" id="coupon-input" placeholder="کد تخفیف را وارد کنید" class="flex-1 px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                         <button onclick="applyCoupon()" class="px-5 py-3 bg-zinc-800 text-white rounded-xl font-semibold text-sm hover:bg-zinc-900 transition-all">اعمال</button>
@@ -96,7 +96,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="text-sm font-semibold text-zinc-600 mb-2 block">آدرس تحویل</label>
+                    <label for="address-select" class="text-sm font-semibold text-zinc-600 mb-2 block">آدرس تحویل</label>
                     <div class="flex gap-2">
                         <select id="address-select" required class="flex-1 px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <option value="">آدرس خود را انتخاب کنید</option>
@@ -123,18 +123,29 @@
                     <span class="text-zinc-500">مبلغ قابل پرداخت</span>
                     <span class="text-2xl font-bold text-rose-600" id="final-total"><?= priceFormat($total) ?></span>
                 </div>
+                <?php if (Auth::check()) : ?>
                 <button onclick="checkout()" class="w-full py-4 bg-zinc-900 hover:bg-black text-white rounded-2xl font-semibold transition-all">
                     <i class="fa-solid fa-check ml-2"></i>
                     ثبت سفارش و پرداخت
                 </button>
+                <?php else : ?>
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 mb-4 text-center">
+                    <i class="fa-solid fa-circle-info text-amber-500 mb-2"></i>
+                    <p class="text-sm text-amber-800">برای نهایی سفارش و انتخاب آدرس تحویل، لطفاً وارد حساب خود شوید.</p>
+                </div>
+                <a href="/login?redirect=/cart" class="w-full py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-semibold transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    ورود / ثبت‌نام برای نهایی سفارش
+                </a>
+                <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>
     </div>
 </div>
 
-<div id="addressModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" onclick="closeAddressModal(event)">
-    <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl" onclick="event.stopPropagation()">
+<div id="addressModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" data-modal-backdrop>
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold" id="addressModalTitle">آدرس جدید</h3>
             <button onclick="closeAddressModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all text-sm">
@@ -146,24 +157,24 @@
             <input type="hidden" name="from_cart" value="1">
             <input type="hidden" name="address_id" id="editAddressId" value="0">
             <div>
-                <label class="block text-sm font-semibold mb-1.5">عنوان آدرس</label>
+                <label for="editTitle" class="block text-sm font-semibold mb-1.5">عنوان آدرس</label>
                 <input type="text" name="title" id="editTitle" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="مثلاً: منزل، محل کار" value="خانه">
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-1.5">آدرس کامل</label>
+                <label for="editAddress" class="block text-sm font-semibold mb-1.5">آدرس کامل</label>
                 <textarea name="address" id="editAddress" rows="3" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="استان، شهر، خیابان، کوچه، پلاک" required></textarea>
             </div>
             <div class="grid grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">شهر</label>
+                    <label for="editCity" class="block text-sm font-semibold mb-1.5">شهر</label>
                     <input type="text" name="city" id="editCity" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="تهران">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">کد پستی</label>
+                    <label for="editZipCode" class="block text-sm font-semibold mb-1.5">کد پستی</label>
                     <input type="text" name="zip_code" id="editZipCode" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">تلفن</label>
+                    <label for="editPhone" class="block text-sm font-semibold mb-1.5">تلفن</label>
                     <input type="text" name="phone" id="editPhone" class="w-full px-4 py-3 bg-[#FDF6F0] border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="اختیاری">
                 </div>
             </div>
@@ -197,7 +208,7 @@ function loadAddresses() {
             }
             if (sel.value) selectedAddressId = sel.value;
         })
-        .catch(() => {});
+        .catch(() => showToast('خطا در بارگذاری آدرس\u200Cها', 'error'));
 }
 
 document.addEventListener('DOMContentLoaded', loadAddresses);

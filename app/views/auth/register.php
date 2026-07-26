@@ -1,4 +1,4 @@
-<?php $title = 'ثبت‌نام | موبارو'; ?>
+<?php $title = 'ثبت‌نام | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen flex items-center justify-center px-4 py-20 bg-gradient-to-br from-rose-50 to-white">
     <div class="w-full max-w-md">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -7,10 +7,10 @@
                     <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center">
                         <i class="fa-solid fa-spa text-white text-2xl"></i>
                     </div>
-                    <span class="logo-font text-3xl font-bold text-rose-600">موبارو</span>
+                    <span class="logo-font text-3xl font-bold text-rose-600"><?= e($settings['brand_name'] ?? 'موبارو') ?></span>
                 </a>
                 <h2 class="text-2xl font-bold mb-2">ثبت‌نام رایگان</h2>
-                <p class="text-zinc-500 text-sm mb-8">به جمع مشتریان موبارو بپیوندید</p>
+                <p class="text-zinc-500 text-sm mb-8">به جمع مشتریان <?= e($settings['brand_name'] ?? 'موبارو') ?> بپیوندید</p>
             </div>
 
             <form method="POST" action="/register" class="px-8 pb-8 space-y-6">

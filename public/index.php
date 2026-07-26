@@ -102,15 +102,19 @@ Router::get('/api/products', ['ApiController', 'products']);
 Router::get('/api/user/addresses', ['ApiController', 'userAddresses']);
 
 Router::get('/privacy', function () {
-    $title = 'حریم خصوصی | موبارو';
+    $settings = Settings::all();
+    $brandName = $settings['brand_name'] ?? 'موبارو';
+    $title = 'حریم خصوصی | ' . $brandName;
     require __DIR__ . '/../app/views/layouts/header.php';
-    echo '<div class="max-w-3xl mx-auto px-4 py-20"><h1 class="text-2xl font-bold mb-4">حریم خصوصی</h1><p class="text-zinc-600 leading-relaxed">اطلاعات کاربران موبارو نزد ما محفوظ است و بدون رضایت شما در اختیار شخص ثالث قرار نخواهد گرفت.</p></div>';
+    echo '<div class="max-w-3xl mx-auto px-4 py-20"><h1 class="text-2xl font-bold mb-4">حریم خصوصی</h1><p class="text-zinc-600 leading-relaxed">اطلاعات کاربران ' . e($brandName) . ' نزد ما محفوظ است و بدون رضایت شما در اختیار شخص ثالث قرار نخواهد گرفت.</p></div>';
     require __DIR__ . '/../app/views/layouts/footer.php';
 });
 Router::get('/terms', function () {
-    $title = 'شرایط استفاده | موبارو';
+    $settings = Settings::all();
+    $brandName = $settings['brand_name'] ?? 'موبارو';
+    $title = 'شرایط استفاده | ' . $brandName;
     require __DIR__ . '/../app/views/layouts/header.php';
-    echo '<div class="max-w-3xl mx-auto px-4 py-20"><h1 class="text-2xl font-bold mb-4">شرایط و قوانین</h1><p class="text-zinc-600 leading-relaxed">استفاده از خدمات موبارو به معنی پذیرش قوانین و مقررات زیر است. لطفاً پیش از استفاده مطالعه کنید.</p></div>';
+    echo '<div class="max-w-3xl mx-auto px-4 py-20"><h1 class="text-2xl font-bold mb-4">شرایط و قوانین</h1><p class="text-zinc-600 leading-relaxed">استفاده از خدمات ' . e($brandName) . ' به معنی پذیرش قوانین و مقررات زیر است. لطفاً پیش از استفاده مطالعه کنید.</p></div>';
     require __DIR__ . '/../app/views/layouts/footer.php';
 });
 

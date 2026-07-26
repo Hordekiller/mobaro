@@ -2,6 +2,8 @@
 
 class BookingController extends BaseController
 {
+    private const TIMEZONE = 'Asia/Tehran';
+
     private function getFormData(): array
     {
         return Cache::remember('booking_form_data', Config::get('cache.ttl.page', 600), function () {
@@ -78,8 +80,8 @@ class BookingController extends BaseController
 
         $allSlots = ['۱۰:۰۰', '۱۱:۰۰', '۱۲:۳۰', '۱۴:۰۰', '۱۴:۴۵', '۱۶:۰۰', '۱۷:۳۰', '۱۸:۰۰', '۱۹:۰۰', '۲۰:۰۰'];
 
-        if ($date === (new DateTime('now', new DateTimeZone('Asia/Tehran')))->format('Y-m-d')) {
-            $tehranNow = new DateTime('now', new DateTimeZone('Asia/Tehran'));
+        if ($date === (new DateTime('now', new DateTimeZone(self::TIMEZONE)))->format('Y-m-d')) {
+            $tehranNow = new DateTime('now', new DateTimeZone(self::TIMEZONE));
             $currentMinutes = (int) $tehranNow->format('G') * 60 + (int) $tehranNow->format('i');
             $allSlots = array_values(array_filter($allSlots, function ($slot) use ($currentMinutes) {
                 $e = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
@@ -123,24 +125,10 @@ class BookingController extends BaseController
             return;
         }
 
-        $tehranNow = new DateTime('now', new DateTimeZone('Asia/Tehran'));
-        $selectedDate = DateTime::createFromFormat('Y-m-d', $date, new DateTimeZone('Asia/Tehran'));
-        $tehranMidnight = clone $tehranNow;
-        $tehranMidnight->setTime(0, 0, 0);
-        if (!$selectedDate || $selectedDate < $tehranMidnight) {
-            $this->json(['error' => 'تاریخ انتخاب‌شده نامعتبر است.'], 400);
+        $timeError = $this->validateTimeSlot($date, $time);
+        if ($timeError) {
+            $this->json(['error' => $timeError], 400);
             return;
-        }
-        if ($date === $tehranNow->format('Y-m-d')) {
-            $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $timeNum = str_replace($persian, range(0, 9), $time);
-            $parts = explode(':', $timeNum);
-            $slotMinutes = (int) ($parts[0] ?? 0) * 60 + (int) ($parts[1] ?? 0);
-            $currentMinutes = (int) $tehranNow->format('G') * 60 + (int) $tehranNow->format('i');
-            if ($slotMinutes <= $currentMinutes) {
-                $this->json(['error' => 'زمان انتخاب‌شده گذشته است.'], 400);
-                return;
-            }
         }
 
         $service = Database::fetch("SELECT * FROM services WHERE id = ?", [$serviceId]);
@@ -179,21 +167,9 @@ class BookingController extends BaseController
             return;
         }
 
-        $finalPrice = $service['price'];
-        $durationModifier = 1.0;
-
-        // Get dynamic price if hair length is selected
-        if ($hairLengthId) {
-            $priceData = Database::fetch(
-                "SELECT price, duration_modifier FROM service_hair_prices 
-                 WHERE service_id = ? AND hair_length_id = ? AND is_active = 1",
-                [$serviceId, $hairLengthId]
-            );
-            if ($priceData) {
-                $finalPrice = $priceData['price'];
-                $durationModifier = (float) $priceData['duration_modifier'];
-            }
-        }
+        $priceResult = $this->calculateFinalPrice($serviceId, $hairLengthId, $service['price']);
+        $finalPrice = $priceResult['price'];
+        $durationModifier = $priceResult['modifier'];
 
         $notes = trim($_POST['notes'] ?? '');
         if ($durationModifier !== 1.0) {
@@ -213,7 +189,7 @@ class BookingController extends BaseController
             'notes' => $notes ?: null,
         ]);
 
-        $bookingPhone = Settings::get('booking_phone', '۰۲۱-۲۲۸۸۴۲۶۷');
+        $bookingPhone = Settings::get('booking_phone', '۰۳۱-۳۶۶۶۲۱۲۲');
 
         $this->json([
             'success' => true,
@@ -224,6 +200,50 @@ class BookingController extends BaseController
             'date' => $date,
             'time' => $time,
         ]);
+    }
+
+    private function validateTimeSlot(string $date, string $time): ?string
+    {
+        $tehranNow = new DateTime('now', new DateTimeZone(self::TIMEZONE));
+        $selectedDate = DateTime::createFromFormat('Y-m-d', $date, new DateTimeZone(self::TIMEZONE));
+        $tehranMidnight = clone $tehranNow;
+        $tehranMidnight->setTime(0, 0, 0);
+
+        if (!$selectedDate || $selectedDate < $tehranMidnight) {
+            return 'تاریخ انتخاب‌شده نامعتبر است.';
+        }
+
+        if ($date === $tehranNow->format('Y-m-d')) {
+            $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            $timeNum = str_replace($persian, range(0, 9), $time);
+            $parts = explode(':', $timeNum);
+            $slotMinutes = (int) ($parts[0] ?? 0) * 60 + (int) ($parts[1] ?? 0);
+            $currentMinutes = (int) $tehranNow->format('G') * 60 + (int) $tehranNow->format('i');
+            if ($slotMinutes <= $currentMinutes) {
+                return 'زمان انتخاب‌شده گذشته است.';
+            }
+        }
+
+        return null;
+    }
+
+    private function calculateFinalPrice(int $serviceId, int $hairLengthId, int $basePrice): array
+    {
+        if (!$hairLengthId) {
+            return ['price' => $basePrice, 'modifier' => 1.0];
+        }
+
+        $priceData = Database::fetch(
+            "SELECT price, duration_modifier FROM service_hair_prices 
+             WHERE service_id = ? AND hair_length_id = ? AND is_active = 1",
+            [$serviceId, $hairLengthId]
+        );
+
+        if ($priceData) {
+            return ['price' => (int) $priceData['price'], 'modifier' => (float) $priceData['duration_modifier']];
+        }
+
+        return ['price' => $basePrice, 'modifier' => 1.0];
     }
 
     public function getHairLengths(): void

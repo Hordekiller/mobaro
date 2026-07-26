@@ -112,7 +112,7 @@ INSERT INTO addresses (user_id, title, address, city, zip_code, is_default) VALU
 -- Settings
 INSERT INTO settings (setting_key, setting_value) VALUES
 ('brand_name', 'موبارو'),
-('brand_phone', '۰۲۱-۲۲۸۸۴۲۶۷'),
+('brand_phone', '۰۳۱-۳۶۶۶۲۱۲۲'),
 ('brand_address', 'تهران، خیابان ولیعصر، پلاک ۱۲۸'),
 ('brand_hours', 'شنبه تا پنجشنبه ۹ صبح - ۸ شب'),
 ('brand_email', 'info@mobaro.ir'),

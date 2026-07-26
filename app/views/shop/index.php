@@ -1,4 +1,4 @@
-<?php $title = 'فروشگاه | موبارو'; ?>
+<?php $title = 'فروشگاه | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <?php
 function filterUrl(array $overrides = []): string
 {
@@ -206,7 +206,7 @@ function filterUrl(array $overrides = []): string
                     <?php if ($inStock) :
                         ?><input type="hidden" name="in_stock" value="1"><?php
                     endif; ?>
-                    <input type="text" name="search" value="<?= e($search) ?>" placeholder="جستجوی محصولات..." 
+                    <input type="text" name="search" value="<?= e($search) ?>" placeholder="جستجوی محصولات..." aria-label="جستجوی محصولات"
                            class="w-full py-4 px-6 pr-14 rounded-2xl border-2 border-rose-200 focus:border-rose-400 focus:outline-none transition bg-white shadow-sm">
                     <i class="fa-solid fa-search absolute right-5 top-1/2 -translate-y-1/2 text-rose-400 text-lg"></i>
                 </form>
@@ -221,10 +221,10 @@ function filterUrl(array $overrides = []): string
                             $discount = round((($item['old_price'] - $item['price']) / $item['old_price']) * 100);
                         }
                         ?>
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300 product-card-shop">
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300">
                         <div class="relative product-image overflow-hidden">
                             <a href="/product/<?= $item['id'] ?>">
-                                <img src="/assets/images/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-full h-64 object-cover transition-transform duration-500" onerror="this.src='/media/400/400/<?= $item['id'] ?>'">
+                                <img src="/assets/images/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-full h-64 object-cover transition-transform duration-500" data-fallback="/media/400/400/<?= $item['id'] ?>">
                             </a>
                             <div class="absolute top-4 right-4 flex flex-col gap-2">
                                 <?php if ($discount > 0) : ?>
@@ -235,15 +235,15 @@ function filterUrl(array $overrides = []): string
                                 <?php endif; ?>
                             </div>
                             <div class="absolute top-4 left-4">
-                                <button onclick="toggleWishlistItem(<?= $item['id'] ?>)" class="heart-btn w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transition <?= in_array($item['id'], $wishlist) ? 'active' : '' ?>">
+                                <button onclick="toggleWishlistItem(<?= $item['id'] ?>)" class="heart-btn w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg transition <?= in_array($item['id'], $wishlist) ? 'active' : '' ?>" aria-label="افزودن به علاقه‌مندی‌ها">
                                     <i class="<?= in_array($item['id'], $wishlist) ? 'fa-solid' : 'fa-regular' ?> fa-heart text-rose-500"></i>
                                 </button>
                             </div>
                             <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-                                <button onclick="openQuickView(<?= $item['id'] ?>)" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-700 hover:bg-rose-500 hover:text-white transition">
+                                <button onclick="openQuickView(<?= $item['id'] ?>)" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-700 hover:bg-rose-500 hover:text-white transition" aria-label="پیش‌نمایش محصول">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
-                                <button onclick="addToCart(<?= $item['id'] ?>, this)" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-700 hover:bg-rose-500 hover:text-white transition">
+                                <button onclick="addToCart(<?= $item['id'] ?>, this)" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-700 hover:bg-rose-500 hover:text-white transition" aria-label="افزودن به سبد خرید">
                                     <i class="fa-solid fa-bag-shopping"></i>
                                 </button>
                             </div>
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var display = document.getElementById('priceValue');
     if (range && display) {
         function updateDisplay() {
-            var val = parseInt(range.value);
+            var val = Number.parseInt(range.value, 10);
             display.textContent = val.toLocaleString('fa-IR') + ' تومان';
         }
         range.addEventListener('input', updateDisplay);
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function applyPriceFilter() {
     var range = document.getElementById('priceRange');
     if (range) {
-        var val = parseInt(range.value);
+        var val = Number.parseInt(range.value, 10);
         if (val > 0 && val < 5000000) {
             window.location.href = '<?= filterUrl(['price_max' => '__VAL__', 'page' => null]) ?>'.replace('__VAL__', val);
         } else if (val >= 5000000) {

@@ -10,7 +10,7 @@
                 <span>سند رسمی</span>
             </div>
             <h1 class="text-4xl md:text-6xl font-bold leading-tight tracking-tight">شرایط استفاده</h1>
-            <p class="mt-4 text-white/70 text-sm">آخرین به‌روزرسانی: تیر ۱۴۰۵</p>
+            <p class="mt-4 text-white/70 text-sm">آخرین به‌روزرسانی: <?= e($settings['terms_updated_at'] ?? 'تیر ۱۴۰۵') ?></p>
         </div>
     </div>
 </section>
@@ -20,7 +20,7 @@
 
         <div class="bg-rose-50 border border-rose-100 rounded-2xl p-6 mb-12">
             <p class="text-sm text-zinc-600 leading-relaxed">
-                با استفاده از وب‌سایت و خدمات موبارو، شما شرایط زیر را می‌پذیرید.
+                با استفاده از وب‌سایت و خدمات <?= e($settings['brand_name'] ?? 'موبارو') ?>، شما شرایط زیر را می‌پذیرید.
                 لطفاً این شرایط را با دقت مطالعه کنید. در صورت عدم توافق با هر بخش، از استفاده از خدمات خودداری کنید.
             </p>
         </div>
@@ -51,7 +51,7 @@
                 تعریف خدمات
             </h2>
             <p class="text-zinc-600 leading-relaxed mb-4">
-                موبارو پلتفرمی آنلاین برای مدیریت سالن زیبایی است که خدمات زیر را ارائه می‌دهد:
+                <?= e($settings['brand_name'] ?? 'موبارو') ?> پلتفرمی آنلاین برای مدیریت سالن زیبایی است که خدمات زیر را ارائه می‌دهد:
             </p>
             <ul class="space-y-3">
                 <li class="flex items-start gap-3 text-zinc-600 leading-relaxed">
@@ -315,7 +315,7 @@
             <ul class="space-y-3 text-zinc-600 leading-relaxed">
                 <li class="flex items-start gap-3">
                     <i class="fa-solid fa-copyright text-violet-500 mt-1.5 text-sm"></i>
-                    <span>تمام محتوای وب‌سایت (متن، تصویر، ویدیو، لوگو، طراحی) متعلق به موبارو است و تحت حمایت قوانین مالکیت فکری قرار دارد.</span>
+                    <span>تمام محتوای وب‌سایت (متن، تصویر، ویدیو، لوگو، طراحی) متعلق به <?= e($settings['brand_name'] ?? 'موبارو') ?> است و تحت حمایت قوانین مالکیت فکری قرار دارد.</span>
                 </li>
                 <li class="flex items-start gap-3">
                     <i class="fa-solid fa-file-import text-violet-500 mt-1.5 text-sm"></i>
@@ -373,7 +373,7 @@
                 قانون حاکم
             </h2>
             <p class="text-zinc-600 leading-relaxed">
-                این شرایط تابع قوانین جمهوری اسلامی ایران است. در صورت بروز اختلاف، مراجع قضایی تهران صلاحیت رسیدگی خواهند داشت.
+                این شرایط تابع قوانین جمهوری اسلامی ایران است. در صورت بروز اختلاف، مراجع قضایی <?= e($settings['brand_city'] ?? 'تهران') ?> صلاحیت رسیدگی خواهند داشت.
             </p>
         </section>
 
@@ -388,15 +388,15 @@
             <div class="bg-zinc-50 border border-zinc-100 rounded-2xl p-6 space-y-3">
                 <div class="flex items-center gap-3 text-zinc-600">
                     <i class="fa-solid fa-phone text-rose-500"></i>
-                    <span>۰۳۱-۳۶۶۶۲۱۲۲</span>
+                    <span><?= e($settings['brand_phone'] ?? '۰۳۱-۳۶۶۶۲۱۲۲') ?></span>
                 </div>
                 <div class="flex items-center gap-3 text-zinc-600">
                     <i class="fa-solid fa-envelope text-rose-500"></i>
-                    <span>info@mobaro.ir</span>
+                    <span><?= e($settings['brand_email'] ?? 'info@mobaro.ir') ?></span>
                 </div>
                 <div class="flex items-center gap-3 text-zinc-600">
                     <i class="fa-solid fa-location-dot text-rose-500"></i>
-                    <span>اصفهان، چهارباغ بالا، بن‌بست ۲۱، پلاک ۱۴، واحد ۶</span>
+                    <span><?= e($settings['brand_address'] ?? 'تهران، خیابان ولیعصر، پلاک ۱۲۸') ?></span>
                 </div>
             </div>
         </section>

@@ -2,6 +2,8 @@
 
 class SmsService
 {
+    private const MSG_API_KEY_MISSING = 'کلید API تنظیم نشده است.';
+
     private string $apiKey;
     private string $sender;
     private string $baseUrl = 'https://api.kavenegar.com/v1';
@@ -15,7 +17,7 @@ class SmsService
     public function sendVerify(string $phone, string $code, string $token = ''): array
     {
         if (empty($this->apiKey)) {
-            return ['status' => false, 'message' => 'کلید API پیامک تنظیم نشده است.'];
+            return ['status' => false, 'message' => self::MSG_API_KEY_MISSING];
         }
 
         $template = 'verify';
@@ -33,7 +35,7 @@ class SmsService
     public function sendLookup(string $phone, string $token, string $pattern): array
     {
         if (empty($this->apiKey)) {
-            return ['status' => false, 'message' => 'کلید API پیامک تنظیم نشده است.'];
+            return ['status' => false, 'message' => self::MSG_API_KEY_MISSING];
         }
 
         $params = [
@@ -50,7 +52,7 @@ class SmsService
     public function sendBulk(string $phone, string $message): array
     {
         if (empty($this->apiKey)) {
-            return ['status' => false, 'message' => 'کلید API پیامک تنظیم نشده است.'];
+            return ['status' => false, 'message' => self::MSG_API_KEY_MISSING];
         }
 
         $params = [
