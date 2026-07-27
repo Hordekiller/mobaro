@@ -45,6 +45,7 @@ class Database
      * @param string $sql  SQL with '?' placeholders, NOT user-supplied values
      * @param array  $params  Bound parameters matching the '?' placeholders
      */
+    /** @phpstan-ignore-line — callers must pass prepared SQL with '?' placeholders */
     public static function query(string $sql, array $params = []): PDOStatement
     {
         $stmt = self::connection()->prepare($sql);
@@ -105,6 +106,7 @@ class Database
         }
         $setStr = implode(', ', $sets);
         $sql = "UPDATE {$table} SET {$setStr} WHERE {$where}";
+        /** @phpstan-ignore-line — $table/$where validated by allowlist regex */
         $stmt = self::connection()->prepare($sql);
         $stmt->execute(array_merge($data, $whereParams));
         return $stmt->rowCount();

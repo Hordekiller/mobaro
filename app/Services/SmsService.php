@@ -169,7 +169,8 @@ class SmsService
             $smsResult = $this->sendVerify($phone, $code);
 
             if (!$smsResult['status']) {
-                error_log("SMS send failed for {$phone}: " . ($smsResult['message'] ?? 'unknown'));
+                $masked = substr($phone, 0, 4) . '****' . substr($phone, -2);
+                error_log("SMS send failed for {$masked}: " . ($smsResult['message'] ?? 'unknown'));
             }
 
             return $code;
