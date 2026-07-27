@@ -438,6 +438,21 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+                        $statusLabels = [
+                            'pending' => 'در انتظار',
+                            'confirmed' => 'تأیید شده',
+                            'done' => 'انجام شده',
+                            'completed' => 'تکمیل شده',
+                            'cancelled' => 'لغو شده',
+                            'processing' => 'در حال پردازش',
+                            'shipped' => 'ارسال شده',
+                            'delivered' => 'تحویل شده',
+                            'rejected' => 'رد شده',
+                            'failed' => 'ناموفق',
+                            'active' => 'فعال',
+                        ];
+                        ?>
                         <?php if (!empty($items)) : ?>
                             <?php foreach ($items as $item) : ?>
                             <tr class="border-b border-rose-100 hover:bg-rose-50/50 transition-all">
@@ -453,7 +468,7 @@
                                             'pending', 'processing', 'shipped' => 'bg-amber-50 text-amber-700',
                                             'cancelled', 'failed', 'rejected' => 'bg-red-50 text-red-500',
                                             default => 'bg-zinc-100 text-zinc-600',
-                                                                                                                          } ?>"><?= e($val) ?></span></td>
+                                                                                                                          } ?>"><?= e($statusLabels[$val] ?? $val) ?></span></td>
                                     <?php elseif ($col['type'] === 'boolean') : ?>
                                         <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $val ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500' ?>"><?= $val ? 'بله' : 'خیر' ?></span></td>
                                     <?php elseif ($col['type'] === 'textarea') : ?>
@@ -561,7 +576,7 @@
                                         <?php
                                         $statusOptions = $col['options'] ?? ['pending', 'confirmed', 'processing', 'completed', 'delivered', 'shipped', 'cancelled', 'rejected', 'failed', 'active'];
                                         foreach ($statusOptions as $opt) : ?>
-                                        <option value="<?= e($opt) ?>"><?= e($opt) ?></option>
+                                        <option value="<?= e($opt) ?>"><?= e($statusLabels[$opt] ?? $opt) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 <?php elseif ($col['type'] === 'price') : ?>

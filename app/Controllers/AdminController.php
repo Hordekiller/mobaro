@@ -326,7 +326,7 @@ class AdminController extends BaseController
         $assignments = Database::fetchAll("SELECT artist_id, service_id FROM artist_services");
         $artistServices = [];
         foreach ($assignments as $as) {
-            $artistServices[$as['artist_id']][] = $as['service_id'];
+            $artistServices[$as['artist_id']][] = (int) $as['service_id'];
         }
         $data['artistServicesJson'] = json_encode($artistServices, JSON_HEX_TAG);
     }
