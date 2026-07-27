@@ -24,7 +24,8 @@
         <?php unset($_SESSION['flash_success']); endif; ?>
 
         <form method="POST" action="/verify-otp" class="bg-white rounded-3xl shadow-xl p-8">
-            <input type="hidden" name="_csrf" value="<?= e($_SESSION['_csrf'] ?? '') ?>">
+            <?= csrf() ?>
+            <input type="hidden" name="phone" value="<?= e($phone ?? '') ?>">
 
             <div class="mb-6">
                 <label for="verify-code" class="block text-sm font-semibold text-zinc-700 mb-2">کد تأیید</label>

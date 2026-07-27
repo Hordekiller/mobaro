@@ -136,7 +136,7 @@ class AdminController extends BaseController
     public function section(string $section): void
     {
         $this->requireAdmin();
-        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices'];
+        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices', 'sms', 'blog-categories'];
 
         if (!in_array($section, $validSections)) {
             redirect(self::PATH_ADMIN);
@@ -164,10 +164,12 @@ class AdminController extends BaseController
             'blog' => ['fa-pen', 'وبلاگ'],
             'reviews' => ['fa-star', 'نظرات محصولات'],
             'blog-comments' => ['fa-comments', 'نظرات وبلاگ'],
+            'blog-categories' => ['fa-folder', 'دسته‌بندی وبلاگ'],
             'product-categories' => ['fa-layer-group', 'دسته\u200cبندی محصولات'],
             'product-brands' => ['fa-tag', 'برندها'],
             'gallery' => ['fa-photo-film', 'گالری رسانه'],
             'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
+            'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
         ];
 
         $method = 'section' . str_replace('-', '', ucwords($section, '-'));
@@ -198,6 +200,7 @@ class AdminController extends BaseController
             'product-categories' => 'product_categories',
             'product-brands' => 'product_brands',
             'hair-prices' => 'hair_prices',
+            'blog-categories' => 'blog_categories',
         ];
 
         $data['columns'] = $this->getColumns($section);
@@ -205,6 +208,10 @@ class AdminController extends BaseController
 
         if ($section === 'products') {
             $this->enrichProductColumns($data['columns']);
+        }
+
+        if ($section === 'blog') {
+            $this->enrichBlogColumns($data['columns']);
         }
 
         $table = $tableMap[$section] ?? null;
@@ -228,6 +235,27 @@ class AdminController extends BaseController
             if ($col['key'] === 'brand') {
                 $col['type'] = 'select';
                 $col['options'] = array_column($brandOptions, 'name');
+            }
+        }
+        unset($col);
+    }
+
+    private function enrichBlogColumns(array &$columns): void
+    {
+        $catOptions = Database::fetchAll("SELECT name FROM blog_categories WHERE is_active = 1 ORDER BY sort_order, name");
+        $adminUsers = Database::fetchAll("SELECT name, family FROM users WHERE role = 'admin' ORDER BY name");
+        foreach ($columns as &$col) {
+            if ($col['key'] === 'category') {
+                $col['type'] = 'select';
+                $col['options'] = array_column($catOptions, 'name');
+            }
+            if ($col['key'] === 'author') {
+                $col['type'] = 'select';
+                $authorOptions = [];
+                foreach ($adminUsers as $u) {
+                    $authorOptions[] = trim($u['name'] . ' ' . $u['family']);
+                }
+                $col['options'] = $authorOptions;
             }
         }
         unset($col);
@@ -420,7 +448,7 @@ class AdminController extends BaseController
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'transactions' => [
-                ['key' => 'user_name', 'label' => self::LABEL_USER, 'type' => 'text'],
+                ['key' => 'user_id', 'label' => 'شناسه کاربر', 'type' => 'text'],
                 ['key' => 'type', 'label' => 'نوع', 'type' => 'status'],
                 ['key' => 'amount', 'label' => 'مبلغ', 'type' => 'price'],
                 ['key' => 'description', 'label' => self::LABEL_DESCRIPTION, 'type' => 'textarea'],
@@ -464,7 +492,7 @@ class AdminController extends BaseController
                 ['key' => 'min_order', 'label' => 'حداقل خرید', 'type' => 'price'],
                 ['key' => 'max_uses', 'label' => 'حداکثر استفاده', 'type' => 'text'],
                 ['key' => 'used_count', 'label' => 'تعداد استفاده', 'type' => 'text'],
-                ['key' => 'expires_at', 'label' => 'تاریخ انقضا', 'type' => 'text'],
+                ['key' => 'expires_at', 'label' => 'تاریخ انقضا', 'type' => 'date'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'blog' => [
@@ -480,10 +508,9 @@ class AdminController extends BaseController
                 ['key' => 'is_published', 'label' => 'منتشر شده', 'type' => 'boolean'],
                 ['key' => 'is_featured', 'label' => 'ویژه', 'type' => 'boolean'],
                 ['key' => 'views', 'label' => 'بازدید', 'type' => 'text'],
-                ['key' => 'published_at', 'label' => 'تاریخ انتشار', 'type' => 'text'],
             ],
             'reviews' => [
-                ['key' => 'product_name', 'label' => 'محصول', 'type' => 'text'],
+                ['key' => 'product_id', 'label' => 'شناسه محصول', 'type' => 'text'],
                 ['key' => 'user_name', 'label' => self::LABEL_USER, 'type' => 'text'],
                 ['key' => 'rating', 'label' => self::LABEL_RATING, 'type' => 'text'],
                 ['key' => 'text', 'label' => self::LABEL_COMMENT, 'type' => 'textarea'],
@@ -512,6 +539,13 @@ class AdminController extends BaseController
             ],
             'product-brands' => [
                 ['key' => 'name', 'label' => 'نام برند', 'type' => 'text', 'required' => true],
+                ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
+            ],
+            'blog-categories' => [
+                ['key' => 'name', 'label' => 'نام دسته', 'type' => 'text', 'required' => true],
+                ['key' => 'slug', 'label' => 'slug', 'type' => 'text'],
+                ['key' => 'sort_order', 'label' => 'ترتیب', 'type' => 'text'],
+                ['key' => 'post_count', 'label' => 'تعداد پست', 'type' => 'text'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'hair-prices' => [
@@ -658,6 +692,7 @@ class AdminController extends BaseController
             'product-categories' => ['products'],
             'product-brands' => ['products'],
             'hair-prices' => ['booking'],
+            'blog-categories' => ['blog'],
         ];
 
         $tags = $sectionToTags[$section] ?? [$section];
@@ -673,7 +708,7 @@ class AdminController extends BaseController
             Cache::forget($key);
         }
 
-        if (in_array($section, ['products', 'services', 'blog', 'courses', 'settings', 'captcha', 'gallery'])) {
+        if (in_array($section, ['products', 'services', 'blog', 'courses', 'settings', 'captcha', 'gallery', 'sms'])) {
             Cache::bumpVersion();
         }
     }
@@ -687,6 +722,7 @@ class AdminController extends BaseController
             'settings' => $this->updateSettings(),
             'captcha' => $this->updateCaptchaSettings(),
             'gallery' => $this->saveGallery(),
+            'sms' => $this->updateSmsSettings(),
             default => $this->saveGenericSection($section),
         };
     }
@@ -765,6 +801,7 @@ class AdminController extends BaseController
         $handled = match ($section) {
             'orders' => $this->saveOrders($id, $data, $table),
             'blog-comments' => $this->saveBlogComments($id, $data, $table),
+            'blog-categories' => $this->saveBlogCategories($id, $data, $table),
             'appointments' => $this->saveAppointments($id, $data, $table),
             'enrollments' => $this->saveEnrollments($id, $data, $table),
             'users' => $this->saveUsers($id, $data, $table),
@@ -807,10 +844,30 @@ class AdminController extends BaseController
         $allowedFields[] = 'instagram';
 
         $rawFields = ['description', 'bio', 'text', 'notes', 'content'];
+        $intFields = [
+            'views', 'reading_time', 'sort_order', 'stock', 'students',
+            'price', 'old_price', 'discount_value', 'max_uses', 'used_count',
+            'amount', 'user_id', 'points', 'product_id', 'min_order',
+            'post_count', 'likes',
+        ];
+        $floatFields = ['wallet', 'rating', 'duration_modifier'];
+        $dateFields = ['expires_at', 'published_at', 'appointment_date'];
+        $skipFields = ['created_at', 'updated_at'];
         $data = [];
         foreach ($allowedFields as $field) {
+            if (in_array($field, $skipFields)) {
+                continue;
+            }
             if (isset($_POST[$field])) {
-                $data[$field] = in_array($field, $rawFields) ? $_POST[$field] : sanitize($_POST[$field]);
+                $value = in_array($field, $rawFields) ? $_POST[$field] : sanitize($_POST[$field]);
+                if (in_array($field, $intFields)) {
+                    $value = (int) $value;
+                } elseif (in_array($field, $floatFields)) {
+                    $value = (float) $value;
+                } elseif (in_array($field, $dateFields)) {
+                    $value = $value !== '' && $value !== null ? $value : null;
+                }
+                $data[$field] = $value;
             }
         }
         return $data;
@@ -818,14 +875,14 @@ class AdminController extends BaseController
 
     private function handleFileUploads(string $section, int $id, string $table, array &$data): void
     {
-        if (!empty($_FILES['image']['name'])) {
+        if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $oldImage = $id ? (Database::fetch("SELECT image FROM {$table} WHERE id = ?", [$id])['image'] ?? null) : null;
             $uploaded = FileUploader::upload($_FILES['image'], 'product', $oldImage);
             if ($uploaded) {
                 $data['image'] = $uploaded;
             }
         }
-        if (!empty($_FILES['avatar']['name'])) {
+        if (!empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
             $oldAvatar = $id ? (Database::fetch("SELECT avatar FROM {$table} WHERE id = ?", [$id])['avatar'] ?? null) : null;
             $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar', $oldAvatar);
             if ($uploaded) {
@@ -986,9 +1043,13 @@ class AdminController extends BaseController
             $data['slug'] = $slug;
         }
 
+        if (!$id) {
+            $data['published_at'] = date('Y-m-d');
+        }
+
         if ($id) {
             $existing = Database::fetch("SELECT image FROM blog_posts WHERE id = ?", [$id]);
-            if (!empty($_FILES['image']['name'])) {
+            if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $uploaded = FileUploader::upload($_FILES['image'], 'blog');
                 if ($uploaded) {
                     $data['image'] = $uploaded;
@@ -1026,6 +1087,65 @@ class AdminController extends BaseController
         $this->clearCache('blog-comments');
         redirect('/admin/blog-comments');
         return true;
+    }
+
+    private function saveBlogCategories(int $id, array $data, string $table): bool
+    {
+        $name = trim($data['name'] ?? '');
+        if ($name === '') {
+            flash('error', 'نام دسته الزامی است.');
+            redirect('/admin/blog-categories');
+            return true;
+        }
+
+        $slug = $data['slug'] ?? '';
+        if ($slug === '') {
+            $slug = preg_replace('/[^a-z0-9]+/', '-', strtolower(trim($name, '-')));
+            $slug = preg_replace('/-+/', '-', $slug);
+            $slug = trim($slug, '-');
+            if (empty($slug)) {
+                $slug = 'cat-' . time();
+            }
+        }
+
+        $exists = Database::fetch("SELECT id FROM blog_categories WHERE name = ? AND id != ?", [$name, $id ?: 0]);
+        if ($exists) {
+            flash('error', 'این نام دسته قبلاً استفاده شده است.');
+            redirect('/admin/blog-categories');
+            return true;
+        }
+
+        $insertData = [
+            'name' => $name,
+            'slug' => $slug,
+            'sort_order' => (int) ($data['sort_order'] ?? 0),
+            'is_active' => isset($data['is_active']) ? 1 : 0,
+        ];
+
+        if ($id) {
+            Database::update($table, $insertData, self::WHERE_ID, ['id' => $id]);
+        } else {
+            Database::insert($table, $insertData);
+        }
+
+        $this->clearCache('blog-categories');
+        flash('success', 'دسته با موفقیت ذخیره شد.');
+        redirect('/admin/blog-categories');
+        return true;
+    }
+
+    private function deleteBlogCategories(int $id): void
+    {
+        $postCount = Database::fetch("SELECT COUNT(*) as cnt FROM blog_posts WHERE category = (SELECT name FROM blog_categories WHERE id = ?)", [$id]);
+        if ($postCount && $postCount['cnt'] > 0) {
+            flash('error', 'این دسته دارای پست است و قابل حذف نیست.');
+            redirect('/admin/blog-categories');
+            return;
+        }
+        Database::query("DELETE FROM blog_categories WHERE id = ?", [$id]);
+        $this->clearCache('blog-categories');
+        flash('success', 'دسته حذف شد.');
+        redirect('/admin/blog-categories');
     }
 
     private function saveAppointments(int $id, array $data, string $table): bool
@@ -1208,6 +1328,11 @@ class AdminController extends BaseController
             }
         }
 
+        if ($section === 'blog-categories') {
+            $this->deleteBlogCategories($id);
+            return;
+        }
+
         if ($table) {
             Database::delete($table, self::WHERE_ID_PARAM, [$id]);
         }
@@ -1259,7 +1384,7 @@ class AdminController extends BaseController
         $this->verifyCsrf();
 
                 $htmlKeys = ['about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'hero_customers_text', 'blog_sidebar_about', 'academy_instructor_bio'];
-        $toggleKeys = ['sms_enabled'];
+        $toggleKeys = [];
 
         $smsEnabled = isset($_POST['setting_sms_enabled']);
         $apiKey = trim($_POST['setting_sms_api_key'] ?? '');
@@ -1294,13 +1419,42 @@ class AdminController extends BaseController
 
         $upserts = [];
         $upsertParams = [];
+        $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'og_image', 'about_image'];
+
         foreach ($_POST as $key => $value) {
             if (str_starts_with($key, 'setting_')) {
                 $settingKey = substr($key, 8);
+                if (in_array($settingKey, $imageUploadKeys)) {
+                    continue;
+                }
                 $value = in_array($settingKey, $htmlKeys) ? $value : sanitize($value);
                 $upserts[] = self::PLACEHOLDER_PAIR;
                 $upsertParams[] = $settingKey;
                 $upsertParams[] = $value;
+            }
+        }
+
+        foreach ($imageUploadKeys as $imageKey) {
+            if (isset($_POST['delete_image_' . $imageKey]) && $_POST['delete_image_' . $imageKey] === '1') {
+                $old = Settings::get($imageKey);
+                if ($old && is_file(__DIR__ . '/../../public/assets/images/' . basename($old))) {
+                    @unlink(__DIR__ . '/../../public/assets/images/' . basename($old));
+                }
+                $upserts[] = self::PLACEHOLDER_PAIR;
+                $upsertParams[] = $imageKey;
+                $upsertParams[] = '';
+                continue;
+            }
+
+            $fileKey = 'setting_file_' . $imageKey;
+            if (!empty($_FILES[$fileKey]['name']) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
+                $old = Settings::get($imageKey);
+                $uploaded = FileUploader::upload($_FILES[$fileKey], 'setting', $old);
+                if ($uploaded) {
+                    $upserts[] = self::PLACEHOLDER_PAIR;
+                    $upsertParams[] = $imageKey;
+                    $upsertParams[] = $uploaded;
+                }
             }
         }
 
@@ -1573,6 +1727,7 @@ class AdminController extends BaseController
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['columns'] = $this->getColumns('blog');
+        $this->enrichBlogColumns($data['columns']);
         $this->view(self::VIEW_ADMIN, $data);
     }
 
@@ -1754,6 +1909,7 @@ class AdminController extends BaseController
             'product-categories' => 'product_categories',
             'product-brands' => 'product_brands',
             'hair-prices' => 'service_hair_prices',
+            'blog-categories' => 'blog_categories',
         ];
         return $map[$section] ?? null;
     }
@@ -1804,5 +1960,277 @@ class AdminController extends BaseController
         $data['total'] = $total;
         $data['search'] = $search;
         $this->view(self::VIEW_ADMIN, $data);
+    }
+
+    private function sectionSms(array &$data): void
+    {
+        $smsService = new SmsService();
+
+        $data['smsSettings'] = [];
+        $smsKeys = ['sms_enabled', 'sms_api_key', 'sms_template_id', 'sms_line_number', 'sms_otp_ttl', 'sms_otp_length'];
+        foreach ($smsKeys as $key) {
+            $data['smsSettings'][$key] = Settings::get($key, '');
+        }
+
+        $data['smsStats'] = ['total_sent' => 0, 'today_sent' => 0, 'failed_count' => 0, 'total_credits' => 0];
+        try {
+            $today = date('Y-m-d');
+            $stats = Database::fetch(
+                "SELECT
+                    COUNT(*) as total_sent,
+                    COALESCE(SUM(CASE WHEN DATE(created_at) = ? THEN 1 ELSE 0 END), 0) as today_sent,
+                    COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count,
+                    COALESCE(SUM(credits), 0) as total_credits
+                 FROM sms_logs",
+                [$today]
+            );
+            if ($stats) {
+                $data['smsStats'] = $stats;
+            }
+        } catch (Throwable $e) {
+            error_log("SMS stats query failed: " . $e->getMessage());
+        }
+
+        $data['smsCredit'] = ['total_purchased' => 0, 'total_used' => 0];
+        try {
+            $purchased = Database::fetch("SELECT COALESCE(SUM(amount), 0) as total FROM sms_credits WHERE status = 'completed'");
+            $used = Database::fetch("SELECT COALESCE(SUM(credits), 0) as total FROM sms_logs WHERE status != 'failed'");
+            $data['smsCredit'] = [
+                'total_purchased' => $purchased['total'] ?? 0,
+                'total_used' => $used['total'] ?? 0,
+            ];
+        } catch (Throwable $e) {
+            error_log("SMS credit query failed: " . $e->getMessage());
+        }
+
+        $data['lines'] = [];
+        if ($smsService->isConfigured()) {
+            $result = $smsService->getLines();
+            if ($result['status'] && !empty($result['data'])) {
+                $data['lines'] = $result['data'];
+            }
+        }
+
+        $data['templates'] = [];
+        try {
+            $data['templates'] = Database::fetchAll("SELECT * FROM sms_templates ORDER BY id DESC");
+        } catch (Throwable $e) {
+            error_log("SMS templates query failed: " . $e->getMessage());
+        }
+
+        $search = trim($_GET['s'] ?? '');
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 20;
+        $tab = $_GET['tab'] ?? 'settings';
+
+        $data['smsTab'] = $tab;
+
+        if ($tab === 'logs') {
+            $searchWhere = '';
+            $searchParams = [];
+            if ($search !== '') {
+                $searchWhere = ' WHERE (phone LIKE ? OR message LIKE ?)';
+                $searchParams = [likePattern($search), likePattern($search)];
+            }
+
+            try {
+                $countQuery = "SELECT COUNT(*) as cnt FROM sms_logs{$searchWhere}";
+                $total = (int) Database::fetch($countQuery, $searchParams)['cnt'];
+                $totalPages = max(1, (int) ceil($total / $perPage));
+                $page = min($page, $totalPages);
+                $offset = ($page - 1) * $perPage;
+
+                $data['items'] = Database::fetchAll(
+                    "SELECT * FROM sms_logs{$searchWhere} ORDER BY id DESC LIMIT ? OFFSET ?",
+                    array_merge($searchParams, [$perPage, $offset])
+                );
+            } catch (Throwable $e) {
+                error_log("SMS logs query failed: " . $e->getMessage());
+                $data['items'] = [];
+                $total = 0;
+                $totalPages = 1;
+            }
+            $data['page'] = $page;
+            $data['totalPages'] = $totalPages;
+            $data['total'] = $total;
+            $data['search'] = $search;
+        }
+
+        $this->view(self::VIEW_ADMIN, $data);
+    }
+
+    public function updateSmsSettings(): void
+    {
+        $this->requireAdmin();
+        $this->verifyCsrf();
+
+        $smsEnabled = isset($_POST['sms_enabled']) && $_POST['sms_enabled'] === '1';
+        $apiKey = trim($_POST['sms_api_key'] ?? '');
+        $lineNumber = trim($_POST['sms_line_number'] ?? '');
+        $templateId = trim($_POST['sms_template_id'] ?? '');
+        $lineNumber = trim($_POST['sms_line_number'] ?? '');
+        $otpTtl = $_POST['sms_otp_ttl'] ?? '';
+        $otpLength = $_POST['sms_otp_length'] ?? '';
+
+        if ($smsEnabled) {
+            if ($apiKey === '') {
+                flash('error', 'کلید API نمی‌تواند خالی باشد.');
+                redirect('/admin/sms');
+                return;
+            }
+        }
+
+        if ($otpTtl !== '' && (!ctype_digit($otpTtl) || (int)$otpTtl < 60 || (int)$otpTtl > 600)) {
+            flash('error', 'مدت اعتبار کد تأیید باید عددی بین ۶۰ تا ۶۰۰ ثانیه باشد.');
+            redirect('/admin/sms');
+            return;
+        }
+
+        if ($otpLength !== '' && (!ctype_digit($otpLength) || (int)$otpLength < 4 || (int)$otpLength > 6)) {
+            flash('error', 'طول کد تأیید باید عددی بین ۴ تا ۶ رقم باشد.');
+            redirect('/admin/sms');
+            return;
+        }
+
+        $settingsMap = [
+            'sms_enabled' => $smsEnabled ? '1' : '0',
+            'sms_api_key' => sanitize($apiKey),
+            'sms_template_id' => sanitize($templateId),
+            'sms_line_number' => sanitize($lineNumber),
+            'sms_otp_ttl' => sanitize($otpTtl ?: '180'),
+            'sms_otp_length' => sanitize($otpLength ?: '5'),
+        ];
+
+        $upserts = [];
+        $upsertParams = [];
+        foreach ($settingsMap as $key => $value) {
+            $upserts[] = '(?, ?)';
+            $upsertParams[] = $key;
+            $upsertParams[] = $value;
+        }
+
+        $values = implode(', ', $upserts);
+        Database::query(
+            "INSERT INTO settings (setting_key, setting_value) VALUES {$values} ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+            $upsertParams
+        );
+
+        Settings::invalidate();
+        Config::reset();
+        flash('success', 'تنظیمات پیامک با موفقیت ذخیره شد.');
+        redirect('/admin/sms');
+    }
+
+    public function sendBulkSms(): void
+    {
+        $this->requireAdmin();
+        $this->verifyCsrf();
+
+        $phones = trim($_POST['phones'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+
+        if (empty($phones)) {
+            flash('error', 'شماره تلفن‌ها را وارد کنید.');
+            redirect('/admin/sms?tab=send');
+            return;
+        }
+
+        if (empty($message)) {
+            flash('error', 'متن پیام را وارد کنید.');
+            redirect('/admin/sms?tab=send');
+            return;
+        }
+
+        $phoneList = array_filter(array_map('trim', preg_split('/[\n,;]+/', $phones)));
+        $phoneList = array_unique($phoneList);
+
+        if (empty($phoneList)) {
+            flash('error', 'شماره تلفن معتبری یافت نشد.');
+            redirect('/admin/sms?tab=send');
+            return;
+        }
+
+        $smsService = new SmsService();
+        $result = $smsService->sendBulk($message, $phoneList);
+
+        if ($result['status']) {
+            flash('success', count($phoneList) . ' پیامک با موفقیت ارسال شد.');
+        } else {
+            flash('error', 'خطا در ارسال پیامک: ' . ($result['message'] ?? 'خطای ناشناخته'));
+        }
+
+        redirect('/admin/sms?tab=send');
+    }
+
+    public function saveSmsTemplate(): void
+    {
+        $this->requireAdmin();
+        $this->verifyCsrf();
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $body = trim($_POST['body'] ?? '');
+        $smsType = $_POST['sms_type'] ?? 'bulk';
+        $variables = trim($_POST['variables'] ?? '');
+
+        if (empty($name) || empty($body)) {
+            flash('error', 'نام و متن قالب الزامی است.');
+            redirect('/admin/sms?tab=templates');
+            return;
+        }
+
+        $data = [
+            'name' => sanitize($name),
+            'body' => sanitize($body),
+            'sms_type' => in_array($smsType, ['verify', 'bulk', 'notification']) ? $smsType : 'bulk',
+            'variables' => $variables ?: null,
+            'is_active' => isset($_POST['is_active']) ? 1 : 0,
+        ];
+
+        if ($id > 0) {
+            Database::query(
+                "UPDATE sms_templates SET name = ?, body = ?, sms_type = ?, variables = ?, is_active = ? WHERE id = ?",
+                [$data['name'], $data['body'], $data['sms_type'], $data['variables'], $data['is_active'], $id]
+            );
+            flash('success', 'قالب با موفقیت بروزرسانی شد.');
+        } else {
+            Database::insert('sms_templates', $data);
+            flash('success', 'قالب جدید با موفقیت ایجاد شد.');
+        }
+
+        redirect('/admin/sms?tab=templates');
+    }
+
+    public function deleteSmsTemplate(int $id): void
+    {
+        $this->requireAdmin();
+        $this->verifyCsrf();
+
+        Database::query("DELETE FROM sms_templates WHERE id = ?", [$id]);
+        flash('success', 'قالب حذف شد.');
+        redirect('/admin/sms?tab=templates');
+    }
+
+    public function refreshSmsCredit(): void
+    {
+        $this->requireAdmin();
+        $this->verifyCsrf();
+
+        $smsService = new SmsService();
+        $result = $smsService->getCredit();
+
+        if ($result['status']) {
+            $credit = $result['data'] ?? 0;
+            Database::query(
+                "INSERT INTO settings (setting_key, setting_value) VALUES ('sms_credit_balance', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+                [(string) $credit]
+            );
+            Settings::invalidate();
+            flash('success', 'موجودی پیامک بروزرسانی شد: ' . faNum($credit) . ' پیامک');
+        } else {
+            flash('error', 'خطا در دریافت موجودی: ' . ($result['message'] ?? 'خطای ناشناخته'));
+        }
+
+        redirect('/admin/sms?tab=credit');
     }
 }

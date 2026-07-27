@@ -8,6 +8,10 @@ class FileUploader
 
     public static function upload(array $file, ?string $prefix = null, ?string $oldFilename = null): ?string
     {
+        if ($file['error'] !== UPLOAD_ERR_OK || empty($file['tmp_name'])) {
+            return null;
+        }
+
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
         if (!in_array($ext, self::ALLOWED_EXT) || $file['size'] > self::MAX_SIZE) {

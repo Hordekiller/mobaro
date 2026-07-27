@@ -17,6 +17,11 @@ function asset(string $path): string
 function url(string $path = ''): string
 {
     $baseUrl = rtrim((string) Config::get('app.url', ''), '/');
+    if ($baseUrl === '') {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $baseUrl = $scheme . '://' . $host;
+    }
     $normalizedPath = '/' . ltrim($path, '/');
 
     return $baseUrl . ($normalizedPath === '/' ? '/' : $normalizedPath);
@@ -34,7 +39,7 @@ function back(): void
     $parsed = parse_url($referer);
     $host = $parsed['host'] ?? '';
     $appHost = parse_url((string) Config::get('app.url', ''), PHP_URL_HOST);
-    if ($host === $appHost || $host === '') {
+    if ($appHost === '' || $host === $appHost || $host === '') {
         header('Location: ' . $referer);
     } else {
         header('Location: /');

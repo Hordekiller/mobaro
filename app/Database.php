@@ -13,6 +13,8 @@ class Database
         'settings', 'blog_comments', 'reviews', 'product_categories',
         'product_brands', 'hair_models', 'tutorials', 'media',
         'blog_posts', 'contact_messages', 'coupons',
+        'sms_logs', 'sms_templates', 'sms_credits', 'verification_codes',
+        'blog_categories',
     ];
 
     public static function connection(): PDO
@@ -119,8 +121,25 @@ class Database
 
     private static function validateWhere(string $where): void
     {
-        if (preg_match('/[\'";`]|--|\/\*|\*\/|UNION|SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|EXEC|xp_/i', $where)) {
-            throw new InvalidArgumentException("Invalid WHERE clause: potential SQL injection");
+        $clean = preg_replace('/\s+/', ' ', trim($where));
+
+        $parts = preg_split('/\s+(?:AND|OR)\s+/i', $clean);
+        if ($parts === false || empty($parts)) {
+            throw new InvalidArgumentException("Invalid WHERE clause: could not parse");
+        }
+
+        $colPattern = '[a-zA-Z_][a-zA-Z0-9_.]*';
+        $ops = '=|!=|<>|>=|<=|>|<|LIKE|IN';
+        $safePattern = "/^{$colPattern}\s+(?:{$ops})\s+\?$/i";
+
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if ($part === '') {
+                throw new InvalidArgumentException("Invalid WHERE clause: empty condition");
+            }
+            if (!preg_match($safePattern, $part)) {
+                throw new InvalidArgumentException("Invalid WHERE clause: disallowed pattern in '{$part}'");
+            }
         }
     }
 

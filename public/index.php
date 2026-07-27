@@ -8,6 +8,8 @@ Router::get('/login', ['AuthController', 'showLogin']);
 Router::post('/login', ['AuthController', 'login']);
 Router::get('/register', ['AuthController', 'showRegister']);
 Router::post('/register', ['AuthController', 'register']);
+Router::get('/verify-otp', ['AuthController', 'showVerifyOtp']);
+Router::post('/verify-otp', ['AuthController', 'verifyOtp']);
 Router::get('/logout', ['AuthController', 'logout']);
 Router::post('/auth/forgot', ['AuthController', 'forgot']);
 Router::get('/auth/google', ['AuthController', 'googleRedirect']);
@@ -82,6 +84,10 @@ Router::post('/admin/{section}/save', ['AdminController', 'save']);
 Router::post('/admin/{section}/delete/{id}', ['AdminController', 'delete']);
 Router::post('/admin/settings/update', ['AdminController', 'updateSettings']);
 Router::post('/admin/password/change', ['AdminController', 'changePassword']);
+Router::post('/admin/sms/send', ['AdminController', 'sendBulkSms']);
+Router::post('/admin/sms/template/save', ['AdminController', 'saveSmsTemplate']);
+Router::post('/admin/sms/template/delete/{id}', ['AdminController', 'deleteSmsTemplate']);
+Router::post('/admin/sms/credit/refresh', ['AdminController', 'refreshSmsCredit']);
 
 Router::get('/cart/summary', function () {
     $count = array_sum(array_column($_SESSION['cart'] ?? [], 'qty'));

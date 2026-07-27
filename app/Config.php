@@ -14,6 +14,11 @@ class Config
         return self::$cache[$key] ?? $default;
     }
 
+    public static function reset(): void
+    {
+        self::$cache = [];
+    }
+
     private static function load(): void
     {
         self::$cache = [
@@ -40,6 +45,15 @@ class Config
             // ZarinPal
             'zarinpal.merchant_id' => env('ZARINPAL_MERCHANT_ID', ''),
             'zarinpal.sandbox' => env('ZARINPAL_SANDBOX', 'true') === 'true',
+
+            // SMS (sms.ir)
+            'sms.api_key' => env('SMS_API_KEY', ''),
+            'sms.sender' => env('SMS_SENDER', ''),
+            'sms.template_id' => (int) (env('SMS_TEMPLATE_ID', '0') ?: '0'),
+            'sms.enabled' => env('SMS_ENABLED', 'false') === 'true',
+            'sms.otp_ttl' => (int) (env('SMS_OTP_TTL', '180') ?: '180'),
+            'sms.otp_length' => (int) (env('SMS_OTP_LENGTH', '5') ?: '5'),
+            'sms.line_number' => env('SMS_LINE_NUMBER', ''),
 
             // Cache
             'cache.prefix' => env('CACHE_PREFIX') ?: 'mobaro',

@@ -130,6 +130,17 @@ class AuthController extends BaseController
             'description' => 'امتیاز ثبت‌نام',
         ]);
 
+        $smsService = new SmsService();
+        if ($smsService->isConfigured()) {
+            $code = $smsService->createVerificationCode($phone, 'register');
+            if ($code) {
+                $_SESSION['verify_phone'] = $phone;
+                flash('success', 'کد تأیید به شماره ' . $phone . ' ارسال شد.');
+                redirect('/verify-otp?phone=' . urlencode($phone));
+                return;
+            }
+        }
+
         $user = Database::fetch("SELECT * FROM users WHERE id = ?", [$userId]);
         Auth::login($userId, $user);
         $this->syncSessionWishlist();
@@ -248,5 +259,62 @@ class AuthController extends BaseController
             }
         }
         $_SESSION['wishlist'] = [];
+    }
+
+    public function showVerifyOtp(): void
+    {
+        if (Auth::check()) {
+            redirect(self::PATH_DASHBOARD);
+        }
+
+        $phone = $_GET['phone'] ?? $_SESSION['verify_phone'] ?? '';
+        if (empty($phone)) {
+            flash('error', 'شماره تلفن یافت نشد. لطفاً دوباره ثبت‌نام کنید.');
+            redirect(self::PATH_REGISTER);
+            return;
+        }
+
+        $this->view('auth/verify-otp', ['phone' => $phone]);
+    }
+
+    public function verifyOtp(): void
+    {
+        if (Auth::check()) {
+            redirect(self::PATH_DASHBOARD);
+            return;
+        }
+
+        $phone = $_POST['phone'] ?? $_SESSION['verify_phone'] ?? '';
+        $code = trim($_POST['code'] ?? '');
+
+        if (empty($phone) || empty($code)) {
+            $this->redirectWithErrors('/verify-otp?phone=' . urlencode($phone), ['code' => 'کد تأیید را وارد کنید.']);
+            $_SESSION['verify_phone'] = $phone;
+            return;
+        }
+
+        $smsService = new SmsService();
+        $valid = $smsService->verifyCode($phone, $code, 'register');
+
+        if (!$valid) {
+            $this->redirectWithErrors('/verify-otp?phone=' . urlencode($phone), ['code' => 'کد تأیید نادرست یا منقضی شده است.']);
+            $_SESSION['verify_phone'] = $phone;
+            return;
+        }
+
+        unset($_SESSION['verify_phone']);
+
+        $user = Database::fetch("SELECT * FROM users WHERE phone = ?", [$phone]);
+        if (!$user) {
+            flash('error', 'کاربر یافت نشد.');
+            redirect(self::PATH_REGISTER);
+            return;
+        }
+
+        Auth::login($user['id'], $user);
+        $this->syncSessionWishlist();
+
+        flash('success', 'ثبت‌نام با موفقیت تأیید شد. خوش آمدید!');
+        redirect(self::PATH_DASHBOARD);
     }
 }

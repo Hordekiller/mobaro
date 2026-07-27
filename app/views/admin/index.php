@@ -28,6 +28,7 @@
                 ['key' => 'content', 'label' => 'محتوا', 'icon' => 'fa-file-lines', 'items' => [
                     'blog' => ['fa-pen', 'وبلاگ'],
                     'blog-comments' => ['fa-comments', 'نظرات وبلاگ'],
+                    'blog-categories' => ['fa-folder', 'دسته‌بندی وبلاگ'],
                     'hair-models' => ['fa-image', 'مدل مو'],
                     'tutorials' => ['fa-video', 'آموزش‌ها'],
                     'gallery' => ['fa-photo-film', 'گالری رسانه'],
@@ -42,6 +43,7 @@
                 ['key' => 'settings', 'label' => 'تنظیمات', 'icon' => 'fa-gear', 'items' => [
                     'captcha' => ['fa-shield-halved', 'کپچا'],
                     'settings' => ['fa-gear', 'تنظیمات'],
+                    'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
                 ]],
             ];
 
@@ -232,7 +234,16 @@
             ];
             $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'meta_description', 'og_description', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
             ?>
-            <form action="/admin/settings/update" method="POST" class="space-y-6">
+            <?php
+            $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'og_image', 'about_image'];
+            $imagePaths = [
+                'hero_bg_image' => '/assets/images/',
+                'hero_model_image' => '/assets/images/',
+                'og_image' => '',
+                'about_image' => '/assets/images/',
+            ];
+            ?>
+            <form action="/admin/settings/update" method="POST" enctype="multipart/form-data" class="space-y-6">
                 <?= csrf() ?>
                 <?php foreach ($settingGroups as $groupTitle => $fields) : ?>
                 <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
@@ -245,11 +256,20 @@
                             <label for="setting_<?= e($key) ?>" class="block text-sm font-semibold mb-1.5"><?= e($label) ?></label>
                             <?php if (in_array($key, $textareaKeys)) : ?>
                                 <textarea id="setting_<?= e($key) ?>" name="setting_<?= e($key) ?>" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($value) ?></textarea>
-                            <?php elseif ($key === 'about_image') : ?>
-                                <div class="flex gap-2 items-center">
-                                    <input id="setting_<?= e($key) ?>" type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="flex-1 w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="مثال: about.jpg">
+                            <?php elseif (in_array($key, $imageUploadKeys)) : ?>
+                                <div class="space-y-2">
                                     <?php if (!empty($value)) : ?>
-                                    <img src="/assets/images/<?= e($value) ?>" alt="" class="w-12 h-12 rounded-lg object-cover flex-shrink-0" data-hide-on-error>
+                                    <div class="flex items-center gap-3">
+                                        <img src="<?= e($imagePaths[$key] . $value) ?>" alt="" class="w-16 h-16 rounded-lg object-cover border border-rose-100" data-hide-on-error>
+                                        <span class="text-xs text-zinc-400 truncate max-w-[180px]"><?= e($value) ?></span>
+                                    </div>
+                                    <?php endif; ?>
+                                    <input type="file" name="setting_file_<?= e($key) ?>" accept="image/*" class="w-full text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 file:cursor-pointer">
+                                    <?php if (!empty($value)) : ?>
+                                    <label class="flex items-center gap-2 text-xs text-zinc-400">
+                                        <input type="checkbox" name="delete_image_<?= e($key) ?>" value="1" class="rounded border-zinc-300 text-rose-600 focus:ring-rose-500">
+                                        حذف تصویر فعلی
+                                    </label>
                                     <?php endif; ?>
                                 </div>
                             <?php else : ?>
@@ -354,6 +374,8 @@
 
         <?php elseif ($section === 'gallery') : ?>
             <?php require_once __DIR__ . '/gallery.php'; ?>
+        <?php elseif ($section === 'sms') : ?>
+            <?php require_once __DIR__ . '/sms.php'; ?>
         <?php else : ?>
             <?php $table = $section;
             if (in_array($section, ['hair-models'])) {
@@ -493,10 +515,16 @@
                         <input type="hidden" name="id" id="item-id" value="">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="modal-fields">
                             <?php foreach ($columns as $col) :
-                                if ($col['key'] === 'id') {
+                                if ($col['key'] === 'id' || in_array($col['key'], ['created_at', 'updated_at'])) {
                                     continue;
                                 }
                                 if ($section === 'hair-prices' && in_array($col['key'], ['price', 'duration_modifier', 'is_active'])) {
+                                    continue;
+                                }
+                                if ($section === 'blog' && in_array($col['key'], ['views', 'published_at'])) {
+                                    continue;
+                                }
+                                if ($section === 'tutorials' && $col['key'] === 'views') {
                                     continue;
                                 }
                                 ?>
@@ -520,7 +548,7 @@
                                     <select id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
                                         <option value="">انتخاب کنید</option>
                                         <?php foreach (($col['options'] ?? []) as $opt) : ?>
-                                        <option value="<?= e($opt) ?>"><?= e($opt) ?></option>
+                                        <option value="<?= e($opt) ?>" <?= ($editItem[$col['key']] ?? '') === $opt ? 'selected' : '' ?>><?= e($opt) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 <?php elseif ($col['type'] === 'boolean') : ?>
@@ -538,6 +566,8 @@
                                     </select>
                                 <?php elseif ($col['type'] === 'price') : ?>
                                     <input id="<?= $col['key'] ?>" type="number" name="<?= $col['key'] ?>" step="1000" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
+                                <?php elseif ($col['type'] === 'date') : ?>
+                                    <input id="<?= $col['key'] ?>" type="date" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
                                 <?php else : ?>
                                     <input id="<?= $col['key'] ?>" type="<?= $col['type'] === 'password' ? 'password' : 'text' ?>" name="<?= $col['key'] ?>" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>>
                                 <?php endif; ?>
@@ -895,7 +925,6 @@ function initBlogEditor(content) {
         tinymce.init({
             selector: '.tinymce-editor',
             height: 500,
-            language: 'fa',
             directionality: 'rtl',
             plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen media table wordcount',
             toolbar: 'undo redo | formatselect | bold italic underline | forecolor backcolor | alignright aligncenter | bullist numlist | link image | code',
