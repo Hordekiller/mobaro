@@ -64,6 +64,7 @@ Router::get('/blog', ['BlogController', 'index']);
 Router::get('/blog/{slug}', ['BlogController', 'show']);
 Router::post('/blog/{slug}/comment', ['BlogController', 'postComment']);
 Router::post('/blog/comment/like', ['BlogController', 'likeComment']);
+Router::post('/admin/blog/upload-image', ['BlogController', 'uploadImage']);
 
 Router::get('/contact', ['ContactController', 'index']);
 Router::post('/contact/send', ['ContactController', 'send']);

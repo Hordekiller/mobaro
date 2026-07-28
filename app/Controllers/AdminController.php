@@ -877,7 +877,7 @@ class AdminController extends BaseController
     {
         if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $oldImage = $id ? (Database::fetch("SELECT image FROM {$table} WHERE id = ?", [$id])['image'] ?? null) : null;
-            $uploaded = FileUploader::upload($_FILES['image'], 'product', $oldImage);
+            $uploaded = FileUploader::upload($_FILES['image'], $section, $oldImage);
             if ($uploaded) {
                 $data['image'] = $uploaded;
             }
@@ -1029,12 +1029,15 @@ class AdminController extends BaseController
 
     private function handleBlogContent(int $id, array &$data): void
     {
-        if (isset($_POST['content'])) {
-            $data['content'] = $_POST['content'];
+        $title = $data['title'] ?? '';
+        if ($title === '') {
+            flash('error', 'عنوان پست الزامی است.');
+            redirect('/admin/blog');
+            return;
         }
 
-        if (empty($data['slug']) && !empty($data['title'])) {
-            $baseSlug = slugify($data['title']);
+        if (empty($data['slug'])) {
+            $baseSlug = slugify($title);
             $slug = $baseSlug;
             $counter = 1;
             while (Database::fetch("SELECT id FROM blog_posts WHERE slug = ? AND id != ?", [$slug, $id ?: 0])) {
@@ -1043,18 +1046,17 @@ class AdminController extends BaseController
             $data['slug'] = $slug;
         }
 
+        if (empty($data['slug'])) {
+            $data['slug'] = 'post-' . bin2hex(random_bytes(8));
+        }
+
         if (!$id) {
             $data['published_at'] = date('Y-m-d');
         }
 
-        if ($id) {
+        if ($id && empty($data['image'])) {
             $existing = Database::fetch("SELECT image FROM blog_posts WHERE id = ?", [$id]);
-            if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $uploaded = FileUploader::upload($_FILES['image'], 'blog');
-                if ($uploaded) {
-                    $data['image'] = $uploaded;
-                }
-            } elseif ($existing && empty($data['image'])) {
+            if ($existing) {
                 $data['image'] = $existing['image'];
             }
         }

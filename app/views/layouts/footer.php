@@ -1,7 +1,7 @@
     </div>
 
     <footer id="about" class="bg-zinc-950 text-zinc-400">
-        <div class="max-w-screen-2xl mx-auto px-8 pt-20">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
             <?php $settings = $settings ?? []; ?>
             <div class="grid grid-cols-2 md:grid-cols-5 gap-y-8 md:gap-y-12">
                 <div>

@@ -233,7 +233,7 @@ function truncate(string $text, int $length = 100): string
     return mb_substr($text, 0, $length) . '...';
 }
 
-function faNum(int $num): string
+function faNum(int|string $num): string
 {
     $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
     return str_replace(range(0, 9), $persian, (string) $num);

@@ -39,7 +39,7 @@
 
     <nav class="bg-white border-b border-zinc-100 shadow-sm fixed w-full z-50">
         <div class="max-w-screen-2xl mx-auto">
-            <div class="px-8 py-5 flex items-center justify-between">
+            <div class="px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-x-3">
                     <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner overflow-hidden">
                         <img src="/assets/images/logo.png" alt="<?= e($settings['brand_name'] ?? 'موبارو') ?>" class="w-full h-full object-cover" data-fallback-icon="<i class='fa-solid fa-spa text-white text-3xl'></i>">

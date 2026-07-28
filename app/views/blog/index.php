@@ -81,7 +81,7 @@
         <a href="/blog/<?= e($featured['slug']) ?>" class="bg-white rounded-3xl overflow-hidden shadow-xl card-hover cursor-pointer group block">
             <div class="grid md:grid-cols-2 gap-0">
                 <div class="image-zoom h-64 md:h-auto">
-                    <img src="/assets/images/<?= e($featured['image']) ?>" alt="<?= e($featured['title']) ?>" class="w-full h-full object-cover">
+                    <img src="/assets/images/<?= e($featured['image'] ?: 'placeholder.svg') ?>" alt="<?= e($featured['title']) ?>" class="w-full h-full object-cover">
                 </div>
                 <div class="p-8 md:p-12 flex flex-col justify-center">
                     <div class="flex items-center gap-3 mb-4">

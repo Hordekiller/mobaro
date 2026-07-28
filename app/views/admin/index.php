@@ -711,7 +711,7 @@
                                 </div>
                             </div>
                             <?php endif; ?>
-                        <button type="submit" id="save-btn" class="w-full py-3.5 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" onclick="this.disabled=true;this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin ml-2\'></i>در حال ذخیره...';this.closest('form').submit();">ذخیره</button>
+                        <button type="submit" id="save-btn" class="w-full py-3.5 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" onclick="this.disabled=true;this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin ml-2\'></i>در حال ذخیره...';if(typeof tinymce!=='undefined')tinymce.triggerSave();this.closest('form').submit();">ذخیره</button>
                     </form>
                 </div>
             </div>
@@ -945,6 +945,33 @@ function initBlogEditor(content) {
             toolbar: 'undo redo | formatselect | bold italic underline | forecolor backcolor | alignright aligncenter | bullist numlist | link image | code',
             branding: false,
             promotion: false,
+            images_upload_url: '/admin/blog/upload-image',
+            images_upload_credentials: true,
+            file_picker_types: 'image',
+            file_picker_callback: function(cb, value, meta) {
+                var input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+                input.onchange = function() {
+                    var file = this.files[0];
+                    var formData = new FormData();
+                    formData.append('file', file);
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/admin/blog/upload-image');
+                    var csrfMeta = document.querySelector('meta[name="csrf"]');
+                    if (csrfMeta) {
+                        xhr.setRequestHeader('X-CSRF-Token', csrfMeta.getAttribute('content'));
+                    }
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            var resp = JSON.parse(xhr.responseText);
+                            cb(resp.location);
+                        }
+                    };
+                    xhr.send(formData);
+                };
+                input.click();
+            },
             setup: function(editor) {
                 if (content) editor.on('init', function() { editor.setContent(content); });
                 editor.on('change', function() { editor.save(); });
@@ -975,5 +1002,11 @@ closeItemModal = function(e) {
     _origClose(e);
     destroyBlogEditor();
 };
+document.addEventListener('submit', function(e) {
+    var form = e.target;
+    if (form.tagName === 'FORM' && form.querySelector('.tinymce-editor') && typeof tinymce !== 'undefined') {
+        tinymce.triggerSave();
+    }
+}, true);
 </script>
 <?php endif; ?>

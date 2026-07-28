@@ -2,12 +2,16 @@
     .blog-content p {
         font-size: 1.1rem;
         line-height: 1.85;
+        margin-bottom: 1.25rem;
+        color: #374151;
     }
     .blog-content h2 {
         font-size: 1.65rem;
         position: relative;
         margin-top: 3rem;
         margin-bottom: 1rem;
+        font-weight: 700;
+        color: #111827;
     }
     .blog-content h2:after {
         content: '';
@@ -17,6 +21,77 @@
         background: #e11d48;
         bottom: -8px;
         right: 0;
+    }
+    .blog-content h3 {
+        font-size: 1.35rem;
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    .blog-content h4 {
+        font-size: 1.15rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+    }
+    .blog-content strong {
+        font-weight: 700;
+        color: #111827;
+    }
+    .blog-content ul, .blog-content ol {
+        margin: 1rem 0;
+        padding-right: 1.5rem;
+    }
+    .blog-content ul { list-style-type: disc; }
+    .blog-content ol { list-style-type: decimal; }
+    .blog-content li {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+    .blog-content blockquote {
+        border-right: 4px solid #e11d48;
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0;
+        background: #fdf2f8;
+        border-radius: 0 12px 12px 0;
+        font-style: italic;
+        color: #6b7280;
+    }
+    .blog-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 16px;
+        margin: 1.5rem 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .blog-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        font-size: 0.95rem;
+    }
+    .blog-content th, .blog-content td {
+        border: 1px solid #e5e7eb;
+        padding: 0.75rem 1rem;
+        text-align: right;
+    }
+    .blog-content th {
+        background: #fdf2f8;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    .blog-content a {
+        color: #e11d48;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        transition: all 0.2s ease;
+    }
+    .blog-content a:hover {
+        color: #be123c;
     }
     .featured-image {
         transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -46,9 +121,14 @@
         position: sticky;
         top: 100px;
     }
+    @media (max-width: 640px) {
+        .blog-content p { font-size: 1rem; line-height: 1.75; }
+        .blog-content h2 { font-size: 1.3rem; margin-top: 2rem; }
+        .sidebar-sticky { position: static; }
+    }
 </style>
 
-<div class="max-w-screen-2xl mx-auto px-8 pt-6">
+<div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
     <div class="flex items-center gap-x-2 text-xs text-rose-700 font-medium">
         <a href="/" class="hover:underline">خانه</a>
         <span class="text-rose-300">/</span>
@@ -58,33 +138,33 @@
     </div>
 </div>
 
-<header class="max-w-screen-2xl mx-auto px-8 pt-8 pb-12">
+<header class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-6 sm:pb-12">
     <div class="max-w-4xl mx-auto">
         <div class="inline-flex items-center gap-x-2 bg-white shadow text-rose-600 text-xs font-medium px-5 h-7 rounded-3xl mb-6">
             <div class="w-2 h-2 bg-rose-400 animate-pulse rounded-full"></div>
-            <?= e($post['category']) ?>
+            <?= e($post['category'] ?: 'وبلاگ') ?>
         </div>
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 tracking-tighter text-center leading-tight">
+        <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 tracking-tighter text-center leading-tight">
             <?= e($post['title']) ?>
         </h1>
-        <div class="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 mt-10 text-sm">
+        <div class="flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-8 gap-y-4 mt-10 text-sm">
             <div class="flex items-center gap-x-3">
                 <div class="w-9 h-9 bg-rose-200 rounded-2xl overflow-hidden">
-                    <img src="/avatar/<?= urlencode($post['author']) ?>/72" alt="<?= e($post['author'])?>" class="w-full h-full object-cover">
+                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/72" alt="<?= e($post['author'] ?: 'تیم موبارو')?>" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-700"><?= e($post['author']) ?></div>
+                    <div class="font-semibold text-gray-700"><?= e($post['author'] ?: 'تیم موبارو') ?></div>
                     <div class="text-xs text-gray-500 -mt-0.5">نویسنده</div>
                 </div>
             </div>
             <div class="h-5 w-px bg-gray-200"></div>
             <div class="flex items-center gap-x-2 text-gray-500">
                 <i class="fa-solid fa-calendar text-xs"></i>
-                <span class="text-sm"><?= jdate('Y/m/d', strtotime($post['published_at'])) ?></span>
+                <span class="text-sm"><?= $post['published_at'] ? jdate('Y/m/d', strtotime($post['published_at'])) : '' ?></span>
             </div>
             <div class="flex items-center gap-x-2 text-gray-500">
                 <i class="fa-solid fa-clock text-xs"></i>
-                <span class="text-sm"><?= e($post['reading_time']) ?> دقیقه مطالعه</span>
+                <span class="text-sm"><?= e($post['reading_time'] ?: '۵') ?> دقیقه مطالعه</span>
             </div>
             <div class="flex items-center gap-x-5 text-gray-400">
                 <button onclick="shareArticle('twitter')" class="hover:text-sky-400 transition-colors" aria-label="اشتراک‌گذاری در توییتر"><i class="fa-brands fa-x-twitter"></i></button>
@@ -95,7 +175,7 @@
     </div>
 </header>
 
-<div class="max-w-screen-2xl mx-auto px-8">
+<div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="relative rounded-3xl overflow-hidden shadow-2xl border border-rose-100">
         <img src="/assets/images/<?= e($post['image'] ?: 'placeholder.svg') ?>"
              alt="<?= e($post['title']) ?>"
@@ -103,7 +183,7 @@
         <div class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl shadow flex items-center gap-x-3 text-xs">
             <div class="flex -space-x-4">
                 <div class="w-6 h-6 bg-rose-300 border-2 border-white rounded-2xl overflow-hidden">
-                    <img src="/avatar/<?= urlencode($post['author']) ?>/48" alt="<?= e($post['author']) ?>" class="object-cover">
+                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/48" alt="<?= e($post['author'] ?: 'تیم موبارو') ?>" class="object-cover">
                 </div>
             </div>
             <div class="text-gray-500 text-[10px] leading-none">
@@ -120,7 +200,7 @@
     </div>
 </div>
 
-<div class="max-w-screen-2xl mx-auto px-8 pt-16 pb-24 grid grid-cols-12 gap-10">
+<div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-16 pb-24 grid grid-cols-12 gap-6 sm:gap-10">
 
     <div class="col-span-12 lg:col-span-8">
         <div class="max-w-2xl mx-auto blog-content prose prose-zinc">
@@ -141,24 +221,24 @@
             </div>
             <?php endif; ?>
 
-            <div class="mt-24 border-t border-b py-8 flex gap-6">
-                <div class="w-16 h-16 bg-rose-200 rounded-3xl overflow-hidden flex-shrink-0">
-                    <img src="/avatar/<?= urlencode($post['author']) ?>/80" alt="<?= e($post['author']) ?>" class="w-full h-full object-cover">
+            <div class="mt-16 sm:mt-24 border-t border-b py-8 flex gap-4 sm:gap-6">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-rose-200 rounded-3xl overflow-hidden flex-shrink-0">
+                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/80" alt="<?= e($post['author'] ?: 'تیم موبارو') ?>" class="w-full h-full object-cover">
                 </div>
                 <div>
                     <div class="flex justify-between">
                         <div>
-                            <span class="font-medium"><?= e($post['author']) ?></span>
+                            <span class="font-medium"><?= e($post['author'] ?: 'تیم موبارو') ?></span>
                             <span class="block text-xs text-rose-500">نویسنده و متخصص حوزه زیبایی</span>
                         </div>
                     </div>
                     <p class="text-xs leading-relaxed text-gray-500 mt-5">
-                        <?= e($post['author']) ?> با سال‌ها تجربه در زمینه آرایش و زیبایی، مطالب تخصصی و کاربردی را برای شما آماده می‌کند.
+                        <?= e($post['author'] ?: 'تیم موبارو') ?> با سال‌ها تجربه در زمینه آرایش و زیبایی، مطالب تخصصی و کاربردی را برای شما آماده می‌کند.
                     </p>
                 </div>
             </div>
 
-            <div class="flex items-center justify-between border-b pb-8 mt-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-6 sm:pb-8 mt-8 gap-3">
                 <div class="text-xs font-medium text-gray-400">این مقاله را به اشتراک بگذارید</div>
                 <div class="flex items-center gap-x-6 text-2xl text-gray-300">
                     <button onclick="shareArticle('twitter')" class="hover:text-sky-400 transition-colors" aria-label="اشتراک‌گذاری در توییتر"><i class="fa-brands fa-x-twitter"></i></button>
@@ -189,7 +269,7 @@
                             <div class="flex-1">
                                 <div class="flex items-center justify-between">
                                     <div class="font-medium text-sm"><?= e($comment['name']) ?></div>
-                                    <div class="text-[10px] text-gray-400"><?= jdate('Y/m/d', strtotime($comment['created_at'])) ?></div>
+                                    <div class="text-[10px] text-gray-400"><?= $comment['created_at'] ? jdate('Y/m/d', strtotime($comment['created_at'])) : '' ?></div>
                                 </div>
                                 <p class="text-sm text-gray-600 mt-2"><?= e($comment['text']) ?></p>
                                 <button onclick="likeComment(<?= $comment['id'] ?>, this)"
@@ -206,16 +286,16 @@
                 <?php endif; ?>
                 </div>
 
-                <div class="mt-8 bg-gray-100 rounded-3xl p-2">
+                <div class="mt-8 bg-gray-100 rounded-3xl p-2 sm:p-3">
                     <label for="comment-textarea" class="sr-only">نظر شما</label>
                     <textarea id="comment-textarea" rows="3"
-                              class="w-full bg-white focus:outline-none rounded-3xl px-6 py-5 text-sm resize-none"
+                              class="w-full bg-white focus:outline-none rounded-3xl px-4 sm:px-6 py-4 sm:py-5 text-sm resize-none"
                               placeholder="نظر خود را بنویسید..."></textarea>
-                    <div class="flex justify-between items-center px-4 pb-4 mt-2">
+                    <div class="flex justify-between items-center px-3 sm:px-4 pb-3 sm:pb-4 mt-2">
                         <input type="text" id="comment-name" placeholder="نام شما (در صورت عدم ورود)" class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 outline-none w-48 hidden">
                         <div></div>
                         <button onclick="postComment()"
-                                class="bg-rose-600 text-white px-10 py-3.5 text-sm font-semibold rounded-3xl active:scale-95 transition-transform">
+                                class="bg-rose-600 text-white px-6 sm:px-10 py-3 sm:py-3.5 text-sm font-semibold rounded-3xl active:scale-95 transition-transform">
                             ارسال نظر
                         </button>
                     </div>
@@ -224,8 +304,8 @@
         </div>
     </div>
 
-    <div class="col-span-12 lg:col-span-4 space-y-10">
-        <div class="sidebar-sticky space-y-10">
+    <div class="col-span-12 lg:col-span-4 space-y-8 sm:space-y-10">
+        <div class="sidebar-sticky space-y-8 sm:space-y-10">
 
             <div class="bg-white border border-rose-200 rounded-3xl p-7">
                 <div class="text-center">
@@ -261,7 +341,7 @@
                         <div class="line-clamp-2 text-sm font-medium leading-tight group-hover:text-rose-600 transition-colors">
                             <?= e($pp['title']) ?>
                         </div>
-                        <div class="text-rose-400 text-xs mt-4"><?= jdate('Y/m/d', strtotime($pp['published_at'])) ?> • <?= e($pp['reading_time']) ?> دقیقه</div>
+                        <div class="text-rose-400 text-xs mt-4"><?= $pp['published_at'] ? jdate('Y/m/d', strtotime($pp['published_at'])) : '' ?> <?= $pp['published_at'] && $pp['reading_time'] ? '•' : '' ?> <?= e($pp['reading_time'] ?: '۵') ?> دقیقه</div>
                     </div>
                 </a>
                 <?php endforeach; ?>
@@ -341,25 +421,25 @@
 </div>
 
 <?php if (!empty($relatedPosts)) : ?>
-<div class="max-w-screen-2xl mx-auto px-8 py-16 bg-white">
-    <div class="flex items-end justify-between mb-8">
-        <div class="text-3xl font-bold text-gray-900">مقالات مرتبط</div>
+<div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 bg-white">
+    <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-6 sm:mb-8 gap-3">
+        <div class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">مقالات مرتبط</div>
         <a href="/blog" class="flex items-center text-xs gap-x-2 text-rose-600 hover:text-rose-700">
             همه مقالات
             <span class="text-xl leading-none">→</span>
         </a>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         <?php foreach ($relatedPosts as $rp) : ?>
         <a href="/blog/<?= e($rp['slug']) ?>"
            class="article-card group bg-white border border-transparent hover:border-rose-200 rounded-3xl overflow-hidden cursor-pointer">
-            <div class="h-60 bg-cover bg-center transition-all group-active:scale-105"
+            <div class="h-48 sm:h-60 bg-cover bg-center transition-all group-active:scale-105"
                  style="background-image: url('/assets/images/<?= e($rp['image'] ?: 'placeholder.svg') ?>')"></div>
-            <div class="p-6">
-                <div class="text-xs text-rose-500"><?= e($rp['category']) ?></div>
-                <div class="font-medium text-xl leading-6 mt-2 line-clamp-2"><?= e($rp['title']) ?></div>
-                <div class="flex justify-between items-center text-xs text-gray-400 mt-8">
-                    <div><?= jdate('Y/m/d', strtotime($rp['published_at'])) ?></div>
+            <div class="p-4 sm:p-6">
+                <div class="text-xs text-rose-500"><?= e($rp['category'] ?: 'وبلاگ') ?></div>
+                <div class="font-medium text-lg sm:text-xl leading-6 mt-2 line-clamp-2"><?= e($rp['title']) ?></div>
+                <div class="flex justify-between items-center text-xs text-gray-400 mt-6 sm:mt-8">
+                    <div><?= $rp['published_at'] ? jdate('Y/m/d', strtotime($rp['published_at'])) : '' ?></div>
                     <div class="flex items-center gap-x-1">
                         <i class="fa-solid fa-eye"></i>
                         <span><?= faNum((int) ($rp['views'] > 999 ? round($rp['views'] / 1000, 1) . 'k' : $rp['views'])) ?></span>

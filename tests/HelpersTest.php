@@ -86,6 +86,12 @@ class HelpersTest extends TestCase
         $this->assertSame('۰', faNum(0));
     }
 
+    public function testFaNumAcceptsString(): void
+    {
+        $this->assertSame('۱۲۳', faNum('123'));
+        $this->assertSame('۰', faNum('0'));
+    }
+
     public function testGregorianToJalaliBasic(): void
     {
         $result = gregorianToJalali(2024, 1, 1);

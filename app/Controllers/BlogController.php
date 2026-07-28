@@ -181,6 +181,35 @@ class BlogController extends BaseController
         exit;
     }
 
+    public function uploadImage(): void
+    {
+        header('Content-Type: application/json');
+        $this->requireAdmin();
+
+        $token = $_POST['_csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        if (!verifyCsrf($token)) {
+            http_response_code(419);
+            echo json_encode(['error' => ['message' => 'درخواست نامعتبر (CSRF).']]);
+            exit;
+        }
+
+        if (empty($_FILES['file']['name']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            echo json_encode(['error' => ['message' => 'فایل ارسال نشد.']]);
+            exit;
+        }
+
+        $uploaded = FileUploader::upload($_FILES['file'], 'blog');
+        if (!$uploaded) {
+            http_response_code(400);
+            echo json_encode(['error' => ['message' => 'آپلود ناموفق بود.']]);
+            exit;
+        }
+
+        echo json_encode(['location' => '/assets/images/' . $uploaded]);
+        exit;
+    }
+
     public function show(string $slug): void
     {
         $post = Cache::remember('blog_post_' . $slug, Config::get('cache.ttl.page', 600), function () use ($slug) {
