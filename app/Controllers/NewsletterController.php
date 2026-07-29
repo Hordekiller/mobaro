@@ -1,5 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\RateLimiter;
+use App\Captcha;
+use App\Database;
+
 class NewsletterController extends BaseController
 {
     public function subscribe(): void

@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Database;
+
 class RateLimiter
 {
     private const DEFAULT_IP = '127.0.0.1';

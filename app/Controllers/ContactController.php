@@ -1,5 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Settings;
+use App\SEOService;
+use App\RateLimiter;
+use App\Database;
+
 class ContactController extends BaseController
 {
     private const PATH_CONTACT = '/contact';

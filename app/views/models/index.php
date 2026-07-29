@@ -1,4 +1,8 @@
-<?php $title = 'مدل‌های مو | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+<?php
+
+declare(strict_types=1);
+
+$title = 'مدل‌های مو | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 
 <section class="relative overflow-hidden bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 text-white">
     <div class="absolute inset-0 opacity-10">

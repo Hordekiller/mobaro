@@ -1,5 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Cache;
+use App\Config;
+use App\Database;
+use App\Auth;
+
 class ApiController extends BaseController
 {
     private const CACHE_HEADER = 'Cache-Control: public, max-age=300, stale-while-revalidate=60';

@@ -1,4 +1,8 @@
-<?php $title = 'علاقه‌مندی‌ها | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+<?php
+
+declare(strict_types=1);
+
+$title = 'علاقه‌مندی‌ها | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 
 <div class="max-w-screen-2xl mx-auto px-8 py-10">
     <div class="mb-8">

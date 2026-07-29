@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <div class="min-h-screen bg-rose-50 flex" dir="rtl">
     <aside class="w-72 bg-white shadow-[0_0_40px_rgba(225,29,72,0.08)] min-h-screen flex flex-col flex-shrink-0">
         <div class="p-6 border-b border-rose-100">
@@ -387,7 +392,7 @@
                 <?php foreach ($seoPages as $seoPage) :
                     $slug = $seoPage['page_slug'];
                     $label = $pageLabels[$slug] ?? $slug;
-                ?>
+                    ?>
                 <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
                     <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">
                         <i class="fa-solid fa-file-lines ml-1 text-rose-500"></i><?= e($label) ?>

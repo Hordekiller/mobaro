@@ -1,4 +1,8 @@
-<?php $title = 'تغییر رمز عبور | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+<?php
+
+declare(strict_types=1);
+
+$title = 'تغییر رمز عبور | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen bg-gradient-to-br from-rose-50 to-white flex items-center justify-center px-4">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
@@ -9,13 +13,14 @@
             <p class="text-zinc-500 mt-2">رمز عبور جدید خود را وارد کنید</p>
         </div>
 
-        <?php if ($errors = $_SESSION['flash_errors'] ?? []): ?>
+        <?php if ($errors = $_SESSION['flash_errors'] ?? []) : ?>
             <div class="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
-                <?php foreach ($errors as $err): ?>
+                <?php foreach ($errors as $err) : ?>
                     <p class="text-red-600 text-sm"><?= e($err) ?></p>
                 <?php endforeach; ?>
             </div>
-        <?php unset($_SESSION['flash_errors']); endif; ?>
+            <?php unset($_SESSION['flash_errors']);
+        endif; ?>
 
         <form method="POST" action="/reset-password" class="bg-white rounded-3xl shadow-xl p-8">
             <input type="hidden" name="_csrf" value="<?= e($_SESSION['_csrf'] ?? '') ?>">

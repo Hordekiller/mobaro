@@ -1,5 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Auth;
+use App\Database;
+use App\FileUploader;
+use App\Config;
+use App\Services\ZarinPal;
+
 class DashboardController extends BaseController
 {
     private const VIEW_DASHBOARD = 'dashboard/index';

@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
 class ImageController
 {
     private const COLOR_WHITE = '#ffffff';
@@ -8,7 +12,7 @@ class ImageController
     private const SVG_FILL = '" fill="';
     private const SVG_OPACITY = '" opacity="';
 
-    private static int $_rngState = 0;
+    private static int $rngState = 0;
 
     private static array $palettes = [
         'beauty'  => ['bg' => self::COLOR_ROSE, 'fg' => self::COLOR_WHITE, 'accent' => '#fda4af'],
@@ -27,15 +31,15 @@ class ImageController
 
     private static function seedRng(int $seed): void
     {
-        self::$_rngState = $seed !== 0 ? $seed : 1;
+        self::$rngState = $seed !== 0 ? $seed : 1;
     }
 
     private static function rngInt(int $min, int $max): int
     {
-        self::$_rngState ^= self::$_rngState << 13;
-        self::$_rngState ^= self::$_rngState >> 17;
-        self::$_rngState ^= self::$_rngState << 5;
-        return $min + abs(self::$_rngState) % ($max - $min + 1);
+        self::$rngState ^= self::$rngState << 13;
+        self::$rngState ^= self::$rngState >> 17;
+        self::$rngState ^= self::$rngState << 5;
+        return $min + abs(self::$rngState) % ($max - $min + 1);
     }
 
     private static function rngPick(array $items): mixed

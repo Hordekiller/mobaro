@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <section id="booking" class="bg-zinc-950 py-20 text-white relative overflow-hidden">
     <div class="max-w-2xl mx-auto px-8">
         <div class="text-center mb-8">

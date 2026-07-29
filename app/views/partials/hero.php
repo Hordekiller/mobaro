@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <header id="home" class="hero-bg min-h-screen flex items-center pt-16">
     <div class="max-w-screen-2xl mx-auto px-8 grid md:grid-cols-2 gap-12 items-center h-full w-full">
         <div class="text-white pt-12 md:pt-0">

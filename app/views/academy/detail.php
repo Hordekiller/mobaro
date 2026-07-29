@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $title = e($course['title']) . ' | ' . ($settings['brand_name'] ?? 'موبارو');
 $curriculum = json_decode($course['curriculum'] ?? '[]', true) ?: [];
 $audience = json_decode($course['audience'] ?? '[]', true) ?: [];

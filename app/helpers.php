@@ -1,5 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Config;
+use App\Database;
+
 function env(string $key, mixed $default = null): mixed
 {
     static $dotenv = [];

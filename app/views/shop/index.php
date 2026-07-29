@@ -1,4 +1,8 @@
-<?php $title = 'فروشگاه | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+<?php
+
+declare(strict_types=1);
+
+$title = 'فروشگاه | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <?php
 function filterUrl(array $overrides = []): string
 {

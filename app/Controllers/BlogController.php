@@ -1,5 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Cache;
+use App\Config;
+use App\Database;
+use App\Settings;
+use App\SEOService;
+use App\RateLimiter;
+use App\Auth;
+use App\FileUploader;
+
 class BlogController extends BaseController
 {
     private function getSidebar(): array

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $title = e($product['name']) . ' | ' . ($settings['brand_name'] ?? 'موبارو');
 $discount = 0;
 if (!empty($product['old_price']) && $product['old_price'] > $product['price']) {

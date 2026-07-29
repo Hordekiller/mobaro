@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <style>
     .gradient-text {
         background: linear-gradient(135deg, #be123c 0%, #d4a843 100%);

@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Cache;
+use App\Config;
+use App\Database;
+use App\Settings;
+use App\Captcha;
+use App\Auth;
+
 class BookingController extends BaseController
 {
     private const TIMEZONE = 'Asia/Tehran';

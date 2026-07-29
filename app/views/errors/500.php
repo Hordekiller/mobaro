@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $brandName = isset($settings) ? ($settings['brand_name'] ?? 'موبارو') : 'موبارو';
 $title = 'خطا | ' . $brandName;
 $errorMessage = $errorMessage ?? 'خطایی غیرمنتظره رخ داده است. لطفاً دوباره تلاش کنید.';

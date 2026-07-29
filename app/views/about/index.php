@@ -1,4 +1,8 @@
-<?php $title = e($settings['about_title'] ?? 'درباره ما') . ' | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+<?php
+
+declare(strict_types=1);
+
+$title = e($settings['about_title'] ?? 'درباره ما') . ' | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 
 <div class="min-h-screen bg-gradient-to-br from-rose-50 via-white to-rose-50/30">
     <div class="relative bg-gradient-to-r from-rose-600 to-rose-800 py-20 overflow-hidden">

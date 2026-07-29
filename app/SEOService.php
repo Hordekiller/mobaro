@@ -1,5 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Settings;
+use App\Cache;
+use App\Database;
+
 class SEOService
 {
     public static function forBlogPost(array $post): array

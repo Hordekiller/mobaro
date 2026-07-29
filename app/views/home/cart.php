@@ -1,4 +1,8 @@
-<?php $title = 'سبد خرید | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+<?php
+
+declare(strict_types=1);
+
+$title = 'سبد خرید | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen bg-gradient-to-br from-rose-50 to-white pt-24">
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="flex items-center gap-3 mb-8">

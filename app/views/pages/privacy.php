@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <section class="relative overflow-hidden bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 text-white">
     <div class="absolute inset-0 opacity-10">
         <div class="absolute top-10 right-20 w-72 h-72 bg-white rounded-full blur-3xl"></div>

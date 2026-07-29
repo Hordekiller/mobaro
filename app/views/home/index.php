@@ -1,4 +1,8 @@
-<?php $title = ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای'; ?>
+<?php
+
+declare(strict_types=1);
+
+$title = ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای'; ?>
 
 <?php require_once __DIR__ . '/../partials/hero.php'; ?>
 <?php require_once __DIR__ . '/../partials/services.php'; ?>

@@ -1,5 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Config;
+use App\Database;
+use App\Auth;
+
 class GoogleAuth
 {
     private static string $authUrl = 'https://accounts.google.com/o/oauth2/v2/auth';

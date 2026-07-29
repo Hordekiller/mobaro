@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <section id="services" class="py-24 bg-white">
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="flex justify-between items-end mb-12">

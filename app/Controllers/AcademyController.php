@@ -1,5 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Cache;
+use App\Config;
+use App\Database;
+use App\Settings;
+use App\SEOService;
+
 class AcademyController extends BaseController
 {
     private const COURSE_QUERY = 'SELECT c.* FROM courses c WHERE (c.slug = ? OR c.id = ?) AND c.is_active = 1';

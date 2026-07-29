@@ -1,5 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Cache;
+use App\Config;
+use App\Database;
+use App\Settings;
+use App\SEOService;
+use App\Auth;
+use App\Services\ZarinPal;
+
 class ShopController extends BaseController
 {
     private const WISHLIST_QUERY = 'SELECT product_id as id FROM wishlist WHERE user_id = ?';

@@ -1,4 +1,8 @@
-<?php if (!empty($order)) : ?>
+<?php
+
+declare(strict_types=1);
+
+if (!empty($order)) : ?>
 <div class="mb-6">
     <a href="/dashboard/orders" class="inline-flex items-center gap-2 text-[#B76E79] font-semibold hover:underline">
         <i class="fa-solid fa-arrow-right"></i> بازگشت به سفارش‌ها

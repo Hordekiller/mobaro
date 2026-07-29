@@ -1,5 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Cache;
+use App\Config;
+use App\Database;
+use App\Settings;
+use App\SEOService;
+
 class ModelsController extends BaseController
 {
     public function index(): void

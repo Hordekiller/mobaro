@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $smsTab = $smsTab ?? 'settings';
 $smsSettings = $smsSettings ?? [];
 $smsStats = $smsStats ?? ['total_sent' => 0, 'today_sent' => 0, 'failed_count' => 0, 'total_credits' => 0];
@@ -50,7 +53,7 @@ $search = $search ?? '';
         'credit' => ['fa-coins', 'اعتبار'],
     ];
     foreach ($tabs as $key => $info) :
-    ?>
+        ?>
     <a href="/admin/sms?tab=<?= $key ?>" class="px-4 py-2 rounded-full text-xs font-semibold transition-all <?= $smsTab === $key ? 'bg-rose-600 text-white shadow-md shadow-rose-200' : 'bg-white text-zinc-600 hover:bg-rose-50 hover:text-rose-600' ?>">
         <i class="fa-solid <?= $info[0] ?> ml-1"></i><?= $info[1] ?>
     </a>
@@ -264,28 +267,28 @@ $search = $search ?? '';
     <?php endif; ?>
 </div>
 
-<?php if ($totalPages > 1) : ?>
+    <?php if ($totalPages > 1) : ?>
 <div class="flex justify-center items-center gap-2 mt-6">
-    <?php if ($page > 1) : ?>
+        <?php if ($page > 1) : ?>
     <a href="?tab=logs&page=<?= $page - 1 ?>&s=<?= e($search) ?>" class="w-10 h-10 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-sm">
         <i class="fa-solid fa-chevron-right"></i>
     </a>
-    <?php endif; ?>
-    <?php
-    $startPage = max(1, $page - 2);
-    $endPage = min($totalPages, $page + 2);
-    for ($i = $startPage; $i <= $endPage; $i++) : ?>
+        <?php endif; ?>
+        <?php
+        $startPage = max(1, $page - 2);
+        $endPage = min($totalPages, $page + 2);
+        for ($i = $startPage; $i <= $endPage; $i++) : ?>
     <a href="?tab=logs&page=<?= $i ?>&s=<?= e($search) ?>" class="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm transition-all <?= $i === $page ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' : 'border border-zinc-300 text-zinc-600 hover:bg-rose-600 hover:text-white hover:border-rose-600' ?>">
-        <?= faNum($i) ?>
+            <?= faNum($i) ?>
     </a>
-    <?php endfor; ?>
-    <?php if ($page < $totalPages) : ?>
+        <?php endfor; ?>
+        <?php if ($page < $totalPages) : ?>
     <a href="?tab=logs&page=<?= $page + 1 ?>&s=<?= e($search) ?>" class="w-10 h-10 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-sm">
         <i class="fa-solid fa-chevron-left"></i>
     </a>
-    <?php endif; ?>
+        <?php endif; ?>
 </div>
-<?php endif; ?>
+    <?php endif; ?>
 
 <?php elseif ($smsTab === 'credit') : ?>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

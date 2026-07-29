@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <style>
     .blog-content p {
         font-size: 1.1rem;

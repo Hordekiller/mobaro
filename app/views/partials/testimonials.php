@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <section class="py-20 bg-zinc-900 text-white">
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="text-center mb-16">

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $title = 'پنل کاربری | ' . ($settings['brand_name'] ?? 'موبارو');
 $currentTab = isset($tab) ? $tab : 'dashboard';
 ?>

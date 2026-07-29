@@ -1,5 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Settings;
+use App\Config;
+use App\Database;
+use App\Auth;
+use Throwable;
+
 class SmsService
 {
     private const BASE_URL = 'https://api.sms.ir/v1';

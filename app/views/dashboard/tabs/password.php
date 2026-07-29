@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <div class="page-header mb-6">
     <h1 class="text-2xl font-extrabold">تغییر رمز عبور</h1>
     <p class="text-[#9e9e9e] text-sm">برای امنیت بیشتر رمز عبور خود را تغییر دهید</p>

@@ -1,5 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Auth;
+use App\Captcha;
+use App\Settings;
+use App\RateLimiter;
+use App\Database;
+use App\Cache;
+use App\Config;
+use App\FileUploader;
+use Throwable;
+
 class AdminController extends BaseController
 {
     private const PATH_ADMIN = '/admin';

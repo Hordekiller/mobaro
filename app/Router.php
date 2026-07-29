@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Settings;
+
 class Router
 {
     private static array $routes = [];

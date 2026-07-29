@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $filter = $filter ?? '';
 $search = $search ?? '';
 $items = $items ?? [];

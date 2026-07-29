@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
 class BaseController
 {
     private static array $protectedVars = ['view', 'data', 'hideFooter', 'this'];

@@ -1,5 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Config;
+use InvalidArgumentException;
+
 class Database
 {
     private static ?PDO $instance = null;

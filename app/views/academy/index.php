@@ -1,12 +1,18 @@
 <?php
+
+declare(strict_types=1);
+
 $title = 'آکادمی | ' . ($settings['brand_name'] ?? 'موبارو');
-function academyFilterUrl(array $overrides = []): string {
+function academyFilterUrl(array $overrides = []): string
+{
     $params = [];
     $current = ['tab', 'category'];
     foreach ($current as $key) {
         $val = $_GET[$key] ?? null;
         if ($val !== null && $val !== '' && $val !== 'all') {
-            if ($key === 'tab' && $val === 'newest') continue;
+            if ($key === 'tab' && $val === 'newest') {
+                continue;
+            }
             $params[$key] = $val;
         }
     }
@@ -184,23 +190,23 @@ function academyFilterUrl(array $overrides = []): string {
         <?php endforeach; ?>
     </div>
 
-    <?php if ($totalPages > 1) : ?>
+        <?php if ($totalPages > 1) : ?>
     <div class="flex justify-center items-center gap-2 mt-10">
-        <?php if ($page > 1) : ?>
+            <?php if ($page > 1) : ?>
         <a href="<?= academyFilterUrl(['page' => $page - 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
             <i class="fa-solid fa-chevron-right"></i>
         </a>
-        <?php endif; ?>
-        <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+            <?php endif; ?>
+            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
         <a href="<?= academyFilterUrl(['page' => $i]) ?>" class="w-10 h-10 rounded-lg flex items-center justify-center font-medium transition <?= $i === $page ? 'bg-rose-600 text-white' : 'border border-zinc-200 text-zinc-600 hover:border-rose-400 hover:text-rose-500' ?>"><?= $i ?></a>
-        <?php endfor; ?>
-        <?php if ($page < $totalPages) : ?>
+            <?php endfor; ?>
+            <?php if ($page < $totalPages) : ?>
         <a href="<?= academyFilterUrl(['page' => $page + 1]) ?>" class="w-10 h-10 rounded-lg border border-zinc-200 text-zinc-500 hover:border-rose-400 hover:text-rose-500 transition flex items-center justify-center">
             <i class="fa-solid fa-chevron-left"></i>
         </a>
-        <?php endif; ?>
+            <?php endif; ?>
     </div>
-    <?php endif; ?>
+        <?php endif; ?>
 
     <?php endif; ?>
 </div>

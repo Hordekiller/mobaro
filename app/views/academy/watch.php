@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $title = e($course['title']) . ' | مشاهده دوره';
 $currentGlobalIndex = 0;
 $lessonMap = [];

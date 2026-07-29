@@ -1,5 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Settings;
+use Throwable;
+
 class Captcha
 {
     private static int $min = 1;

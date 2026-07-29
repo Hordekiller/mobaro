@@ -1,4 +1,8 @@
-<?php $title = 'ورود | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+<?php
+
+declare(strict_types=1);
+
+$title = 'ورود | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen flex items-center justify-center px-4 py-20 bg-gradient-to-br from-rose-50 to-white">
     <div class="w-full max-w-md">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">

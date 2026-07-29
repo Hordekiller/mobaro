@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Config;
+
 class ZarinPal
 {
     private bool $sandbox;

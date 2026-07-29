@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Config;
+
 class Cache
 {
     private const VERSION_DIR = 'versions';

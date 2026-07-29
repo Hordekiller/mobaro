@@ -1,9 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php $settings = $settings ?? []; $seo = $seo ?? []; ?>
+    <?php $settings = $settings ?? [];
+    $seo = $seo ?? []; ?>
     <title><?= e($seo['title'] ?? $title ?? ($settings['meta_title'] ?? ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای')) ?></title>
     <meta name="description" content="<?= e($seo['description'] ?? ($settings['meta_description'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای')) ?>">
     <?php if (!empty($seo['canonical'])) : ?>

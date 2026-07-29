@@ -1,5 +1,6 @@
 <?php
 
+use App\Captcha;
 use PHPUnit\Framework\TestCase;
 
 class CaptchaTest extends TestCase

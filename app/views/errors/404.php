@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $brandName = isset($settings) ? ($settings['brand_name'] ?? 'موبارو') : 'موبارو';
 $title = 'صفحه یافت نشد | ' . $brandName; ?>
 <div class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 50%, #fff5f5 100%);">

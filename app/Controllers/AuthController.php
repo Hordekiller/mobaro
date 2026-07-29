@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Auth;
+use App\Captcha;
+use App\RateLimiter;
+use App\Database;
+use App\Services\SmsService;
+use App\GoogleAuth;
+
 class AuthController extends BaseController
 {
     private const PATH_DASHBOARD = '/dashboard';

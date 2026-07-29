@@ -1,5 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Database;
+use App\Auth;
+
 class MediaController
 {
     public function stream(int $id): void

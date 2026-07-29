@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $title = 'رزرو نوبت | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div id="booking" class="min-h-screen bg-gradient-to-br from-rose-50 to-white pt-24">
     <div class="max-w-6xl mx-auto px-4 py-8">

@@ -1,5 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
+use App\Cache;
+use App\Database;
+use Throwable;
+
 class Settings
 {
     private static ?array $local = null;

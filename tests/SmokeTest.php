@@ -1,5 +1,6 @@
 <?php
 
+use App\Config;
 use PHPUnit\Framework\TestCase;
 
 class SmokeTest extends TestCase

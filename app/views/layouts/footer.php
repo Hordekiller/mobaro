@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
     </div>
 
     <footer id="about" class="bg-zinc-950 text-zinc-400">

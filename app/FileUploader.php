@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App;
+
 class FileUploader
 {
     private const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];

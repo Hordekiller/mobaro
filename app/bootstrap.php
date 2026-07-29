@@ -1,5 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Auth;
+use App\Cache;
+use App\Config;
+use App\RateLimiter;
+use App\Settings;
+
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../vendor/autoload.php';

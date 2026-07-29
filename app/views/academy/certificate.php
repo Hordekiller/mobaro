@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $title = 'گواهی پایان دوره | ' . e($course['title']); ?>
 <style>
     @media print {

@@ -1,3 +1,8 @@
+<?php
+
+declare(strict_types=1);
+
+?>
 <section id="education" class="bg-gradient-to-br from-zinc-100 to-white py-20">
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="grid md:grid-cols-12 gap-16">

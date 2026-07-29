@@ -3,9 +3,9 @@
     "description": "Mobaro beauty salon MVC application",
     "type": "project",
     "autoload": {
-        "classmap": [
-            "app/"
-        ],
+        "psr-4": {
+            "App\\": "app/"
+        },
         "files": [
             "app/helpers.php"
         ]
