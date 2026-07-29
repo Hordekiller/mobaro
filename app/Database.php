@@ -132,7 +132,7 @@ class Database
 
         $colPattern = '[a-zA-Z_][a-zA-Z0-9_.]*';
         $ops = '=|!=|<>|>=|<=|>|<|LIKE|IN';
-        $safePattern = "/^{$colPattern}\s+(?:{$ops})\s+\?$/i";
+        $safePattern = "/^{$colPattern}\s+(?:{$ops})\s+(?:\?|:[a-zA-Z_][a-zA-Z0-9_]*)$/i";
 
         foreach ($parts as $part) {
             $part = trim($part);
