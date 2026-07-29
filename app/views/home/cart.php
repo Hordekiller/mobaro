@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Auth;
+
 $title = 'سبد خرید | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen bg-gradient-to-br from-rose-50 to-white pt-24">
     <div class="max-w-4xl mx-auto px-4 py-8">

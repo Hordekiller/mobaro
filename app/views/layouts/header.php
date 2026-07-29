@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Auth;
+use App\Database;
+
 ?>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">

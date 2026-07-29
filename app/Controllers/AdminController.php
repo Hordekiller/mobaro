@@ -13,6 +13,7 @@ use App\Cache;
 use App\Config;
 use App\FileUploader;
 use Throwable;
+use finfo;
 
 class AdminController extends BaseController
 {

@@ -6,6 +6,8 @@ namespace App;
 
 use App\Config;
 use InvalidArgumentException;
+use PDO;
+use PDOStatement;
 
 class Database
 {

@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Auth;
+use App\Database;
+
 $title = e($product['name']) . ' | ' . ($settings['brand_name'] ?? 'موبارو');
 $discount = 0;
 if (!empty($product['old_price']) && $product['old_price'] > $product['price']) {
@@ -80,7 +83,7 @@ $inWishlist = Auth::check()
                     <div class="flex items-center gap-3 mb-6">
                         <div class="star-rating text-amber-400 text-lg">
                             <?php for ($i = 1; $i <= 5; $i++) : ?>
-                                <?php if ($i <= floor($product['rating'] ?? 0)) : ?>
+                                <?php if ($i <= floor((float) ($product['rating'] ?? 0))) : ?>
                                     <i class="fa-solid fa-star"></i>
                                 <?php elseif ($i - 0.5 <= ($product['rating'] ?? 0)) : ?>
                                     <i class="fa-solid fa-star-half-alt"></i>

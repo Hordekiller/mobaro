@@ -44,6 +44,13 @@ class Router
 
             if (preg_match($route['pattern'], $uri, $matches)) {
                 $params = array_filter($matches, fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
+
+                foreach ($params as $k => $v) {
+                    if (is_string($v) && ctype_digit($v)) {
+                        $params[$k] = (int) $v;
+                    }
+                }
+
                 $handler = $route['handler'];
 
                 if (is_array($handler)) {

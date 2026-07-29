@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Captcha;
+use App\Database;
+
 ?>
 <section id="booking" class="bg-zinc-950 py-20 text-white relative overflow-hidden">
     <div class="max-w-2xl mx-auto px-8">

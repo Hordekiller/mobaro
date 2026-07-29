@@ -10,6 +10,8 @@ use App\Database;
 use App\Settings;
 use App\Captcha;
 use App\Auth;
+use DateTime;
+use DateTimeZone;
 
 class BookingController extends BaseController
 {

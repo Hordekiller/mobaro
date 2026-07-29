@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Settings;
+
 class BaseController
 {
     private static array $protectedVars = ['view', 'data', 'hideFooter', 'this'];
