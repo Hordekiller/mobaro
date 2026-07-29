@@ -66,11 +66,12 @@ class AcademyController extends BaseController
 
         $sidebar = $this->getSidebar();
         $settings = Settings::all();
+        $seo = SEOService::forPage('academy');
 
         $this->view('academy/index', [
             'courses' => $courses, 'tab' => $tab, 'category' => $category,
             'page' => $page, 'totalPages' => $totalPages, 'totalCourses' => $totalCourses,
-            'settings' => $settings, 'featuredCourse' => $featuredCourse,
+            'settings' => $settings, 'featuredCourse' => $featuredCourse, 'seo' => $seo,
         ] + $sidebar);
     }
 
@@ -103,7 +104,8 @@ class AcademyController extends BaseController
 
         $settings = Settings::all();
 
-        $this->view('academy/detail', compact('course', 'related', 'settings'));
+        $seo = SEOService::forPage('academy');
+        $this->view('academy/detail', compact('course', 'related', 'settings', 'seo'));
     }
 
     public function enroll(string $slug): void

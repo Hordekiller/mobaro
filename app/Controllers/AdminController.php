@@ -136,7 +136,7 @@ class AdminController extends BaseController
     public function section(string $section): void
     {
         $this->requireAdmin();
-        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices', 'sms', 'blog-categories'];
+        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices', 'sms', 'blog-categories', 'seo'];
 
         if (!in_array($section, $validSections)) {
             redirect(self::PATH_ADMIN);
@@ -170,6 +170,7 @@ class AdminController extends BaseController
             'gallery' => ['fa-photo-film', 'گالری رسانه'],
             'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
             'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
+            'seo' => ['fa-globe', 'مدیریت سئو'],
         ];
 
         $method = 'section' . str_replace('-', '', ucwords($section, '-'));
@@ -508,6 +509,13 @@ class AdminController extends BaseController
                 ['key' => 'is_published', 'label' => 'منتشر شده', 'type' => 'boolean'],
                 ['key' => 'is_featured', 'label' => 'ویژه', 'type' => 'boolean'],
                 ['key' => 'views', 'label' => 'بازدید', 'type' => 'text'],
+                ['key' => 'meta_title', 'label' => 'عنوان متا (SEO)', 'type' => 'text'],
+                ['key' => 'meta_description', 'label' => 'توضیحات متا (SEO)', 'type' => 'text'],
+                ['key' => 'canonical_url', 'label' => 'آدرس کنونیکال', 'type' => 'text'],
+                ['key' => 'og_title', 'label' => 'عنوان Open Graph', 'type' => 'text'],
+                ['key' => 'og_description', 'label' => 'توضیحات Open Graph', 'type' => 'text'],
+                ['key' => 'og_image', 'label' => 'تصویر Open Graph', 'type' => 'image'],
+                ['key' => 'image_alt', 'label' => 'متن جایگزین تصویر', 'type' => 'text'],
             ],
             'reviews' => [
                 ['key' => 'product_id', 'label' => 'شناسه محصول', 'type' => 'text'],
@@ -693,6 +701,7 @@ class AdminController extends BaseController
             'product-brands' => ['products'],
             'hair-prices' => ['booking'],
             'blog-categories' => ['blog'],
+            'seo' => ['homepage', 'blog'],
         ];
 
         $tags = $sectionToTags[$section] ?? [$section];
@@ -723,6 +732,7 @@ class AdminController extends BaseController
             'captcha' => $this->updateCaptchaSettings(),
             'gallery' => $this->saveGallery(),
             'sms' => $this->updateSmsSettings(),
+            'seo' => $this->saveSeo(),
             default => $this->saveGenericSection($section),
         };
     }
@@ -887,6 +897,13 @@ class AdminController extends BaseController
             $uploaded = FileUploader::upload($_FILES['avatar'], 'avatar', $oldAvatar);
             if ($uploaded) {
                 $data['avatar'] = $uploaded;
+            }
+        }
+        if (!empty($_FILES['og_image']['name']) && $_FILES['og_image']['error'] === UPLOAD_ERR_OK) {
+            $oldOg = $id ? (Database::fetch("SELECT og_image FROM {$table} WHERE id = ?", [$id])['og_image'] ?? null) : null;
+            $uploaded = FileUploader::upload($_FILES['og_image'], 'og_image', $oldOg);
+            if ($uploaded) {
+                $data['og_image'] = $uploaded;
             }
         }
     }
@@ -1058,6 +1075,12 @@ class AdminController extends BaseController
             $existing = Database::fetch("SELECT image FROM blog_posts WHERE id = ?", [$id]);
             if ($existing) {
                 $data['image'] = $existing['image'];
+            }
+        }
+        if ($id && empty($data['og_image'])) {
+            $existing = Database::fetch("SELECT og_image FROM blog_posts WHERE id = ?", [$id]);
+            if ($existing && !empty($existing['og_image'])) {
+                $data['og_image'] = $existing['og_image'];
             }
         }
     }
@@ -2234,5 +2257,77 @@ class AdminController extends BaseController
         }
 
         redirect('/admin/sms?tab=credit');
+    }
+
+    private function sectionSeo(array &$data): void
+    {
+        $data['seoPages'] = Database::fetchAll("SELECT * FROM seo_meta ORDER BY id");
+        $data['pageLabels'] = [
+            'home'    => 'صفحه اصلی',
+            'shop'    => 'فروشگاه',
+            'about'   => 'درباره ما',
+            'contact' => 'تماس با ما',
+            'academy' => 'آکادمی',
+        ];
+        $this->view(self::VIEW_ADMIN, $data);
+    }
+
+    private function saveSeo(): void
+    {
+        $seoData = $_POST['seo'] ?? [];
+        if (empty($seoData)) {
+            flash('error', 'داده‌ای ارسال نشده است.');
+            redirect('/admin/seo');
+            return;
+        }
+
+        foreach ($seoData as $pageSlug => $fields) {
+            $pageSlug = sanitize($pageSlug);
+            $updateData = [];
+            if (isset($fields['meta_title'])) {
+                $updateData['meta_title'] = sanitize($fields['meta_title']);
+            }
+            if (isset($fields['meta_description'])) {
+                $updateData['meta_description'] = sanitize($fields['meta_description']);
+            }
+            if (isset($fields['canonical_url'])) {
+                $updateData['canonical_url'] = sanitize($fields['canonical_url']);
+            }
+            if (isset($fields['og_title'])) {
+                $updateData['og_title'] = sanitize($fields['og_title']);
+            }
+            if (isset($fields['og_description'])) {
+                $updateData['og_description'] = sanitize($fields['og_description']);
+            }
+            if (isset($fields['og_image'])) {
+                $updateData['og_image'] = sanitize($fields['og_image']);
+            }
+
+            if (!empty($updateData)) {
+                $existing = Database::fetch("SELECT id FROM seo_meta WHERE page_slug = ?", [$pageSlug]);
+                if ($existing) {
+                    $sets = [];
+                    $params = [];
+                    foreach ($updateData as $k => $v) {
+                        $sets[] = "{$k} = ?";
+                        $params[] = $v;
+                    }
+                    $params[] = $existing['id'];
+                    Database::query(
+                        "UPDATE seo_meta SET " . implode(', ', $sets) . " WHERE id = ?",
+                        $params
+                    );
+                } else {
+                    $updateData['page_slug'] = $pageSlug;
+                    Database::insert('seo_meta', $updateData);
+                }
+            }
+        }
+
+        Cache::flushByTag('homepage');
+        Cache::flushByTag('blog');
+        Settings::invalidate();
+        flash('success', 'تنظیمات سئو با موفقیت ذخیره شد.');
+        redirect('/admin/seo');
     }
 }

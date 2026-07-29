@@ -40,6 +40,7 @@ class ModelsController extends BaseController
         }, 'models');
 
         $settings = Settings::all();
+        $seo = SEOService::forPage('home');
 
         $this->view('models/index', compact(
             'models',
@@ -48,7 +49,8 @@ class ModelsController extends BaseController
             'totalPages',
             'totalModels',
             'categories',
-            'settings'
+            'settings',
+            'seo'
         ));
     }
 }

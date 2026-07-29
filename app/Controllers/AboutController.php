@@ -5,7 +5,8 @@ class AboutController extends BaseController
     public function index(): void
     {
         $settings = Settings::all();
+        $seo = SEOService::forPage('about');
 
-        $this->view('about/index', compact('settings'));
+        $this->view('about/index', compact('settings', 'seo'));
     }
 }

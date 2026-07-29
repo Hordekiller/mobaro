@@ -81,7 +81,7 @@
         <a href="/blog/<?= e($featured['slug']) ?>" class="bg-white rounded-3xl overflow-hidden shadow-xl card-hover cursor-pointer group block">
             <div class="grid md:grid-cols-2 gap-0">
                 <div class="image-zoom h-64 md:h-auto">
-                    <img src="/assets/images/<?= e($featured['image'] ?: 'placeholder.svg') ?>" alt="<?= e($featured['title']) ?>" class="w-full h-full object-cover">
+                    <img src="/assets/images/<?= e($featured['image'] ?: 'placeholder.svg') ?>" alt="<?= e($featured['image_alt'] ?? $featured['title']) ?>" class="w-full h-full object-cover">
                 </div>
                 <div class="p-8 md:p-12 flex flex-col justify-center">
                     <div class="flex items-center gap-3 mb-4">
@@ -137,7 +137,7 @@
                     <article class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover group">
                         <a href="/blog/<?= e($post['slug']) ?>">
                             <div class="image-zoom h-48 relative">
-                                <img src="/assets/images/<?= e($post['image'] ?: 'placeholder.svg') ?>" alt="<?= e($post['title']) ?>" class="w-full h-full object-cover">
+                                <img src="/assets/images/<?= e($post['image'] ?: 'placeholder.svg') ?>" alt="<?= e($post['image_alt'] ?? $post['title']) ?>" class="w-full h-full object-cover">
                                 <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-xs font-bold text-rose-600 shadow-md">
                                     <?= e($post['category']) ?>
                                 </div>
@@ -235,7 +235,7 @@
                         <div class="space-y-4">
                             <?php foreach ($popularPosts as $pp) : ?>
                             <a href="/blog/<?= e($pp['slug']) ?>" class="flex gap-3 group">
-                                <img src="/assets/images/<?= e($pp['image'] ?: 'placeholder.svg') ?>" class="w-20 h-20 rounded-lg object-cover flex-shrink-0" alt="<?= e($pp['title']) ?>">
+                                <img src="/assets/images/<?= e($pp['image'] ?: 'placeholder.svg') ?>" class="w-20 h-20 rounded-lg object-cover flex-shrink-0" alt="<?= e($pp['image_alt'] ?? $pp['title']) ?>">
                                 <div>
                                     <h5 class="text-sm font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1">
                                         <?= e($pp['title']) ?>

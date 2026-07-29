@@ -44,6 +44,7 @@
                     'captcha' => ['fa-shield-halved', 'کپچا'],
                     'settings' => ['fa-gear', 'تنظیمات'],
                     'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
+                    'seo' => ['fa-globe', 'مدیریت سئو'],
                 ]],
             ];
 
@@ -376,6 +377,51 @@
             <?php require_once __DIR__ . '/gallery.php'; ?>
         <?php elseif ($section === 'sms') : ?>
             <?php require_once __DIR__ . '/sms.php'; ?>
+        <?php elseif ($section === 'seo') : ?>
+            <div class="mb-6">
+                <h2 class="text-2xl font-extrabold">مدیریت سئو (SEO)</h2>
+                <p class="text-zinc-400 text-sm">تنظیم متادیتا و Open Graph برای صفحات سایت</p>
+            </div>
+            <form action="/admin/seo/save" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <?= csrf() ?>
+                <?php foreach ($seoPages as $seoPage) :
+                    $slug = $seoPage['page_slug'];
+                    $label = $pageLabels[$slug] ?? $slug;
+                ?>
+                <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
+                    <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">
+                        <i class="fa-solid fa-file-lines ml-1 text-rose-500"></i><?= e($label) ?>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="seo_<?= $slug ?>_meta_title" class="block text-sm font-semibold mb-1.5">عنوان متا (Meta Title)</label>
+                            <input id="seo_<?= $slug ?>_meta_title" type="text" name="seo[<?= $slug ?>][meta_title]" value="<?= e($seoPage['meta_title'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="seo_<?= $slug ?>_meta_description" class="block text-sm font-semibold mb-1.5">توضیحات متا (Meta Description)</label>
+                            <input id="seo_<?= $slug ?>_meta_description" type="text" name="seo[<?= $slug ?>][meta_description]" value="<?= e($seoPage['meta_description'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="seo_<?= $slug ?>_canonical_url" class="block text-sm font-semibold mb-1.5">آدرس کنونیکال</label>
+                            <input id="seo_<?= $slug ?>_canonical_url" type="text" name="seo[<?= $slug ?>][canonical_url]" value="<?= e($seoPage['canonical_url'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="خودکار">
+                        </div>
+                        <div>
+                            <label for="seo_<?= $slug ?>_og_title" class="block text-sm font-semibold mb-1.5">عنوان Open Graph</label>
+                            <input id="seo_<?= $slug ?>_og_title" type="text" name="seo[<?= $slug ?>][og_title]" value="<?= e($seoPage['og_title'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="seo_<?= $slug ?>_og_description" class="block text-sm font-semibold mb-1.5">توضیحات Open Graph</label>
+                            <input id="seo_<?= $slug ?>_og_description" type="text" name="seo[<?= $slug ?>][og_description]" value="<?= e($seoPage['og_description'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label for="seo_<?= $slug ?>_og_image" class="block text-sm font-semibold mb-1.5">تصویر Open Graph (URL کامل)</label>
+                            <input id="seo_<?= $slug ?>_og_image" type="text" name="seo[<?= $slug ?>][og_image]" value="<?= e($seoPage['og_image'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="/favicon/og-image.png">
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+                <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات سئو</button>
+            </form>
         <?php else : ?>
             <?php $table = $section;
             if (in_array($section, ['hair-models'])) {

@@ -7,9 +7,10 @@ class ContactController extends BaseController
     public function index(): void
     {
         $settings = Settings::all();
+        $seo = SEOService::forPage('contact');
 
         $pageTitle = $settings['contact_header_text'] ?? 'تماس با ما';
-        $this->view('contact/index', compact('settings', 'pageTitle'));
+        $this->view('contact/index', compact('settings', 'seo', 'pageTitle'));
     }
 
     public function send(): void

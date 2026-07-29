@@ -118,6 +118,7 @@ class ShopController extends BaseController
             $wishlist = $_SESSION['wishlist'] ?? [];
         }
         $settings = Settings::all();
+        $seo = SEOService::forPage('shop');
 
         $this->view('shop/index', [
             'products' => $products, 'category' => $category, 'brand' => $brand,
@@ -125,6 +126,7 @@ class ShopController extends BaseController
             'totalPages' => $totalPages, 'totalProducts' => $totalProducts,
             'allTotal' => $allTotal,
             'cart' => $cart, 'wishlist' => $wishlist, 'settings' => $settings,
+            'seo' => $seo,
             'priceMin' => $priceMin, 'priceMax' => $priceMax, 'rating' => $rating,
             'isSale' => $isSale, 'isNew' => $isNew, 'inStock' => $inStock,
         ] + $facets);
@@ -181,8 +183,9 @@ class ShopController extends BaseController
 
         $settings = Settings::all();
         $cart = $_SESSION['cart'] ?? [];
+        $seo = SEOService::forPage('shop');
 
-        $this->view('shop/detail', compact('product', 'related', 'settings', 'cart', 'reviews', 'avgRating', 'reviewCount', 'gallery', 'productMedia'));
+        $this->view('shop/detail', compact('product', 'related', 'settings', 'cart', 'reviews', 'avgRating', 'reviewCount', 'gallery', 'productMedia', 'seo'));
     }
 
     public function postReview(int $productId): void

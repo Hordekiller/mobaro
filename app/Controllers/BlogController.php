@@ -87,10 +87,12 @@ class BlogController extends BaseController
 
         $sidebar = $this->getSidebar();
         $settings = Settings::all();
+        $seo = SEOService::forPage('blog');
 
         $this->view('blog/index', [
             'posts' => $posts, 'category' => $category, 'search' => $search,
             'page' => $page, 'totalPages' => $totalPages, 'settings' => $settings,
+            'seo' => $seo,
         ] + $sidebar);
     }
 
@@ -261,9 +263,11 @@ class BlogController extends BaseController
         );
         $commentCount = count($comments);
 
+        $seo = SEOService::forBlogPost($post);
+
         $this->view('blog/show', [
             'post' => $post, 'relatedPosts' => $relatedPosts, 'settings' => $settings, 'tags' => $tags,
-            'comments' => $comments, 'commentCount' => $commentCount,
+            'comments' => $comments, 'commentCount' => $commentCount, 'seo' => $seo,
         ] + $sidebar);
     }
 }

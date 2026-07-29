@@ -26,12 +26,14 @@ class HomeController extends BaseController
         }, 'homepage');
 
         $settings = Settings::all();
+        $seo = SEOService::forPage('home');
         $captchaEnabled = Captcha::isEnabled('booking');
         $captchaQuestion = $captchaEnabled ? Captcha::store() : '';
 
         $this->view('home/index', compact(
             'homeData',
             'settings',
+            'seo',
             'captchaQuestion',
             'captchaEnabled'
         ) + [

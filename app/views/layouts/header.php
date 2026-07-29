@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php $settings = $settings ?? []; ?>
-    <title><?= e($title ?? ($settings['meta_title'] ?? ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای')) ?></title>
-    <meta name="description" content="<?= e($settings['meta_description'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای') ?>">
-    <meta property="og:title" content="<?= e($settings['og_title'] ?? ($title ?? ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای')) ?>">
-    <meta property="og:description" content="<?= e($settings['og_description'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای') ?>">
-    <meta property="og:image" content="<?= e($settings['og_image'] ?? '/favicon/og-image.png') ?>">
+    <?php $settings = $settings ?? []; $seo = $seo ?? []; ?>
+    <title><?= e($seo['title'] ?? $title ?? ($settings['meta_title'] ?? ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای')) ?></title>
+    <meta name="description" content="<?= e($seo['description'] ?? ($settings['meta_description'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای')) ?>">
+    <?php if (!empty($seo['canonical'])) : ?>
+    <link rel="canonical" href="<?= e($seo['canonical']) ?>">
+    <?php endif; ?>
+    <meta property="og:title" content="<?= e($seo['og_title'] ?? ($settings['og_title'] ?? ($title ?? $seo['title'] ?? ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی حرفه‌ای'))) ?>">
+    <meta property="og:description" content="<?= e($seo['og_desc'] ?? ($settings['og_description'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای')) ?>">
+    <meta property="og:image" content="<?= e($seo['og_image'] ?? ($settings['og_image'] ?? '/favicon/og-image.png')) ?>">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <?php $_csrf_token = $_SESSION['_csrf'] ?? ''; ?>

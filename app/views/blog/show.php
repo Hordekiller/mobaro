@@ -178,7 +178,7 @@
 <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="relative rounded-3xl overflow-hidden shadow-2xl border border-rose-100">
         <img src="/assets/images/<?= e($post['image'] ?: 'placeholder.svg') ?>"
-             alt="<?= e($post['title']) ?>"
+             alt="<?= e($post['image_alt'] ?: $post['title']) ?>"
              class="featured-image w-full h-auto max-h-[520px] object-cover">
         <div class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl shadow flex items-center gap-x-3 text-xs">
             <div class="flex -space-x-4">
