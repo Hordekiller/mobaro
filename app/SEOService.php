@@ -21,6 +21,7 @@ class SEOService
             'og_title'    => $post['og_title']          ?: ($post['meta_title'] ?: $post['title']),
             'og_desc'     => $post['og_description']    ?: ($post['meta_description'] ?: ($post['excerpt'] ?: $defaultDesc)),
             'og_image'    => $post['og_image']          ?: ($post['image'] ? asset('assets/images/' . $post['image']) : Settings::get('og_image', '/favicon/og-image.png')),
+            'robots'      => $post['robots']            ?? '',
         ];
     }
 
@@ -47,6 +48,7 @@ class SEOService
                 'og_title'    => $row['og_title']          ?: ($row['meta_title'] ?: $settings['og_title'] ?? ''),
                 'og_desc'     => $row['og_description']    ?: ($row['meta_description'] ?: $settings['og_description'] ?? ''),
                 'og_image'    => $row['og_image']          ?: $settings['og_image'] ?? '/favicon/og-image.png',
+                'robots'      => $row['robots']            ?? $settings['default_robots'] ?? '',
             ];
         });
     }

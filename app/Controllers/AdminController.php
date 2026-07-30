@@ -12,6 +12,7 @@ use App\Database;
 use App\Cache;
 use App\Config;
 use App\FileUploader;
+use App\Services\SmsService;
 use Throwable;
 use finfo;
 
@@ -531,6 +532,7 @@ class AdminController extends BaseController
                 ['key' => 'og_description', 'label' => 'توضیحات Open Graph', 'type' => 'text'],
                 ['key' => 'og_image', 'label' => 'تصویر Open Graph', 'type' => 'image'],
                 ['key' => 'image_alt', 'label' => 'متن جایگزین تصویر', 'type' => 'text'],
+                ['key' => 'robots', 'label' => 'دستور روبات‌ها (Robots)', 'type' => 'text'],
             ],
             'reviews' => [
                 ['key' => 'product_id', 'label' => 'شناسه محصول', 'type' => 'text'],
@@ -1854,9 +1856,10 @@ class AdminController extends BaseController
         $search = trim($_GET['s'] ?? '');
         $filter = trim($_GET['filter'] ?? '');
         $page = max(1, (int) ($_GET['page'] ?? 1));
-        $cacheKey = 'gallery_page_' . $page . '_' . $filter . '_' . hash('sha256', $search);
+        $limit = max(12, min(24, (int) ($_GET['limit'] ?? 20)));
+        $cacheKey = 'gallery_page_' . $page . '_' . $limit . '_' . $filter . '_' . hash('sha256', $search);
 
-        $paged = Cache::remember($cacheKey, Config::get('cache.ttl.admin', 300), function () use ($search, $filter) {
+        $paged = Cache::remember($cacheKey, Config::get('cache.ttl.admin', 300), function () use ($search, $filter, $limit) {
             $where = 'WHERE 1=1';
             $params = [];
 
@@ -1874,15 +1877,26 @@ class AdminController extends BaseController
             return $this->paginate(
                 "SELECT * FROM media {$where} ORDER BY id DESC",
                 "SELECT COUNT(*) as cnt FROM media {$where}",
-                $params
+                $params,
+                $limit
             );
         }, ['gallery']);
-        $data['items'] = $paged['items'];
+
+        $items = $paged['items'];
+        $publicDir = realpath(__DIR__ . '/../../public');
+        foreach ($items as &$item) {
+            $fullPath = realpath($publicDir . '/' . ltrim($item['filepath'], '/'));
+            $item['file_exists'] = $fullPath !== false && str_starts_with($fullPath, $publicDir . '/');
+        }
+        unset($item);
+
+        $data['items'] = $items;
         $data['page'] = $paged['page'];
         $data['totalPages'] = $paged['totalPages'];
         $data['total'] = $paged['total'];
         $data['search'] = $search;
         $data['filter'] = $filter;
+        $data['limit'] = $limit;
         $this->view(self::VIEW_ADMIN, $data);
     }
 
@@ -2276,48 +2290,135 @@ class AdminController extends BaseController
 
     private function sectionSeo(array &$data): void
     {
-        $data['seoPages'] = Database::fetchAll("SELECT * FROM seo_meta ORDER BY id");
+        $defaultSlugs = ['home', 'shop', 'blog', 'contact', 'about', 'academy'];
+        foreach ($defaultSlugs as $slug) {
+            Database::query(
+                "INSERT IGNORE INTO seo_meta (page_slug) VALUES (?)",
+                [$slug]
+            );
+        }
+
+        $data['seoPages'] = Database::fetchAll(
+            "SELECT * FROM seo_meta WHERE page_slug IN ('home','shop','blog','contact','about','academy') ORDER BY FIELD(page_slug, 'home','shop','blog','contact','about','academy')"
+        );
         $data['pageLabels'] = [
             'home'    => 'صفحه اصلی',
             'shop'    => 'فروشگاه',
-            'about'   => 'درباره ما',
+            'blog'    => 'وبلاگ',
             'contact' => 'تماس با ما',
+            'about'   => 'درباره ما',
             'academy' => 'آکادمی',
+        ];
+        $data['globalSeo'] = [
+            'meta_title'       => Settings::get('meta_title', ''),
+            'meta_description' => Settings::get('meta_description', ''),
+            'og_title'         => Settings::get('og_title', ''),
+            'og_description'   => Settings::get('og_description', ''),
+            'og_image'         => Settings::get('og_image', ''),
+            'title_prefix'     => Settings::get('title_prefix', ''),
+            'title_suffix'     => Settings::get('title_suffix', ''),
+            'default_robots'   => Settings::get('default_robots', 'index,follow'),
+            'robots_txt'       => Settings::get('robots_txt', ''),
         ];
         $this->view(self::VIEW_ADMIN, $data);
     }
 
     private function saveSeo(): void
     {
-        $seoData = $_POST['seo'] ?? [];
-        if (empty($seoData)) {
-            flash('error', 'داده‌ای ارسال نشده است.');
+        $globalSeo = $_POST['seo_global'] ?? [];
+        $seoData   = $_POST['seo'] ?? [];
+
+        // ——— Validate global SEO fields ———
+        if (!empty($globalSeo['meta_title']) && mb_strlen($globalSeo['meta_title']) > 255) {
+            flash('error', 'عنوان متا پیش‌فرض حداکثر ۲۵۵ کاراکتر می‌تواند باشد.');
+            redirect('/admin/seo');
+            return;
+        }
+        if (!empty($globalSeo['og_title']) && mb_strlen($globalSeo['og_title']) > 255) {
+            flash('error', 'عنوان Open Graph پیش‌فرض حداکثر ۲۵۵ کاراکتر می‌تواند باشد.');
+            redirect('/admin/seo');
+            return;
+        }
+        if (!empty($globalSeo['title_prefix']) && mb_strlen($globalSeo['title_prefix']) > 100) {
+            flash('error', 'پیشوند عنوان حداکثر ۱۰۰ کاراکتر می‌تواند باشد.');
+            redirect('/admin/seo');
+            return;
+        }
+        if (!empty($globalSeo['title_suffix']) && mb_strlen($globalSeo['title_suffix']) > 100) {
+            flash('error', 'پسوند عنوان حداکثر ۱۰۰ کاراکتر می‌تواند باشد.');
             redirect('/admin/seo');
             return;
         }
 
+        // ——— Save global SEO to settings table ———
+        $globalFields = ['meta_title', 'meta_description', 'og_title', 'og_description',
+                         'title_prefix', 'title_suffix', 'default_robots'];
+        $upserts = [];
+        $upsertParams = [];
+        foreach ($globalFields as $field) {
+            $value = isset($globalSeo[$field]) ? sanitize($globalSeo[$field]) : '';
+            $upserts[] = self::PLACEHOLDER_PAIR;
+            $upsertParams[] = $field;
+            $upsertParams[] = $value;
+        }
+
+        if (isset($_POST['delete_seo_global_og_image']) && $_POST['delete_seo_global_og_image'] === '1') {
+            $old = Settings::get('og_image');
+            if ($old && is_file(__DIR__ . '/../../public/assets/images/' . basename($old))) {
+                @unlink(__DIR__ . '/../../public/assets/images/' . basename($old));
+            }
+            $upserts[] = self::PLACEHOLDER_PAIR;
+            $upsertParams[] = 'og_image';
+            $upsertParams[] = '';
+        } elseif (!empty($_FILES['seo_global_og_image']['name']) && $_FILES['seo_global_og_image']['error'] === UPLOAD_ERR_OK) {
+            $old = Settings::get('og_image');
+            $uploaded = FileUploader::upload($_FILES['seo_global_og_image'], 'setting', $old);
+            if ($uploaded) {
+                $upserts[] = self::PLACEHOLDER_PAIR;
+                $upsertParams[] = 'og_image';
+                $upsertParams[] = $uploaded;
+            }
+        } elseif (!empty($globalSeo['og_image'])) {
+            $upserts[] = self::PLACEHOLDER_PAIR;
+            $upsertParams[] = 'og_image';
+            $upsertParams[] = sanitize($globalSeo['og_image']);
+        }
+
+        // ——— Save robots.txt content (separate because newlines must be preserved) ———
+        if (isset($globalSeo['robots_txt'])) {
+            $robotsTxt = str_replace(["<?php", "<?", "?>"], "", $globalSeo['robots_txt']);
+            $robotsTxt = str_replace("\r\n", "\n", $robotsTxt);
+            $robotsTxt = trim($robotsTxt);
+            $robotsTxt = mb_substr($robotsTxt, 0, 8192);
+            $upserts[] = self::PLACEHOLDER_PAIR;
+            $upsertParams[] = 'robots_txt';
+            $upsertParams[] = $robotsTxt;
+        }
+
+        if (!empty($upserts)) {
+            $values = implode(', ', $upserts);
+            Database::query(
+                "INSERT INTO settings (setting_key, setting_value) VALUES {$values} ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+                $upsertParams
+            );
+            Cache::forget('robots.txt');
+            Settings::invalidate();
+        }
+
+        // ——— Save page-specific SEO to seo_meta table ———
+        $pageFields = ['meta_title', 'meta_description', 'canonical_url',
+                       'og_title', 'og_description', 'og_image', 'robots'];
         foreach ($seoData as $pageSlug => $fields) {
             $pageSlug = sanitize($pageSlug);
             $updateData = [];
-            if (isset($fields['meta_title'])) {
-                $updateData['meta_title'] = sanitize($fields['meta_title']);
+            foreach ($pageFields as $f) {
+                if (isset($fields[$f])) {
+                    $val = sanitize($fields[$f]);
+                    if ($val !== '') {
+                        $updateData[$f] = $val;
+                    }
+                }
             }
-            if (isset($fields['meta_description'])) {
-                $updateData['meta_description'] = sanitize($fields['meta_description']);
-            }
-            if (isset($fields['canonical_url'])) {
-                $updateData['canonical_url'] = sanitize($fields['canonical_url']);
-            }
-            if (isset($fields['og_title'])) {
-                $updateData['og_title'] = sanitize($fields['og_title']);
-            }
-            if (isset($fields['og_description'])) {
-                $updateData['og_description'] = sanitize($fields['og_description']);
-            }
-            if (isset($fields['og_image'])) {
-                $updateData['og_image'] = sanitize($fields['og_image']);
-            }
-
             if (!empty($updateData)) {
                 $existing = Database::fetch("SELECT id FROM seo_meta WHERE page_slug = ?", [$pageSlug]);
                 if ($existing) {

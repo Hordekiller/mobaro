@@ -47,19 +47,26 @@ class ImageController
         return $items[self::rngInt(0, count($items) - 1)];
     }
 
-    public static function random(int $width, int $height): void
+    public function random(int $width, int $height): void
     {
         $seed = random_int(1, 999999);
         self::serve($width, $height, $seed);
     }
 
-    public static function seeded(int $width, int $height, int $seed): void
+    public function seeded(int $width, int $height, int $seed): void
     {
         self::serve($width, $height, $seed);
     }
 
+    private const MAX_DIM = 2000;
+
     private static function serve(int $width, int $height, int $seed): void
     {
+        if ($width < 1 || $height < 1 || $width > self::MAX_DIM || $height > self::MAX_DIM) {
+            http_response_code(404);
+            exit;
+        }
+
         $cacheDir = __DIR__ . '/../../public/assets/images/cache';
 
         if (random_int(1, 100) === 1) {
@@ -70,14 +77,14 @@ class ImageController
         $cacheFile = $cacheDir . '/' . $cacheKey;
 
         if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0755, true);
+            @mkdir($cacheDir, 0755, true);
         }
 
         if (file_exists($cacheFile)) {
             header('Content-Type: image/svg+xml');
             header('Cache-Control: public, max-age=86400');
             readfile($cacheFile);
-            return;
+            exit;
         }
 
         self::seedRng($seed);
@@ -87,7 +94,7 @@ class ImageController
 
         $svg = self::generateSvg($width, $height, $palette, $pattern, $seed);
 
-        file_put_contents($cacheFile, $svg);
+        @file_put_contents($cacheFile, $svg);
 
         header('Content-Type: image/svg+xml');
         header('Cache-Control: public, max-age=86400');
@@ -98,16 +105,22 @@ class ImageController
     private static function cleanupOldCache(string $dir): void
     {
         $cutoff = time() - 86400 * 7;
-        foreach (glob($dir . '/*.svg') as $f) {
-            if (is_file($f) && filemtime($f) < $cutoff) {
-                @unlink($f);
+        $files = glob($dir . '/*.svg');
+        if (is_array($files)) {
+            foreach ($files as $f) {
+                if (is_file($f) && filemtime($f) < $cutoff) {
+                    @unlink($f);
+                }
             }
         }
         $avatarDir = $dir . '/avatars';
         if (is_dir($avatarDir)) {
-            foreach (glob($avatarDir . '/*.svg') as $f) {
-                if (is_file($f) && filemtime($f) < $cutoff) {
-                    @unlink($f);
+            $avatarFiles = glob($avatarDir . '/*.svg');
+            if (is_array($avatarFiles)) {
+                foreach ($avatarFiles as $f) {
+                    if (is_file($f) && filemtime($f) < $cutoff) {
+                        @unlink($f);
+                    }
                 }
             }
         }

@@ -149,6 +149,17 @@ function priceFormat(int|string $amount): string
     return number_format((int) $amount) . ' تومان';
 }
 
+function formatFileSize(int $bytes): string
+{
+    if ($bytes >= 1048576) {
+        return number_format($bytes / 1048576, 1) . ' MB';
+    }
+    if ($bytes >= 1024) {
+        return number_format($bytes / 1024, 0) . ' KB';
+    }
+    return $bytes . ' B';
+}
+
 function likePattern(string $search): string
 {
     return '%' . Database::escapeLike($search) . '%';

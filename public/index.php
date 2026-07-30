@@ -76,6 +76,10 @@ Router::post('/contact/send', ['App\Controllers\ContactController', 'send']);
 
 Router::get('/about', ['App\Controllers\AboutController', 'index']);
 
+Router::get('/sitemap.xml', ['App\Controllers\SitemapController', 'index']);
+
+Router::get('/robots.txt', ['App\Controllers\RobotsController', 'index']);
+
 Router::get('/models', ['App\Controllers\ModelsController', 'index']);
 
 Router::get('/dashboard/wallet/payment/callback', ['App\Controllers\DashboardController', 'walletPaymentCallback']);

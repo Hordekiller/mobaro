@@ -222,7 +222,7 @@ function filterUrl(array $overrides = []): string
                         $item = $product;
                         $discount = 0;
                         if (!empty($item['old_price']) && $item['old_price'] > $item['price']) {
-                            $discount = round((($item['old_price'] - $item['price']) / $item['old_price']) * 100);
+                            $discount = round(((floatval($item['old_price']) - floatval($item['price'])) / floatval($item['old_price'])) * 100);
                         }
                         ?>
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300">
@@ -260,7 +260,7 @@ function filterUrl(array $overrides = []): string
                             <div class="flex items-center gap-2 mb-3">
                                 <div class="star-rating text-amber-400 text-sm">
                                     <?php for ($i = 1; $i <= 5; $i++) : ?>
-                                        <?php if ($i <= floor($item['rating'] ?? 0)) : ?>
+                                        <?php if ($i <= floor((float) ($item['rating'] ?? 0))) : ?>
                                             <i class="fa-solid fa-star"></i>
                                         <?php elseif ($i - 0.5 <= ($item['rating'] ?? 0)) : ?>
                                             <i class="fa-solid fa-star-half-alt"></i>
@@ -274,9 +274,9 @@ function filterUrl(array $overrides = []): string
                             <div class="flex items-center justify-between">
                                 <div>
                                     <?php if (!empty($item['old_price']) && $item['old_price'] > $item['price']) : ?>
-                                    <span class="text-zinc-400 text-sm line-through ml-2"><?= number_format($item['old_price']) ?> تومان</span>
+                                    <span class="text-zinc-400 text-sm line-through ml-2"><?= number_format((float) $item['old_price']) ?> تومان</span>
                                     <?php endif; ?>
-                                    <span class="text-lg font-bold text-rose-500"><?= number_format($item['price']) ?> تومان</span>
+                                    <span class="text-lg font-bold text-rose-500"><?= number_format((int) $item['price']) ?> تومان</span>
                                 </div>
                                 <button onclick="addToCart(<?= $item['id'] ?>, this)" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm transition-all">
                                     <i class="fa-solid fa-plus ml-1"></i>افزودن
@@ -348,7 +348,7 @@ const shopProducts = <?= json_encode(array_map(function ($p) {
         'category' => $p['category'] ?? '',
         'price' => (int)$p['price'],
         'old_price' => (int)($p['old_price'] ?? 0),
-        'discount' => (!empty($p['old_price']) && $p['old_price'] > $p['price']) ? round((($p['old_price'] - $p['price']) / $p['old_price']) * 100) : 0,
+        'discount' => (!empty($p['old_price']) && $p['old_price'] > $p['price']) ? round(((floatval($p['old_price']) - floatval($p['price'])) / floatval($p['old_price'])) * 100) : 0,
         'rating' => (float)($p['rating'] ?? 0),
         'reviews' => (int)($p['reviews'] ?? 0),
         'image' => '/assets/images/' . e($p['image']),

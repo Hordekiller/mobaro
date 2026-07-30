@@ -8,6 +8,9 @@ $items = $items ?? [];
 $page = $page ?? 1;
 $totalPages = $totalPages ?? 1;
 $total = $total ?? 0;
+$limit = $limit ?? 20;
+
+$limitOptions = [12, 16, 20, 24];
 ?>
 <div class="mb-6 flex justify-between items-center flex-wrap gap-3">
     <div>
@@ -16,6 +19,12 @@ $total = $total ?? 0;
     </div>
     <div class="flex items-center gap-3">
         <form method="GET" action="/admin/gallery" class="flex items-center gap-2">
+            <select id="galleryLimit" name="limit" onchange="this.form.submit()" class="px-3 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                <?php foreach ($limitOptions as $opt) : ?>
+                <option value="<?= $opt ?>" <?= $limit === $opt ? 'selected' : '' ?>><?= faNum($opt) ?> عدد</option>
+                <?php endforeach; ?>
+            </select>
+            <label for="galleryLimit" class="sr-only">تعداد در صفحه</label>
             <select id="galleryFilter" name="filter" onchange="this.form.submit()" class="px-3 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
                 <option value="">همه</option>
                 <option value="image" <?= $filter === 'image' ? 'selected' : '' ?>>تصاویر</option>
@@ -47,22 +56,28 @@ $total = $total ?? 0;
             <?php
             $isImage = $item['type'] === 'image';
             $src = '/media/stream/' . $item['id'];
-            $icon = $isImage ? 'fa-image' : 'fa-video';
-            $iconColor = $isImage ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600';
-            $sourceLabels = [
-            'product_image' => 'محصول',
-            'product_gallery' => 'گالری محصول',
-            'product_video' => 'ویدیو محصول',
-            'course_video' => 'ویدیو دوره',
-            'tutorial_video' => 'ویدیو آموزش',
-            'direct' => 'آپلود مستقیم',
-            ];
-            $sourceLabel = $sourceLabels[$item['source_type']] ?? $item['source_type'];
+            $fileExists = $item['file_exists'] ?? true;
+
+            $sourceLabel = match ($item['source_type']) {
+                'product_image', 'product_gallery', 'product_video' => ['label' => 'تصویر محصول', 'color' => 'bg-blue-100 text-blue-600'],
+                'course_video', 'tutorial_video' => ['label' => 'تصویر بلاگ', 'color' => 'bg-emerald-100 text-emerald-600'],
+                'direct' => ['label' => 'آپلود مستقیم', 'color' => 'bg-purple-100 text-purple-600'],
+                default => ['label' => $item['source_type'], 'color' => 'bg-zinc-100 text-zinc-500'],
+            };
             ?>
         <div class="group relative bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100 hover:shadow-lg hover:border-rose-200 transition-all">
             <div class="aspect-square bg-zinc-100 flex items-center justify-center overflow-hidden">
-                <?php if ($isImage) : ?>
-                <img src="<?= e($src) ?>" alt="<?= e($item['alt_text'] ?: $item['original_name']) ?>" class="w-full h-full object-cover" loading="lazy" data-fallback-icon="<i class='fa-solid fa-image text-3xl text-zinc-300'></i>">
+                <?php if ($isImage && $fileExists) : ?>
+                <img src="<?= e($src) ?>"
+                     alt="<?= e($item['alt_text'] ?: $item['original_name']) ?>"
+                     class="w-full h-full object-cover"
+                     loading="lazy"
+                     onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\'fa-solid fa-file-circle-xmark text-4xl text-zinc-300\'></i>';this.parentElement.classList.add('bg-zinc-100')">
+                <?php elseif ($isImage && !$fileExists) : ?>
+                <div class="flex flex-col items-center gap-2 text-zinc-300">
+                    <i class="fa-solid fa-file-circle-xmark text-4xl"></i>
+                    <span class="text-xs text-zinc-400">فایل موجود نیست</span>
+                </div>
                 <?php else : ?>
                 <div class="flex flex-col items-center gap-2 text-zinc-400">
                     <i class="fa-solid fa-video text-4xl"></i>
@@ -75,7 +90,7 @@ $total = $total ?? 0;
                     <?= e(mb_substr($item['alt_text'] ?: $item['original_name'], 0, 30)) ?>
                 </p>
                 <div class="flex items-center justify-between mt-1.5">
-                    <span class="text-[10px] px-1.5 py-0.5 rounded-full <?= $iconColor ?>"><?= e($sourceLabel) ?></span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded-full <?= $sourceLabel['color'] ?>"><?= e($sourceLabel['label']) ?></span>
                     <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
                         <button type="button" onclick="copyMediaLink(<?= $item['id'] ?>)" class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 text-xs flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all" title="کپی لینک" aria-label="کپی لینک">
                             <i class="fa-solid fa-link"></i>
@@ -86,28 +101,61 @@ $total = $total ?? 0;
                     </div>
                 </div>
             </div>
+            <div class="px-2.5 pb-2 text-[10px] text-zinc-400 space-y-0.5 border-t border-zinc-100 pt-1.5 mt-0">
+                <div class="truncate" title="<?= e($item['original_name']) ?>"><?= e($item['original_name']) ?></div>
+                <div class="flex justify-between">
+                    <span><?= formatFileSize((int) $item['size']) ?></span>
+                    <span><?= timeAgo($item['created_at']) ?></span>
+                </div>
+            </div>
         </div>
         <?php endforeach; ?>
     </div>
 
         <?php if ($totalPages > 1) : ?>
-    <div class="flex justify-center gap-2 mt-8">
-            <?php if ($page > 1) : ?>
-        <a href="/admin/gallery?page=<?= $page - 1 ?>&filter=<?= e($filter) ?>&s=<?= e($search) ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">قبلی</a>
+    <div class="flex justify-center gap-2 mt-8" dir="ltr">
+        <?php
+        $qs = 'filter=' . urlencode($filter) . '&s=' . urlencode($search) . '&limit=' . $limit;
+        $visiblePages = 7;
+        $half = floor(($visiblePages - 1) / 2);
+        $start = max(1, $page - $half);
+        $end = min($totalPages, $page + $half);
+        if ($end - $start + 1 < $visiblePages) {
+            if ($start === 1) {
+                $end = min($totalPages, $start + $visiblePages - 1);
+            } else {
+                $start = max(1, $end - $visiblePages + 1);
+            }
+        }
+        ?>
+        <?php if ($page > 1) : ?>
+        <a href="/admin/gallery?page=<?= $page - 1 ?>&<?= $qs ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">قبلی</a>
+        <?php endif; ?>
+        <?php if ($start > 1) : ?>
+        <a href="/admin/gallery?page=1&<?= $qs ?>" class="px-3 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all"><?= faNum(1) ?></a>
+            <?php if ($start > 2) : ?>
+        <span class="px-2 py-2 text-zinc-400 text-sm">…</span>
             <?php endif; ?>
-            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-        <a href="/admin/gallery?page=<?= $i ?>&filter=<?= e($filter) ?>&s=<?= e($search) ?>" class="px-4 py-2 rounded-xl text-sm transition-all <?= $i === $page ? 'bg-rose-600 text-white' : 'bg-zinc-100 hover:bg-rose-100 hover:text-rose-600' ?>"><?= faNum($i) ?></a>
-            <?php endfor; ?>
-            <?php if ($page < $totalPages) : ?>
-        <a href="/admin/gallery?page=<?= $page + 1 ?>&filter=<?= e($filter) ?>&s=<?= e($search) ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">بعدی</a>
+        <?php endif; ?>
+        <?php for ($i = $start; $i <= $end; $i++) : ?>
+        <a href="/admin/gallery?page=<?= $i ?>&<?= $qs ?>" class="px-3 py-2 rounded-xl text-sm transition-all <?= $i === $page ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30' : 'bg-zinc-100 hover:bg-rose-100 hover:text-rose-600' ?>"><?= faNum($i) ?></a>
+        <?php endfor; ?>
+        <?php if ($end < $totalPages) : ?>
+            <?php if ($end < $totalPages - 1) : ?>
+        <span class="px-2 py-2 text-zinc-400 text-sm">…</span>
             <?php endif; ?>
+        <a href="/admin/gallery?page=<?= $totalPages ?>&<?= $qs ?>" class="px-3 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all"><?= faNum($totalPages) ?></a>
+        <?php endif; ?>
+        <?php if ($page < $totalPages) : ?>
+        <a href="/admin/gallery?page=<?= $page + 1 ?>&<?= $qs ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">بعدی</a>
+        <?php endif; ?>
     </div>
         <?php endif; ?>
     <?php endif; ?>
 </div>
 
 <!-- Upload Modal -->
-    <div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
+<div id="uploadMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
     <div class="bg-white rounded-[20px] p-6 w-full max-w-lg mx-4 shadow-2xl">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold">آپلود رسانه جدید</h3>
@@ -133,7 +181,7 @@ $total = $total ?? 0;
 </div>
 
 <!-- Delete Confirmation Modal -->
-    <div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
+<div id="deleteMediaModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
     <div class="bg-white rounded-[20px] p-6 w-full max-w-sm mx-4 shadow-2xl">
         <div class="text-center">
             <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i>

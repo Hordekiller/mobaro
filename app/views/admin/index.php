@@ -217,13 +217,6 @@ declare(strict_types=1);
                 'آکادمی' => [
                     'academy_instructor_bio' => 'بیوگرافی پیش‌فرض مدرس',
                 ],
-                'سئو (SEO)' => [
-                    'meta_title' => 'عنوان متا (SEO)',
-                    'meta_description' => 'توضیحات متا (SEO)',
-                    'og_title' => 'عنوان Open Graph',
-                    'og_description' => 'توضیحات Open Graph',
-                    'og_image' => 'تصویر Open Graph (مسیر تصویر)',
-                ],
                 'تصاویر هیرو' => [
                     'hero_bg_image' => 'نام تصویر پس‌زمینه هیرو (مثلاً hero-bg.jpg)',
                     'hero_model_image' => 'نام تصویر مدل هیرو (مثلاً hero-model.jpg)',
@@ -238,14 +231,13 @@ declare(strict_types=1);
                     'footer_description' => 'توضیحات فوتر',
                 ],
             ];
-            $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'meta_description', 'og_description', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
+            $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
             ?>
             <?php
-            $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'og_image', 'about_image'];
+            $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'about_image'];
             $imagePaths = [
                 'hero_bg_image' => '/assets/images/',
                 'hero_model_image' => '/assets/images/',
-                'og_image' => '',
                 'about_image' => '/assets/images/',
             ];
             ?>
@@ -385,10 +377,85 @@ declare(strict_types=1);
         <?php elseif ($section === 'seo') : ?>
             <div class="mb-6">
                 <h2 class="text-2xl font-extrabold">مدیریت سئو (SEO)</h2>
-                <p class="text-zinc-400 text-sm">تنظیم متادیتا و Open Graph برای صفحات سایت</p>
+                <p class="text-zinc-400 text-sm">تنظیمات سئوی سراسری و صفحه به صفحه</p>
             </div>
             <form action="/admin/seo/save" method="POST" enctype="multipart/form-data" class="space-y-6">
                 <?= csrf() ?>
+
+                <!-- Global SEO defaults -->
+                <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
+                    <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">
+                        <i class="fa-solid fa-globe ml-1 text-rose-500"></i>تنظیمات سراسری سئو
+                    </h3>
+                    <p class="text-xs text-zinc-400 mb-4">این مقادیر به عنوان پیش‌فرض برای تمام صفحات استفاده می‌شوند.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="seo_global_meta_title" class="block text-sm font-semibold mb-1.5">عنوان متا پیش‌فرض</label>
+                            <input id="seo_global_meta_title" type="text" name="seo_global[meta_title]" value="<?= e($globalSeo['meta_title'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" maxlength="255">
+                        </div>
+                        <div>
+                            <label for="seo_global_meta_description" class="block text-sm font-semibold mb-1.5">توضیحات متا پیش‌فرض</label>
+                            <textarea id="seo_global_meta_description" name="seo_global[meta_description]" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($globalSeo['meta_description'] ?? '') ?></textarea>
+                        </div>
+                        <div>
+                            <label for="seo_global_og_title" class="block text-sm font-semibold mb-1.5">عنوان Open Graph پیش‌فرض</label>
+                            <input id="seo_global_og_title" type="text" name="seo_global[og_title]" value="<?= e($globalSeo['og_title'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" maxlength="255">
+                        </div>
+                        <div>
+                            <label for="seo_global_og_description" class="block text-sm font-semibold mb-1.5">توضیحات Open Graph پیش‌فرض</label>
+                            <textarea id="seo_global_og_description" name="seo_global[og_description]" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($globalSeo['og_description'] ?? '') ?></textarea>
+                        </div>
+                        <div>
+                            <label for="seo_global_og_image" class="block text-sm font-semibold mb-1.5">تصویر Open Graph پیش‌فرض</label>
+                            <div class="space-y-2">
+                                <?php $ogImg = $globalSeo['og_image'] ?? ''; ?>
+                                <?php if (!empty($ogImg)) : ?>
+                                <div class="flex items-center gap-3">
+                                    <img src="<?= e($ogImg) ?>" alt="" class="w-16 h-16 rounded-lg object-cover border border-rose-100" data-hide-on-error>
+                                    <span class="text-xs text-zinc-400 truncate max-w-[180px]"><?= e($ogImg) ?></span>
+                                </div>
+                                <?php endif; ?>
+                                <input type="file" name="seo_global_og_image" accept="image/*" class="w-full text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 file:cursor-pointer">
+                                <?php if (!empty($ogImg)) : ?>
+                                <label class="flex items-center gap-2 text-xs text-zinc-400">
+                                    <input type="checkbox" name="delete_seo_global_og_image" value="1" class="rounded border-zinc-300 text-rose-600 focus:ring-rose-500">
+                                    حذف تصویر فعلی
+                                </label>
+                                <?php endif; ?>
+                                <input type="hidden" name="seo_global[og_image]" value="<?= e($ogImg) ?>">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="seo_global_default_robots" class="block text-sm font-semibold mb-1.5">ربات‌های پیش‌فرض (Robots)</label>
+                            <select id="seo_global_default_robots" name="seo_global[default_robots]" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                <?php $robotsVal = $globalSeo['default_robots'] ?? 'index,follow'; ?>
+                                <?php foreach (['index,follow' => 'ایندکس و دنبال لینک', 'noindex,nofollow' => 'بدون ایندکس و بدون دنبال لینک', 'index,nofollow' => 'ایندکس بدون دنبال لینک', 'noindex,follow' => 'بدون ایندکس با دنبال لینک'] as $rVal => $rLabel) : ?>
+                                <option value="<?= e($rVal) ?>" <?= $robotsVal === $rVal ? 'selected' : '' ?>><?= e($rLabel) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="seo_global_title_prefix" class="block text-sm font-semibold mb-1.5">پیشوند عنوان (مثال: «فروشگاه | »)</label>
+                            <input id="seo_global_title_prefix" type="text" name="seo_global[title_prefix]" value="<?= e($globalSeo['title_prefix'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" maxlength="100" placeholder="مثال: فروشگاه | ">
+                        </div>
+                        <div>
+                            <label for="seo_global_title_suffix" class="block text-sm font-semibold mb-1.5">پسوند عنوان (مثال: « | موبارو»)</label>
+                            <input id="seo_global_title_suffix" type="text" name="seo_global[title_suffix]" value="<?= e($globalSeo['title_suffix'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" maxlength="100" placeholder="مثال: | موبارو">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
+                    <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">
+                        <i class="fa-solid fa-file-code ml-1 text-rose-500"></i>محتوای robots.txt
+                    </h3>
+                    <div>
+                        <textarea name="seo_global[robots_txt]" rows="8" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" placeholder="User-agent: *&#10;Allow: /&#10;Disallow: /admin/"><?= e($globalSeo['robots_txt'] ?? '') ?></textarea>
+                        <p class="text-xs text-zinc-400 mt-2">خالی بگذارید تا مقادیر پیش‌فرض استفاده شود.</p>
+                    </div>
+                </div>
+
+                <!-- Page-specific SEO -->
                 <?php foreach ($seoPages as $seoPage) :
                     $slug = $seoPage['page_slug'];
                     $label = $pageLabels[$slug] ?? $slug;
@@ -404,7 +471,7 @@ declare(strict_types=1);
                         </div>
                         <div>
                             <label for="seo_<?= $slug ?>_meta_description" class="block text-sm font-semibold mb-1.5">توضیحات متا (Meta Description)</label>
-                            <input id="seo_<?= $slug ?>_meta_description" type="text" name="seo[<?= $slug ?>][meta_description]" value="<?= e($seoPage['meta_description'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                            <textarea id="seo_<?= $slug ?>_meta_description" name="seo[<?= $slug ?>][meta_description]" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($seoPage['meta_description'] ?? '') ?></textarea>
                         </div>
                         <div>
                             <label for="seo_<?= $slug ?>_canonical_url" class="block text-sm font-semibold mb-1.5">آدرس کنونیکال</label>
@@ -416,11 +483,20 @@ declare(strict_types=1);
                         </div>
                         <div>
                             <label for="seo_<?= $slug ?>_og_description" class="block text-sm font-semibold mb-1.5">توضیحات Open Graph</label>
-                            <input id="seo_<?= $slug ?>_og_description" type="text" name="seo[<?= $slug ?>][og_description]" value="<?= e($seoPage['og_description'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                            <textarea id="seo_<?= $slug ?>_og_description" name="seo[<?= $slug ?>][og_description]" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($seoPage['og_description'] ?? '') ?></textarea>
                         </div>
                         <div>
                             <label for="seo_<?= $slug ?>_og_image" class="block text-sm font-semibold mb-1.5">تصویر Open Graph (URL کامل)</label>
                             <input id="seo_<?= $slug ?>_og_image" type="text" name="seo[<?= $slug ?>][og_image]" value="<?= e($seoPage['og_image'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" placeholder="/favicon/og-image.png">
+                        </div>
+                        <div>
+                            <label for="seo_<?= $slug ?>_robots" class="block text-sm font-semibold mb-1.5">ربات‌ها (Robots)</label>
+                            <select id="seo_<?= $slug ?>_robots" name="seo[<?= $slug ?>][robots]" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                <option value="">استفاده از پیش‌فرض</option>
+                                <?php foreach (['index,follow' => 'ایندکس و دنبال لینک', 'noindex,nofollow' => 'بدون ایندکس و بدون دنبال لینک', 'index,nofollow' => 'ایندکس بدون دنبال لینک', 'noindex,follow' => 'بدون ایندکس با دنبال لینک'] as $rVal => $rLabel) : ?>
+                                <option value="<?= e($rVal) ?>" <?= ($seoPage['robots'] ?? '') === $rVal ? 'selected' : '' ?>><?= e($rLabel) ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
                 </div>

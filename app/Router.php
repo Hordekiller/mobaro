@@ -45,20 +45,33 @@ class Router
             if (preg_match($route['pattern'], $uri, $matches)) {
                 $params = array_filter($matches, fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
 
+                $numericNames = ['id', 'size', 'width', 'height', 'seed'];
                 foreach ($params as $k => $v) {
-                    if (is_string($v) && ctype_digit($v)) {
+                    if (is_numeric($v) || in_array($k, $numericNames, true)) {
                         $params[$k] = (int) $v;
                     }
                 }
 
                 $handler = $route['handler'];
 
-                if (is_array($handler)) {
-                    [$controller, $action] = $handler;
-                    $controllerInstance = new $controller();
-                    $controllerInstance->$action(...$params);
-                } else {
-                    $handler(...$params);
+                try {
+                    if (is_array($handler)) {
+                        [$controller, $action] = $handler;
+                        $controllerInstance = new $controller();
+                        $controllerInstance->$action(...$params);
+                    } else {
+                        $handler(...$params);
+                    }
+                } catch (Throwable $e) {
+                    error_log(sprintf(
+                        '[Router] %s: %s in %s:%d',
+                        get_class($e),
+                        $e->getMessage(),
+                        $e->getFile(),
+                        $e->getLine()
+                    ));
+                    self::renderError(404);
+                    return;
                 }
                 return;
             }

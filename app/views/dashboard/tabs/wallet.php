@@ -72,7 +72,7 @@ declare(strict_types=1);
                         </td>
                         <td class="py-3.5 px-3 text-sm text-left font-bold <?= in_array($t['type'], ['wallet_deposit', 'points_earn']) ? 'text-green-600' : 'text-red-500' ?>">
                             <?= in_array($t['type'], ['wallet_deposit', 'points_earn']) ? '+' : '-' ?>
-                            <?= e(number_format($t['amount'])) ?>
+                            <?= e(number_format((int) $t['amount'])) ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

@@ -17,9 +17,9 @@ class MediaController
             exit;
         }
 
-        $filePath = __DIR__ . '/../../public/' . $media['filepath'];
+        $filePath = __DIR__ . '/../../public/' . ($media['filepath'] ?? '');
 
-        if (!file_exists($filePath)) {
+        if ($media['filepath'] === null || $media['filepath'] === '' || !file_exists($filePath)) {
             http_response_code(404);
             exit;
         }
@@ -42,7 +42,7 @@ class MediaController
         }
 
         $mimeType = $media['mime_type'] ?: mime_content_type($filePath);
-        $size = $media['size'] ?: filesize($filePath);
+        $size = $media['size'] > 0 ? (int) $media['size'] : filesize($filePath);
 
         header('Content-Type: ' . $mimeType);
         header('Content-Length: ' . $size);

@@ -39,7 +39,7 @@ function academyFilterUrl(array $overrides = []): string
                     <span class="text-amber-300">آرایش و زیبایی</span>
                 </h1>
                 <p class="mt-6 text-lg text-white/80 leading-relaxed max-w-lg">
-                    بیش از <?= number_format($totalStudents) ?> دانشجو در دوره‌های آموزشی ما شرکت کرده‌اند. از مبتدی تا حرفه‌ای، مسیر یادگیری خود را پیدا کنید.
+                    بیش از <?= number_format((int) $totalStudents) ?> دانشجو در دوره‌های آموزشی ما شرکت کرده‌اند. از مبتدی تا حرفه‌ای، مسیر یادگیری خود را پیدا کنید.
                 </p>
                 <div class="mt-8 flex flex-wrap items-center gap-4">
                     <a href="#courses-section" class="bg-white text-indigo-700 px-8 py-3.5 rounded-2xl font-semibold hover:shadow-lg hover:shadow-white/25 transition-all active:scale-95">
@@ -56,7 +56,7 @@ function academyFilterUrl(array $overrides = []): string
                         <div class="w-10 h-10 rounded-full bg-emerald-400 border-2 border-indigo-600 flex items-center justify-center text-xs font-bold text-indigo-800">م</div>
                     </div>
                     <div class="text-sm text-white/70">
-                        <span class="font-bold text-white"><?= number_format($totalStudents) ?>+</span> دانشجو فعال
+                        <span class="font-bold text-white"><?= number_format((int) $totalStudents) ?>+</span> دانشجو فعال
                     </div>
                 </div>
             </div>
@@ -72,7 +72,7 @@ function academyFilterUrl(array $overrides = []): string
                             <div class="text-sm text-white/60">دوره ویژه هفته</div>
                             <div class="font-semibold text-lg mt-1 group-hover:text-amber-300 transition-colors"><?= e($featuredCourse['title']) ?></div>
                         </div>
-                        <div class="text-amber-300 text-2xl font-bold"><?= number_format($featuredCourse['rating'], 1) ?></div>
+                        <div class="text-amber-300 text-2xl font-bold"><?= number_format((float) $featuredCourse['rating'], 1) ?></div>
                     </div>
                     <div class="mt-3 flex items-center gap-2 text-sm text-white/60">
                         <i class="fa-solid fa-clock"></i>
@@ -164,8 +164,8 @@ function academyFilterUrl(array $overrides = []): string
                 </div>
                 <div class="flex justify-between items-center mt-5">
                     <div class="text-xs flex items-center gap-x-px text-amber-400">
-                        <?= str_repeat('★', (int) round($course['rating'])) ?><?= str_repeat('☆', 5 - (int) round($course['rating'])) ?>
-                        <span class="text-zinc-400 mr-2"><?= number_format($course['rating'], 1) ?></span>
+                        <?= str_repeat('★', (int) round((float) $course['rating'])) ?><?= str_repeat('☆', 5 - (int) round((float) $course['rating'])) ?>
+                        <span class="text-zinc-400 mr-2"><?= number_format((float) $course['rating'], 1) ?></span>
                     </div>
                     <div>
                         <?php if ($course['is_free']) : ?>

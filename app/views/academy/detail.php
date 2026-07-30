@@ -51,8 +51,8 @@ if (isset($_SESSION['user'])) {
                         <span><?= e($course['teacher']) ?></span>
                     </div>
                     <div class="flex items-center gap-1 text-amber-300">
-                        <?= str_repeat('★', (int) round($course['rating'])) ?>
-                        <span class="text-white/70 mr-1"><?= number_format($course['rating'], 1) ?></span>
+                        <?= str_repeat('★', (int) round((float) $course['rating'])) ?>
+                        <span class="text-white/70 mr-1"><?= number_format((float) $course['rating'], 1) ?></span>
                     </div>
                     <div><i class="fa-solid fa-user-group ml-1"></i><?= number_format($course['students']) ?> دانشجو</div>
                     <div><i class="fa-solid fa-clock ml-1"></i><?= e($course['duration']) ?></div>
@@ -135,7 +135,7 @@ if (isset($_SESSION['user'])) {
                     <h3 class="font-bold text-lg"><?= e($course['teacher']) ?></h3>
                     <p class="text-sm text-zinc-500 mt-1"><?= e($settings['academy_instructor_bio'] ?? 'مدرس ' . $course['category'] . ' با بیش از ۱۰ سال سابقه تدریس و فعالیت حرفه‌ای در سالن‌های زیبایی معتبر.') ?></p>
                     <div class="flex flex-wrap gap-2 mt-3">
-                        <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-star text-amber-400 ml-1"></i>امتیاز <?= number_format($course['rating'], 1) ?></span>
+                        <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-star text-amber-400 ml-1"></i>امتیاز <?= number_format((float) $course['rating'], 1) ?></span>
                         <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-user-group text-rose-400 ml-1"></i><?= number_format($course['students']) ?> دانشجو</span>
                     </div>
                 </div>
@@ -147,8 +147,8 @@ if (isset($_SESSION['user'])) {
             <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-star text-amber-400 ml-2"></i>نظرات دانشجویان</h2>
             <div class="flex items-center gap-6 mb-6 p-4 bg-gradient-to-l from-rose-50 to-amber-50 rounded-2xl">
                 <div class="text-center">
-                    <div class="text-4xl font-bold text-rose-600"><?= number_format($course['rating'], 1) ?></div>
-                    <div class="text-amber-400 text-sm mt-1"><?= str_repeat('★', (int) round($course['rating'])) ?></div>
+                    <div class="text-4xl font-bold text-rose-600"><?= number_format((float) $course['rating'], 1) ?></div>
+                    <div class="text-amber-400 text-sm mt-1"><?= str_repeat('★', (int) round((float) $course['rating'])) ?></div>
                     <div class="text-xs text-zinc-500 mt-1">از ۵</div>
                 </div>
                 <div class="flex-1 space-y-1">

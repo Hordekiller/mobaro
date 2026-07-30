@@ -8,7 +8,7 @@ use App\Database;
 $title = e($product['name']) . ' | ' . ($settings['brand_name'] ?? 'موبارو');
 $discount = 0;
 if (!empty($product['old_price']) && $product['old_price'] > $product['price']) {
-    $discount = round((($product['old_price'] - $product['price']) / $product['old_price']) * 100);
+    $discount = round(((floatval($product['old_price']) - floatval($product['price'])) / floatval($product['old_price'])) * 100);
 }
 $inWishlist = Auth::check()
     ? (bool) Database::fetch("SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?", [Auth::id(), $product['id']])
@@ -97,9 +97,9 @@ $inWishlist = Auth::check()
 
                     <div class="mb-6">
                         <?php if ($discount > 0) : ?>
-                        <span class="text-zinc-400 text-xl line-through ml-3"><?= number_format($product['old_price']) ?> تومان</span>
+                        <span class="text-zinc-400 text-xl line-through ml-3"><?= number_format((float) $product['old_price']) ?> تومان</span>
                         <?php endif; ?>
-                        <span class="text-4xl font-bold text-rose-500"><?= number_format($product['price']) ?> تومان</span>
+                        <span class="text-4xl font-bold text-rose-500"><?= number_format((int) $product['price']) ?> تومان</span>
                     </div>
 
                     <?php $desc = $product['description'] ?? ''; ?>
@@ -238,7 +238,7 @@ $inWishlist = Auth::check()
                     <?php
                     $relDiscount = 0;
                     if (!empty($rel['old_price']) && $rel['old_price'] > $rel['price']) {
-                        $relDiscount = round((($rel['old_price'] - $rel['price']) / $rel['old_price']) * 100);
+                        $relDiscount = round(((floatval($rel['old_price']) - floatval($rel['price'])) / floatval($rel['old_price'])) * 100);
                     }
                     ?>
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all duration-300">
@@ -254,7 +254,7 @@ $inWishlist = Auth::check()
                         <span class="text-xs text-rose-500 font-medium"><?= e($rel['brand'] ?? '') ?></span>
                         <h3 class="font-bold text-zinc-800 mt-1"><a href="/product/<?= $rel['id'] ?>" class="hover:text-rose-500 transition-colors"><?= e($rel['name']) ?></a></h3>
                         <div class="flex items-center justify-between mt-3">
-                            <span class="font-bold text-rose-500"><?= number_format($rel['price']) ?> تومان</span>
+                            <span class="font-bold text-rose-500"><?= number_format((int) $rel['price']) ?> تومان</span>
                             <button onclick="addToCart(<?= $rel['id'] ?>)" class="w-9 h-9 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-600 hover:text-white transition-all" aria-label="افزودن <?= e($rel['name']) ?> به سبد خرید">
                                 <i class="fa-solid fa-plus"></i>
                             </button>
