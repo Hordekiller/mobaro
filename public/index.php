@@ -7,69 +7,79 @@ use App\Settings;
 
 require_once __DIR__ . '/../app/bootstrap.php';
 
+const AUTH = 'App\\Controllers\\AuthController';
+const DASHBOARD = 'App\\Controllers\\DashboardController';
+const BOOKING = 'App\\Controllers\\BookingController';
+const SHOP = 'App\\Controllers\\ShopController';
+const BLOG = 'App\\Controllers\\BlogController';
+const ADMIN = 'App\\Controllers\\AdminController';
+const API = 'App\\Controllers\\ApiController';
+const ACADEMY = 'App\\Controllers\\AcademyController';
+const JSON_HEADER = 'Content-Type: application/json';
+
 Router::get('/', ['App\Controllers\HomeController', 'index']);
 
-Router::get('/login', ['App\Controllers\AuthController', 'showLogin']);
-Router::post('/login', ['App\Controllers\AuthController', 'login']);
-Router::get('/register', ['App\Controllers\AuthController', 'showRegister']);
-Router::post('/register', ['App\Controllers\AuthController', 'register']);
-Router::get('/verify-otp', ['App\Controllers\AuthController', 'showVerifyOtp']);
-Router::post('/verify-otp', ['App\Controllers\AuthController', 'verifyOtp']);
-Router::get('/logout', ['App\Controllers\AuthController', 'logout']);
-Router::post('/auth/forgot', ['App\Controllers\AuthController', 'forgot']);
-Router::get('/auth/google', ['App\Controllers\AuthController', 'googleRedirect']);
-Router::get('/auth/google/callback', ['App\Controllers\AuthController', 'googleCallback']);
+Router::get('/login', [AUTH, 'showLogin']);
+Router::post('/login', [AUTH, 'login']);
+Router::get('/register', [AUTH, 'showRegister']);
+Router::post('/register', [AUTH, 'register']);
+Router::get('/verify-otp', [AUTH, 'showVerifyOtp']);
+Router::post('/verify-otp', [AUTH, 'verifyOtp']);
+Router::get('/logout', [AUTH, 'logout']);
+Router::post('/auth/forgot', [AUTH, 'forgot']);
+Router::get('/auth/google', [AUTH, 'googleRedirect']);
+Router::get('/auth/google/callback', [AUTH, 'googleCallback']);
 
-Router::get('/dashboard', ['App\Controllers\DashboardController', 'index']);
-Router::get('/dashboard/{tab}', ['App\Controllers\DashboardController', 'tab']);
+Router::get('/dashboard', [DASHBOARD, 'index']);
+Router::get('/dashboard/{tab}', [DASHBOARD, 'tab']);
 
-Router::post('/dashboard/profile/update', ['App\Controllers\DashboardController', 'updateProfile']);
-Router::post('/dashboard/password/change', ['App\Controllers\DashboardController', 'changePassword']);
-Router::post('/dashboard/address/add', ['App\Controllers\DashboardController', 'addAddress']);
-Router::post('/dashboard/address/delete/{id}', ['App\Controllers\DashboardController', 'deleteAddress']);
-Router::post('/dashboard/address/update/{id}', ['App\Controllers\DashboardController', 'updateAddress']);
-Router::post('/dashboard/wishlist/toggle', ['App\Controllers\DashboardController', 'toggleWishlist']);
-Router::post('/dashboard/appointment/cancel', ['App\Controllers\DashboardController', 'cancelAppointment']);
-Router::post('/dashboard/appointment/reschedule', ['App\Controllers\DashboardController', 'rescheduleAppointment']);
-Router::post('/dashboard/order/cancel', ['App\Controllers\DashboardController', 'cancelOrder']);
-Router::get('/dashboard/order/detail', ['App\Controllers\DashboardController', 'orderDetail']);
-Router::post('/dashboard/wallet/topup', ['App\Controllers\DashboardController', 'walletTopUp']);
+Router::post('/dashboard/profile/update', [DASHBOARD, 'updateProfile']);
+Router::post('/dashboard/password/change', [DASHBOARD, 'changePassword']);
+Router::post('/dashboard/address/add', [DASHBOARD, 'addAddress']);
+Router::post('/dashboard/address/delete/{id}', [DASHBOARD, 'deleteAddress']);
+Router::post('/dashboard/address/update/{id}', [DASHBOARD, 'updateAddress']);
+Router::post('/dashboard/wishlist/toggle', [DASHBOARD, 'toggleWishlist']);
+Router::post('/dashboard/appointment/cancel', [DASHBOARD, 'cancelAppointment']);
+Router::post('/dashboard/appointment/reschedule', [DASHBOARD, 'rescheduleAppointment']);
+Router::post('/dashboard/order/cancel', [DASHBOARD, 'cancelOrder']);
+Router::get('/dashboard/order/detail', [DASHBOARD, 'orderDetail']);
+Router::post('/dashboard/wallet/topup', [DASHBOARD, 'walletTopUp']);
 
-Router::post('/booking/services', ['App\Controllers\BookingController', 'getServices']);
-Router::post('/booking/slots', ['App\Controllers\BookingController', 'getSlots']);
-Router::post('/booking/confirm', ['App\Controllers\BookingController', 'confirm']);
-Router::post('/booking/captcha/refresh', ['App\Controllers\BookingController', 'refreshCaptcha']);
-Router::get('/booking', ['App\Controllers\BookingController', 'index']);
-Router::get('/api/hair-lengths', ['App\Controllers\BookingController', 'getHairLengths']);
-Router::post('/booking/price-calculation', ['App\Controllers\BookingController', 'getServicePrice']);
+Router::post('/booking/services', [BOOKING, 'getServices']);
+Router::post('/booking/slots', [BOOKING, 'getSlots']);
+Router::post('/booking/confirm', [BOOKING, 'confirm']);
+Router::post('/booking/captcha/refresh', [BOOKING, 'refreshCaptcha']);
+Router::get('/booking', [BOOKING, 'index']);
+Router::get('/api/hair-lengths', [BOOKING, 'getHairLengths']);
+Router::post('/booking/price-calculation', [BOOKING, 'getServicePrice']);
 
-Router::get('/shop', ['App\Controllers\ShopController', 'index']);
-Router::get('/product/{id}', ['App\Controllers\ShopController', 'show']);
-Router::post('/product/{id}/review', ['App\Controllers\ShopController', 'postReview']);
-Router::post('/shop/cart/add', ['App\Controllers\ShopController', 'addToCart']);
-Router::post('/shop/cart/update', ['App\Controllers\ShopController', 'updateCart']);
-Router::post('/shop/cart/remove', ['App\Controllers\ShopController', 'removeFromCart']);
-Router::post('/shop/cart/checkout', ['App\Controllers\ShopController', 'checkout']);
+Router::get('/shop', [SHOP, 'index']);
+Router::get('/product/{id}', [SHOP, 'show']);
+Router::post('/product/{id}/review', [SHOP, 'postReview']);
+Router::post('/shop/cart/add', [SHOP, 'addToCart']);
+Router::post('/shop/cart/update', [SHOP, 'updateCart']);
+Router::post('/shop/cart/remove', [SHOP, 'removeFromCart']);
+Router::post('/shop/cart/checkout', [SHOP, 'checkout']);
 Router::post('/shop/cart/list', function () {
-    header('Content-Type: application/json');
+    header(JSON_HEADER);
     echo json_encode(['cart' => $_SESSION['cart'] ?? []]);
     exit;
 });
-Router::post('/shop/coupon/verify', ['App\Controllers\ShopController', 'verifyCoupon']);
-Router::get('/cart', ['App\Controllers\ShopController', 'cart']);
-Router::get('/shop/cart/summary', ['App\Controllers\ShopController', 'cartSummary']);
-Router::post('/shop/wishlist/toggle', ['App\Controllers\ShopController', 'toggleWishlist']);
-Router::post('/shop/wishlist/data', ['App\Controllers\ShopController', 'wishlistData']);
-Router::get('/wishlist', ['App\Controllers\ShopController', 'wishlist']);
-Router::post('/shop/course/add', ['App\Controllers\ShopController', 'addCourseToCart']);
+Router::post('/shop/coupon/verify', [SHOP, 'verifyCoupon']);
+Router::get('/cart', [SHOP, 'cart']);
+Router::get('/shop/cart/summary', [SHOP, 'cartSummary']);
+Router::post('/shop/wishlist/toggle', [SHOP, 'toggleWishlist']);
+Router::post('/shop/wishlist/data', [SHOP, 'wishlistData']);
+Router::get('/wishlist', [SHOP, 'wishlist']);
+Router::post('/shop/course/add', [SHOP, 'addCourseToCart']);
 
-Router::get('/shop/payment/callback', ['App\Controllers\ShopController', 'paymentCallback']);
+Router::get('/shop/payment/callback', [SHOP, 'paymentCallback']);
 
-Router::get('/blog', ['App\Controllers\BlogController', 'index']);
-Router::get('/blog/{slug}', ['App\Controllers\BlogController', 'show']);
-Router::post('/blog/{slug}/comment', ['App\Controllers\BlogController', 'postComment']);
-Router::post('/blog/comment/like', ['App\Controllers\BlogController', 'likeComment']);
-Router::post('/admin/blog/upload-image', ['App\Controllers\BlogController', 'uploadImage']);
+Router::get('/blog', [BLOG, 'index']);
+Router::get('/blog/{slug}', [BLOG, 'show']);
+Router::post('/blog/{slug}/comment', [BLOG, 'postComment']);
+Router::post('/blog/comment/like', [BLOG, 'likeComment']);
+Router::post('/admin/blog/upload-image', [BLOG, 'uploadImage']);
 
 Router::get('/contact', ['App\Controllers\ContactController', 'index']);
 Router::post('/contact/send', ['App\Controllers\ContactController', 'send']);
@@ -82,40 +92,40 @@ Router::get('/robots.txt', ['App\Controllers\RobotsController', 'index']);
 
 Router::get('/models', ['App\Controllers\ModelsController', 'index']);
 
-Router::get('/dashboard/wallet/payment/callback', ['App\Controllers\DashboardController', 'walletPaymentCallback']);
+Router::get('/dashboard/wallet/payment/callback', [DASHBOARD, 'walletPaymentCallback']);
 
 Router::post('/newsletter/subscribe', ['App\Controllers\NewsletterController', 'subscribe']);
 
-Router::get('/admin/login', ['App\Controllers\AdminController', 'loginForm']);
-Router::post('/admin/login', ['App\Controllers\AdminController', 'doLogin']);
-Router::get('/admin', ['App\Controllers\AdminController', 'dashboard']);
-Router::get('/admin/{section}', ['App\Controllers\AdminController', 'section']);
-Router::post('/admin/{section}/save', ['App\Controllers\AdminController', 'save']);
-Router::post('/admin/{section}/delete/{id}', ['App\Controllers\AdminController', 'delete']);
-Router::post('/admin/settings/update', ['App\Controllers\AdminController', 'updateSettings']);
-Router::post('/admin/password/change', ['App\Controllers\AdminController', 'changePassword']);
-Router::post('/admin/sms/send', ['App\Controllers\AdminController', 'sendBulkSms']);
-Router::post('/admin/sms/template/save', ['App\Controllers\AdminController', 'saveSmsTemplate']);
-Router::post('/admin/sms/template/delete/{id}', ['App\Controllers\AdminController', 'deleteSmsTemplate']);
-Router::post('/admin/sms/credit/refresh', ['App\Controllers\AdminController', 'refreshSmsCredit']);
+Router::get('/admin/login', [ADMIN, 'loginForm']);
+Router::post('/admin/login', [ADMIN, 'doLogin']);
+Router::get('/admin', [ADMIN, 'dashboard']);
+Router::get('/admin/{section}', [ADMIN, 'section']);
+Router::post('/admin/{section}/save', [ADMIN, 'save']);
+Router::post('/admin/{section}/delete/{id}', [ADMIN, 'delete']);
+Router::post('/admin/settings/update', [ADMIN, 'updateSettings']);
+Router::post('/admin/password/change', [ADMIN, 'changePassword']);
+Router::post('/admin/sms/send', [ADMIN, 'sendBulkSms']);
+Router::post('/admin/sms/template/save', [ADMIN, 'saveSmsTemplate']);
+Router::post('/admin/sms/template/delete/{id}', [ADMIN, 'deleteSmsTemplate']);
+Router::post('/admin/sms/credit/refresh', [ADMIN, 'refreshSmsCredit']);
 
 Router::get('/cart/summary', function () {
     $count = array_sum(array_column($_SESSION['cart'] ?? [], 'qty'));
-    header('Content-Type: application/json');
+    header(JSON_HEADER);
     echo json_encode(['count' => $count]);
     exit;
 });
 
 Router::post('/api/like-model', function () {
-    header('Content-Type: application/json');
+    header(JSON_HEADER);
     echo json_encode(['success' => true, 'message' => 'لایک ثبت شد ❤️'], JSON_UNESCAPED_UNICODE);
     exit;
 });
 
-Router::get('/api/services', ['App\Controllers\ApiController', 'services']);
-Router::get('/api/artists', ['App\Controllers\ApiController', 'artists']);
-Router::get('/api/products', ['App\Controllers\ApiController', 'products']);
-Router::get('/api/user/addresses', ['App\Controllers\ApiController', 'userAddresses']);
+Router::get('/api/services', [API, 'services']);
+Router::get('/api/artists', [API, 'artists']);
+Router::get('/api/products', [API, 'products']);
+Router::get('/api/user/addresses', [API, 'userAddresses']);
 
 Router::get('/privacy', function () {
     $settings = Settings::all();
@@ -134,12 +144,12 @@ Router::get('/terms', function () {
     require __DIR__ . '/../app/views/layouts/footer.php';
 });
 
-Router::get('/academy', ['App\Controllers\AcademyController', 'index']);
-Router::get('/course/{slug}', ['App\Controllers\AcademyController', 'show']);
-Router::post('/course/{slug}/enroll', ['App\Controllers\AcademyController', 'enroll']);
-Router::get('/course/{slug}/watch', ['App\Controllers\AcademyController', 'watch']);
-Router::post('/course/lesson/complete', ['App\Controllers\AcademyController', 'completeLesson']);
-Router::get('/course/{slug}/certificate', ['App\Controllers\AcademyController', 'certificate']);
+Router::get('/academy', [ACADEMY, 'index']);
+Router::get('/course/{slug}', [ACADEMY, 'show']);
+Router::post('/course/{slug}/enroll', [ACADEMY, 'enroll']);
+Router::get('/course/{slug}/watch', [ACADEMY, 'watch']);
+Router::post('/course/lesson/complete', [ACADEMY, 'completeLesson']);
+Router::get('/course/{slug}/certificate', [ACADEMY, 'certificate']);
 
 Router::get('/media/stream/{id}', ['App\Controllers\MediaController', 'stream']);
 Router::get('/media/{width}/{height}', ['App\Controllers\ImageController', 'random']);

@@ -26,4 +26,4 @@ if ($uri !== '/' && is_file($file)) {
     exit;
 }
 
-require $root . '/index.php';
+require_once $root . '/index.php';

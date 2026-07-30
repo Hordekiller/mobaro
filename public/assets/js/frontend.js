@@ -601,7 +601,7 @@ var hairLengths = window._mobaroHairLengths || [];
         var dots = document.querySelectorAll('.booking-step');
         var container = getBookingContainer();
         var isDark = container ? container.getAttribute('data-theme') === 'dark' : false;
-        for (var i = 0; i < dots.length; i++) {
+        for (let i = 0; i < dots.length; i++) {
             var dot = dots[i];
             if (i === step) {
                 dot.style.borderColor = '#e11d48';
@@ -648,7 +648,7 @@ var hairLengths = window._mobaroHairLengths || [];
             '<button onclick="nextBookingStep()" class="mt-6 w-full py-5 text-lg font-semibold border ' + btnBorder + ' ' + btnText + ' transition-colors rounded-3xl">ادامه ←</button>';
 
             var list = document.getElementById('artist-select-list');
-            for (var i = 0; i < artists.length; i++) {
+            for (let i = 0; i < artists.length; i++) {
                 (function (idx) {
                     var a = artists[idx];
                     var isSel = selectedArtistId === a.id;
@@ -672,11 +672,13 @@ var hairLengths = window._mobaroHairLengths || [];
                     list.appendChild(el);
                 })(i);
             }
-        } else if (currentBookingStep === 1) {
+            return;
+        }
+        if (currentBookingStep === 1) {
             var filtered = [];
-            for (var i = 0; i < services.length; i++) {
-                if (!services[i].artist_id || services[i].artist_id == selectedArtistId) {
-                    filtered.push(services[i]);
+            for (const svc of services) {
+                if (!svc.artist_id || svc.artist_id == selectedArtistId) {
+                    filtered.push(svc);
                 }
             }
 
@@ -687,10 +689,10 @@ var hairLengths = window._mobaroHairLengths || [];
                     '<div class="text-xs font-medium ' + textMuted + ' mb-2">قد مو</div>' +
                     '<div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="hair-length-select">';
 
-                for (var i = 0; i < hairLengths.length; i++) {
-                    var hl = hairLengths[i];
-                    var isSelected = selectedHairLengthId === hl.id;
-                    hairLengthHTML += '<div onclick="selectHairLength(' + hl.id + ', this)" role="button" tabindex="0" aria-label="انتخاب ' + hl.title + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \')selectHairLength(' + hl.id + ', this)" class="cursor-pointer p-3 border ' + (isSelected ? selectedBorder + ' ' + selectedBg : baseBorder) + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center">' +
+                for (const hl of hairLengths) {
+                    let isSelected = selectedHairLengthId === hl.id;
+                    const hlBorderCls = isSelected ? selectedBorder + ' ' + selectedBg : baseBorder;
+                    hairLengthHTML += '<div onclick="selectHairLength(' + hl.id + ', this)" role="button" tabindex="0" aria-label="انتخاب ' + hl.title + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \')selectHairLength(' + hl.id + ', this)" class="cursor-pointer p-3 border ' + hlBorderCls + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center">' +
                         '<div class="font-medium ' + textPrimary + '">' + hl.title + '</div>' +
                         '<div class="text-xs ' + textMuted + ' mt-1">' + hl.min_cm + '-' + hl.max_cm + ' سانتیمتر</div>' +
                         '</div>';
@@ -712,12 +714,13 @@ var hairLengths = window._mobaroHairLengths || [];
             if (filtered.length === 0) {
                 grid.innerHTML = '<div class="col-span-2 text-center py-10 ' + textMuted + ' text-sm">این آرایشگر خدمتی ثبت نکرده است</div>';
             } else {
-                for (var i = 0; i < filtered.length; i++) {
+                for (let i = 0; i < filtered.length; i++) {
                     (function (idx) {
                         var svc = filtered[idx];
                         var actualIdx = services.indexOf(svc);
+                        const svcBorderCls = selectedServiceIndex === actualIdx ? selectedBorder + ' ' + selectedBg : baseBorder;
                         var el = document.createElement('div');
-                        el.className = 'px-5 py-6 border ' + (selectedServiceIndex === actualIdx ? selectedBorder + ' ' + selectedBg : baseBorder) + ' rounded-3xl cursor-pointer transition-all ' + hoverBorder + ' ' + hoverBg;
+                        el.className = 'px-5 py-6 border ' + svcBorderCls + ' rounded-3xl cursor-pointer transition-all ' + hoverBorder + ' ' + hoverBg;
                         el.innerHTML =
                         '<div class="font-medium ' + textPrimary + '">' + svc.title + '</div>' +
                         '<div class="text-xs ' + textMuted + ' mt-1">' + (svc.duration || '') + (svc.artist_name ? ' · ' + svc.artist_name : '') + '</div>' +
@@ -730,17 +733,19 @@ var hairLengths = window._mobaroHairLengths || [];
                     })(i);
                 }
             }
-        } else if (currentBookingStep === 2) {
+            return;
+        }
+        if (currentBookingStep === 2) {
             var dateHTML = '';
-            for (var d = 0; d < 5; d++) {
-                var dt = getTehranDateObj(d);
+            for (let d = 0; d < 5; d++) {
+                let dt = getTehranDateObj(d);
                 var parts = getPersianParts(dt, 'Asia/Tehran');
                 var weekday = getPersianWeekday(dt, 'Asia/Tehran');
                 var label = d === 0 ? 'امروز' : d === 1 ? 'فردا' : weekday;
                 var day = parts.day;
                 var month = parts.month;
                 var dateStr = getTehranDateStr(d);
-                var isSelected = selectedDate === dateStr;
+                let isSelected = selectedDate === dateStr;
                 dateHTML += '<div onclick="selectDate(\'' + dateStr + '\', this)" role="button" tabindex="0" aria-label="انتخاب ' + dateStr + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \')selectDate(\'' + dateStr + '\', this)" class="cursor-pointer text-center min-w-[70px] ' + (isDark ? 'bg-white/5 border-white/10 hover:border-white/40' : 'bg-zinc-50 border-zinc-200 hover:border-zinc-300') + ' border transition-colors rounded-3xl py-4 ' + (isSelected ? 'ring-2 ring-rose-400' : '') + '">' +
                 '<div class="text-xs ' + (isDark ? 'text-white/60' : 'text-zinc-400') + '">' + label + '</div>' +
                 '<div class="font-semibold text-xl ' + textPrimary + '">' + day + '</div>' +
@@ -762,11 +767,12 @@ var hairLengths = window._mobaroHairLengths || [];
             ];
             var tehranNow = getTehranNow();
             var timeHTML = '';
-            for (var t = 0; t < timeSlots.length; t++) {
+            for (let t = 0; t < timeSlots.length; t++) {
                 var slot = timeSlots[t];
                 var isPast = selectedDate === tehranNow.date && slot.minutes <= tehranNow.totalMinutes;
                 var isTimeSelected = selectedTime === slot.display;
-                var cls = isPast ? 'opacity-30 pointer-events-none ' + slotBg : (isTimeSelected ? 'bg-emerald-900 text-emerald-400 border-emerald-400' : slotBg);
+                const timeActiveCls = isTimeSelected ? 'bg-emerald-900 text-emerald-400 border-emerald-400' : slotBg;
+                var cls = isPast ? 'opacity-30 pointer-events-none ' + slotBg : timeActiveCls;
                 timeHTML += '<div onclick="' + (isPast ? '' : 'selectTimeSlot(\'' + slot.display + '\', this)') + '" role="button" tabindex="0" aria-label="انتخاب ساعت ' + slot.display + '" onkeydown="if(event.key===\'Enter\'||event.key===\' \')' + (isPast ? '' : 'selectTimeSlot(\'' + slot.display + '\', this)') + '" class="' + cls + ' border transition-all text-center py-5 rounded-3xl' + (isPast ? '' : ' cursor-pointer') + '">' + slot.display + '</div>';
             }
 
@@ -781,19 +787,21 @@ var hairLengths = window._mobaroHairLengths || [];
                 '<button onclick="prevBookingStep()" class="flex-1 py-5 border ' + btnBorder + ' ' + btnText + ' rounded-3xl">قبلی</button>' +
                 '<button onclick="nextBookingStep()" class="flex-1 py-5 ' + accentBg + ' ' + accentText + ' font-semibold rounded-3xl">بعدی</button>' +
             '</div>';
-        } else if (currentBookingStep === 3) {
+            return;
+        }
+        if (currentBookingStep === 3) {
             var svc = (selectedServiceIndex !== null && services[selectedServiceIndex]) ? services[selectedServiceIndex] : null;
             var artist = null;
             if (selectedArtistId) {
-                for (var i = 0; i < artists.length; i++) {
-                    if (artists[i].id === selectedArtistId) {
-                        artist = artists[i]; break; }
+                for (const a of artists) {
+                    if (a.id === selectedArtistId) {
+                        artist = a; break; }
                 }
             }
             var displayDate = '';
             if (selectedDate) {
                 var dtParts = selectedDate.split('-');
-                var dt = new Date(Date.UTC(Number.parseInt(dtParts[0], 10), Number.parseInt(dtParts[1], 10) - 1, Number.parseInt(dtParts[2], 10), 12, 0, 0));
+                let dt = new Date(Date.UTC(Number.parseInt(dtParts[0], 10), Number.parseInt(dtParts[1], 10) - 1, Number.parseInt(dtParts[2], 10), 12, 0, 0));
                 displayDate = getPersianDateStr(dt, 'Asia/Tehran');
             }
             var captchaQ = window._mobaroCaptchaQuestion || '۵ + ۳';
@@ -842,8 +850,8 @@ var hairLengths = window._mobaroHairLengths || [];
         selectedTime = '';
         var parent = el.parentElement;
         var children = parent.children;
-        for (var i = 0; i < children.length; i++) {
-            children[i].classList.remove('ring-2', 'ring-rose-400');
+        for (const child of children) {
+            child.classList.remove('ring-2', 'ring-rose-400');
         }
         el.classList.add('ring-2', 'ring-rose-400');
     }
@@ -851,13 +859,12 @@ var hairLengths = window._mobaroHairLengths || [];
     function selectTimeSlot(time, el)
     {
         selectedTime = time;
-        var container = getBookingContainer();
         var theme = getBookingTheme();
         var isDark = theme === 'dark';
         var slotBg = isDark ? 'bg-white/5 border-white/10 hover:border-emerald-400 text-white' : 'bg-zinc-50 border-zinc-200 hover:border-emerald-400 text-zinc-700';
         var slots = el.parentElement.querySelectorAll('div');
-        for (var i = 0; i < slots.length; i++) {
-            slots[i].className = slotBg + ' border transition-all text-center py-5 rounded-3xl cursor-pointer';
+        for (const slotEl of slots) {
+            slotEl.className = slotBg + ' border transition-all text-center py-5 rounded-3xl cursor-pointer';
         }
         el.className = 'bg-emerald-900 text-emerald-400 border border-emerald-400 text-center py-5 rounded-3xl cursor-pointer';
     }
@@ -865,7 +872,6 @@ var hairLengths = window._mobaroHairLengths || [];
 function selectHairLength(id, el)
 {
     selectedHairLengthId = id;
-    var container = getBookingContainer();
     var theme = getBookingTheme();
     var isDark = theme === 'dark';
     var baseBorder = isDark ? 'border-white/10' : 'border-zinc-200';
@@ -875,8 +881,8 @@ function selectHairLength(id, el)
     var hoverBg = isDark ? 'hover:bg-white/5' : 'hover:bg-rose-50/50';
     
     var items = el.parentElement.querySelectorAll('div');
-    for (var i = 0; i < items.length; i++) {
-        items[i].className = 'cursor-pointer p-3 border ' + baseBorder + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center';
+    for (const item of items) {
+        item.className = 'cursor-pointer p-3 border ' + baseBorder + ' rounded-2xl transition-all ' + hoverBorder + ' ' + hoverBg + ' text-center';
     }
     el.className = 'cursor-pointer p-3 border ' + selectedBorder + ' ' + selectedBg + ' rounded-2xl transition-all text-center';
     
@@ -945,7 +951,7 @@ function updateServicePrice()
         }
         var services = window._mobaroServices || [];
         var svc = services[selectedServiceIndex];
-        if (svc && svc.requires_hair_length && !selectedHairLengthId) {
+        if (svc?.requires_hair_length && !selectedHairLengthId) {
             showToast('لطفاً قد مو را انتخاب کنید', 'error');
             return;
         }
@@ -1067,7 +1073,7 @@ function updateServicePrice()
         var displayDate = '';
         if (data.date) {
             var cParts = data.date.split('-');
-            var dt = new Date(Date.UTC(Number.parseInt(cParts[0], 10), Number.parseInt(cParts[1], 10) - 1, Number.parseInt(cParts[2], 10), 12, 0, 0));
+            let dt = new Date(Date.UTC(Number.parseInt(cParts[0], 10), Number.parseInt(cParts[1], 10) - 1, Number.parseInt(cParts[2], 10), 12, 0, 0));
             displayDate = getPersianDateStr(dt, 'Asia/Tehran');
         }
         container.innerHTML =
@@ -1117,9 +1123,9 @@ function updateServicePrice()
 
 function getHairLengthTitle(id)
 {
-    for (var i = 0; i < hairLengths.length; i++) {
-        if (hairLengths[i].id === id) {
-            return hairLengths[i].title;
+    for (const hl of hairLengths) {
+        if (hl.id === id) {
+            return hl.title;
         }
     }
     return '';

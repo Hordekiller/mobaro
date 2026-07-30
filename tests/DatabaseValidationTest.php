@@ -5,6 +5,22 @@ use PHPUnit\Framework\TestCase;
 
 class DatabaseValidationTest extends TestCase
 {
+    private function getAllowedTablesProperty(): ReflectionProperty
+    {
+        $reflection = new ReflectionClass(Database::class);
+        $property = $reflection->getProperty('allowedTables');
+        $property->setAccessible(true);
+        return $property;
+    }
+
+    private function getValidateColumnsMethod(): ReflectionMethod
+    {
+        $reflection = new ReflectionClass(Database::class);
+        $method = $reflection->getMethod('validateColumns');
+        $method->setAccessible(true);
+        return $method;
+    }
+
     public function testInsertRejectsInvalidTableName(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -59,10 +75,7 @@ class DatabaseValidationTest extends TestCase
 
     public function testAllowedTablesAcceptValidNames(): void
     {
-        $reflection = new ReflectionClass(Database::class);
-        $property = $reflection->getProperty('allowedTables');
-        $property->setAccessible(true);
-        $allowed = $property->getValue();
+        $allowed = $this->getAllowedTablesProperty()->getValue();
 
         $this->assertContains('users', $allowed);
         $this->assertContains('services', $allowed);
@@ -73,31 +86,20 @@ class DatabaseValidationTest extends TestCase
 
     public function testAllowedTablesDoesNotContainWalletTopups(): void
     {
-        $reflection = new ReflectionClass(Database::class);
-        $property = $reflection->getProperty('allowedTables');
-        $property->setAccessible(true);
-        $allowed = $property->getValue();
+        $allowed = $this->getAllowedTablesProperty()->getValue();
 
         $this->assertNotContains('wallet_topups', $allowed);
     }
 
     public function testValidateColumnsRejectsSqlInjection(): void
     {
-        $reflection = new ReflectionClass(Database::class);
-        $method = $reflection->getMethod('validateColumns');
-        $method->setAccessible(true);
-
         $this->expectException(InvalidArgumentException::class);
-        $method->invoke(null, ['id; DROP TABLE users']);
+        $this->getValidateColumnsMethod()->invoke(null, ['id; DROP TABLE users']);
     }
 
     public function testValidateColumnsAcceptsValidNames(): void
     {
-        $reflection = new ReflectionClass(Database::class);
-        $method = $reflection->getMethod('validateColumns');
-        $method->setAccessible(true);
-
-        $method->invoke(null, ['id', 'user_name', '_private', 'col123']);
+        $this->getValidateColumnsMethod()->invoke(null, ['id', 'user_name', '_private', 'col123']);
         $this->assertTrue(true);
     }
 }
