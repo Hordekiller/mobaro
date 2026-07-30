@@ -57,6 +57,9 @@ class Database
     /** @phpstan-ignore-line — callers must pass prepared SQL with '?' placeholders */
     public static function query(string $sql, array $params = []): PDOStatement
     {
+        if ($params !== [] && !str_contains($sql, '?') && !str_contains($sql, ':')) {
+            throw new InvalidArgumentException('Query with parameters must use ? or :named placeholders');
+        }
         $stmt = self::connection()->prepare($sql);
         $stmt->execute($params);
         return $stmt;
@@ -115,9 +118,7 @@ class Database
         }
         $setStr = implode(', ', $sets);
         $sql = "UPDATE {$table} SET {$setStr} WHERE {$where}";
-        /** @phpstan-ignore-line — $table/$where validated by allowlist regex */
-        $stmt = self::connection()->prepare($sql);
-        $stmt->execute(array_merge($data, $whereParams));
+        $stmt = self::query($sql, array_merge($data, $whereParams));
         return $stmt->rowCount();
     }
 

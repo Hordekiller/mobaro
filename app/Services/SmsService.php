@@ -180,7 +180,7 @@ class SmsService
 
             if (!$smsResult['status']) {
                 $masked = substr($phone, 0, 4) . '****' . substr($phone, -2);
-                error_log("SMS send failed for {$masked}: " . ($smsResult['message'] ?? 'unknown'));
+                error_log("SMS send failed for {$masked}");
             }
 
             return $code;

@@ -1060,7 +1060,7 @@ function closeItemModal(e) {
 <?php endif; ?>
 
 <?php if ($section === 'blog') : ?>
-<script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" integrity="sha384-Ovv1ZPEkpW4ElBKDKaEIPkNfTTadFpifFwNJOBnuStg0PQ0RBln5Lsf9AI8BsCmx" crossorigin="anonymous"></script>
 <script>
 function initBlogEditor(content) {
     if (tinymce.activeEditor) tinymce.remove();
