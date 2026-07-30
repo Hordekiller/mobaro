@@ -18,7 +18,7 @@ use App\Captcha;
                             <i class="fa-solid fa-spa"></i>
                         </div>
                         <span class="logo-font text-4xl font-bold text-white">
-                            <?= e($settings['brand_name'] ?? 'موبارو') ?>
+                            <?= e($brandName) ?>
                         </span>
                     </div>
                     <p class="text-xs leading-relaxed max-w-xs">
@@ -122,7 +122,7 @@ use App\Captcha;
             </div>
 
             <div class="pt-10 mt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs md:text-[10px]">
-                <div>© <?= date('Y') ?> <?= e($settings['brand_name'] ?? 'موبارو') ?>. تمامی حقوق محفوظ است.</div>
+                <div>© <?= date('Y') ?> <?= e($brandName) ?>. تمامی حقوق محفوظ است.</div>
                 <div class="flex items-center gap-x-6 text-xs md:text-[10px] mt-6 md:mt-0">
                     <?php if (Auth::check()) : ?>
                         <a href="/dashboard" class="cursor-pointer hover:text-white">پنل کاربری</a>
@@ -143,7 +143,7 @@ use App\Captcha;
 
     <!-- Cart Sidebar -->
     <div id="cartSidebar" class="cart-sidebar hidden">
-        <div class="absolute inset-0 bg-black/50" onclick="toggleCart()" onkeydown="if(event.key==='Escape')toggleCart()"></div>
+        <button type="button" class="absolute inset-0 bg-black/50 w-full h-full border-0 p-0 cursor-pointer" onclick="toggleCart()" onkeydown="if(event.key==='Escape')toggleCart()"></button>
         <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300">
             <div class="p-6 h-full flex flex-col">
                 <div class="flex items-center justify-between mb-6">
@@ -172,7 +172,7 @@ use App\Captcha;
 
     <!-- Wishlist Sidebar -->
     <div id="wishlistSidebar" class="cart-sidebar hidden">
-        <div class="absolute inset-0 bg-black/50" onclick="toggleWishlistSidebar()" onkeydown="if(event.key==='Escape')toggleWishlistSidebar()"></div>
+        <button type="button" class="absolute inset-0 bg-black/50 w-full h-full border-0 p-0 cursor-pointer" onclick="toggleWishlistSidebar()" onkeydown="if(event.key==='Escape')toggleWishlistSidebar()"></button>
         <div class="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl">
             <div class="p-6 h-full flex flex-col">
                 <div class="flex items-center justify-between mb-6">

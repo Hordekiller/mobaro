@@ -13,7 +13,7 @@ class NewsletterController extends BaseController
     public function subscribe(): void
     {
         $this->verifyCsrf();
-        header('Content-Type: application/json; charset=utf-8');
+        header(self::CONTENT_TYPE_JSON . '; charset=utf-8');
 
         $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
         if (RateLimiter::isLocked('newsletter:' . $ip, 3, 15)) {

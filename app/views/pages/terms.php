@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+$brandName = $settings['brand_name'] ?? 'موبارو';
 ?>
 <section class="relative overflow-hidden bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 text-white">
     <div class="absolute inset-0 opacity-10">
@@ -25,7 +26,7 @@ declare(strict_types=1);
 
         <div class="bg-rose-50 border border-rose-100 rounded-2xl p-6 mb-12">
             <p class="text-sm text-zinc-600 leading-relaxed">
-                با استفاده از وب‌سایت و خدمات <?= e($settings['brand_name'] ?? 'موبارو') ?>، شما شرایط زیر را می‌پذیرید.
+                با استفاده از وب‌سایت و خدمات <?= e($brandName) ?>، شما شرایط زیر را می‌پذیرید.
                 لطفاً این شرایط را با دقت مطالعه کنید. در صورت عدم توافق با هر بخش، از استفاده از خدمات خودداری کنید.
             </p>
         </div>
@@ -56,7 +57,7 @@ declare(strict_types=1);
                 تعریف خدمات
             </h2>
             <p class="text-zinc-600 leading-relaxed mb-4">
-                <?= e($settings['brand_name'] ?? 'موبارو') ?> پلتفرمی آنلاین برای مدیریت سالن زیبایی است که خدمات زیر را ارائه می‌دهد:
+                <?= e($brandName) ?> پلتفرمی آنلاین برای مدیریت سالن زیبایی است که خدمات زیر را ارائه می‌دهد:
             </p>
             <ul class="space-y-3">
                 <li class="flex items-start gap-3 text-zinc-600 leading-relaxed">
@@ -320,7 +321,7 @@ declare(strict_types=1);
             <ul class="space-y-3 text-zinc-600 leading-relaxed">
                 <li class="flex items-start gap-3">
                     <i class="fa-solid fa-copyright text-violet-500 mt-1.5 text-sm"></i>
-                    <span>تمام محتوای وب‌سایت (متن، تصویر، ویدیو، لوگو، طراحی) متعلق به <?= e($settings['brand_name'] ?? 'موبارو') ?> است و تحت حمایت قوانین مالکیت فکری قرار دارد.</span>
+                    <span>تمام محتوای وب‌سایت (متن، تصویر، ویدیو، لوگو، طراحی) متعلق به <?= e($brandName) ?> است و تحت حمایت قوانین مالکیت فکری قرار دارد.</span>
                 </li>
                 <li class="flex items-start gap-3">
                     <i class="fa-solid fa-file-import text-violet-500 mt-1.5 text-sm"></i>

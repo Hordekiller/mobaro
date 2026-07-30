@@ -71,7 +71,7 @@ class SmsService
         $result = $this->request(self::BASE_URL . '/send/verify', $params);
 
         if ($result['status']) {
-            $this->logSms($phone, "کد تأیید: {$code}", 'verify', $result);
+            $this->logSms($phone, 'کد تأیید: ****', 'verify', $result);
         }
 
         return $result;
@@ -194,8 +194,8 @@ class SmsService
     {
         try {
             $record = Database::fetch(
-                "SELECT id FROM verification_codes 
-                 WHERE phone = ? AND code = ? AND purpose = ? AND used = 0 AND expires_at > NOW() 
+                "SELECT id FROM verification_codes
+                 WHERE phone = ? AND code = ? AND purpose = ? AND used = 0 AND expires_at > NOW()
                  ORDER BY id DESC LIMIT 1",
                 [$phone, $code, $purpose]
             );

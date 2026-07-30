@@ -92,7 +92,7 @@ class ImageController
         $palette = self::$palettes[self::rngPick($paletteKeys)];
         $pattern = self::rngPick(self::$patterns);
 
-        $svg = self::generateSvg($width, $height, $palette, $pattern, $seed);
+        $svg = self::generateSvg($width, $height, $palette, $pattern);
 
         @file_put_contents($cacheFile, $svg);
 
@@ -126,7 +126,7 @@ class ImageController
         }
     }
 
-    private static function generateSvg(int $w, int $h, array $palette, string $pattern, int $seed): string
+    private static function generateSvg(int $w, int $h, array $palette, string $pattern): string
     {
         $bg = $palette['bg'];
         $fg = $palette['fg'];
@@ -135,82 +135,101 @@ class ImageController
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $w . self::SVG_HEIGHT . $h . '" viewBox="0 0 ' . $w . ' ' . $h . '">';
         $svg .= '<rect width="' . $w . self::SVG_HEIGHT . $h . self::SVG_FILL . $bg . '"/>';
 
-        switch ($pattern) {
-            case 'circle':
-                for ($i = 0; $i < 5; $i++) {
-                    $cx = self::rngInt(0, $w);
-                    $cy = self::rngInt(0, $h);
-                    $r = self::rngInt(intdiv($w, 8), intdiv($w, 2));
-                    $opacity = self::rngInt(10, 30) / 100;
-                    $color = $i % 2 === 0 ? $fg : $accent;
-                    $svg .= '<circle cx="' . $cx . '" cy="' . $cy . '" r="' . $r . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
-                }
-                break;
-
-            case 'diamond':
-                for ($i = 0; $i < 4; $i++) {
-                    $cx = self::rngInt(intdiv($w, 4), intdiv($w * 3, 4));
-                    $cy = self::rngInt(intdiv($h, 4), intdiv($h * 3, 4));
-                    $size = self::rngInt(intdiv($w, 6), intdiv($w, 2));
-                    $opacity = self::rngInt(10, 30) / 100;
-                    $color = $i % 2 === 0 ? $fg : $accent;
-                    $points = ($cx) . ',' . ($cy - $size) . ' ' .
-                              ($cx + $size) . ',' . $cy . ' ' .
-                              ($cx) . ',' . ($cy + $size) . ' ' .
-                              ($cx - $size) . ',' . $cy;
-                    $svg .= '<polygon points="' . $points . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
-                }
-                break;
-
-            case 'wave':
-                $amp = self::rngInt(intdiv($h, 10), intdiv($h, 4));
-                $freq = self::rngInt(2, 6);
-                for ($i = 0; $i < 3; $i++) {
-                    $offset = self::rngInt(0, $h);
-                    $color = $i % 2 === 0 ? $fg : $accent;
-                    $opacity = self::rngInt(8, 20) / 100;
-                    $d = 'M0 ' . $offset;
-                    for ($x = 0; $x <= $w; $x += 10) {
-                        $y = $offset + sin(($x / $w) * M_PI * $freq + $i) * $amp;
-                        $d .= ' L' . $x . ' ' . $y;
-                    }
-                    $d .= ' L' . $w . ' ' . $h . ' L0 ' . $h . ' Z';
-                    $svg .= '<path d="' . $d . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
-                }
-                break;
-
-            case 'dots':
-                $spacing = self::rngInt(20, 50);
-                $radius = self::rngInt(2, 6);
-                $ox = self::rngInt(0, $spacing);
-                $oy = self::rngInt(0, $spacing);
-                for ($x = $ox; $x < $w; $x += $spacing) {
-                    for ($y = $oy; $y < $h; $y += $spacing) {
-                        $r = $radius + self::rngInt(-1, 1);
-                        $opacity = self::rngInt(15, 40) / 100;
-                        $svg .= '<circle cx="' . $x . '" cy="' . $y . '" r="' . $r . self::SVG_FILL . $fg . self::SVG_OPACITY . $opacity . '"/>';
-                    }
-                }
-                break;
-
-            case 'cross':
-                for ($i = 0; $i < 6; $i++) {
-                    $cx = self::rngInt(0, $w);
-                    $cy = self::rngInt(0, $h);
-                    $size = self::rngInt(intdiv($w, 10), intdiv($w, 3));
-                    $thickness = self::rngInt(2, 8);
-                    $opacity = self::rngInt(10, 30) / 100;
-                    $color = $i % 2 === 0 ? $fg : $accent;
-                    $svg .= '<rect x="' . ($cx - $thickness) . '" y="' . ($cy - $size) . '" width="' . ($thickness * 2) . self::SVG_HEIGHT . ($size * 2) . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '" rx="2"/>';
-                    $svg .= '<rect x="' . ($cx - $size) . '" y="' . ($cy - $thickness) . '" width="' . ($size * 2) . self::SVG_HEIGHT . ($thickness * 2) . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '" rx="2"/>';
-                }
-                break;
-
-            default:
-                break;
-        }
+        $svg .= match ($pattern) {
+            'circle' => self::svgCircle($w, $h, $fg, $accent),
+            'diamond' => self::svgDiamond($w, $h, $fg, $accent),
+            'wave' => self::svgWave($w, $h, $fg, $accent),
+            'dots' => self::svgDots($w, $h, $fg),
+            'cross' => self::svgCross($w, $h, $fg, $accent),
+            default => '',
+        };
 
         $svg .= '</svg>';
         return $svg;
+    }
+
+    private static function svgCircle(int $w, int $h, string $fg, string $accent): string
+    {
+        $out = '';
+        for ($i = 0; $i < 5; $i++) {
+            $cx = self::rngInt(0, $w);
+            $cy = self::rngInt(0, $h);
+            $r = self::rngInt(intdiv($w, 8), intdiv($w, 2));
+            $opacity = self::rngInt(10, 30) / 100;
+            $color = $i % 2 === 0 ? $fg : $accent;
+            $out .= '<circle cx="' . $cx . '" cy="' . $cy . '" r="' . $r . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
+        }
+        return $out;
+    }
+
+    private static function svgDiamond(int $w, int $h, string $fg, string $accent): string
+    {
+        $out = '';
+        for ($i = 0; $i < 4; $i++) {
+            $cx = self::rngInt(intdiv($w, 4), intdiv($w * 3, 4));
+            $cy = self::rngInt(intdiv($h, 4), intdiv($h * 3, 4));
+            $size = self::rngInt(intdiv($w, 6), intdiv($w, 2));
+            $opacity = self::rngInt(10, 30) / 100;
+            $color = $i % 2 === 0 ? $fg : $accent;
+            $points = ($cx) . ',' . ($cy - $size) . ' ' .
+                      ($cx + $size) . ',' . $cy . ' ' .
+                      ($cx) . ',' . ($cy + $size) . ' ' .
+                      ($cx - $size) . ',' . $cy;
+            $out .= '<polygon points="' . $points . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
+        }
+        return $out;
+    }
+
+    private static function svgWave(int $w, int $h, string $fg, string $accent): string
+    {
+        $out = '';
+        $amp = self::rngInt(intdiv($h, 10), intdiv($h, 4));
+        $freq = self::rngInt(2, 6);
+        for ($i = 0; $i < 3; $i++) {
+            $offset = self::rngInt(0, $h);
+            $color = $i % 2 === 0 ? $fg : $accent;
+            $opacity = self::rngInt(8, 20) / 100;
+            $d = 'M0 ' . $offset;
+            for ($x = 0; $x <= $w; $x += 10) {
+                $y = $offset + sin(($x / $w) * M_PI * $freq + $i) * $amp;
+                $d .= ' L' . $x . ' ' . $y;
+            }
+            $d .= ' L' . $w . ' ' . $h . ' L0 ' . $h . ' Z';
+            $out .= '<path d="' . $d . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '"/>';
+        }
+        return $out;
+    }
+
+    private static function svgDots(int $w, int $h, string $fg): string
+    {
+        $out = '';
+        $spacing = self::rngInt(20, 50);
+        $radius = self::rngInt(2, 6);
+        $ox = self::rngInt(0, $spacing);
+        $oy = self::rngInt(0, $spacing);
+        for ($x = $ox; $x < $w; $x += $spacing) {
+            for ($y = $oy; $y < $h; $y += $spacing) {
+                $r = $radius + self::rngInt(-1, 1);
+                $opacity = self::rngInt(15, 40) / 100;
+                $out .= '<circle cx="' . $x . '" cy="' . $y . '" r="' . $r . self::SVG_FILL . $fg . self::SVG_OPACITY . $opacity . '"/>';
+            }
+        }
+        return $out;
+    }
+
+    private static function svgCross(int $w, int $h, string $fg, string $accent): string
+    {
+        $out = '';
+        for ($i = 0; $i < 6; $i++) {
+            $cx = self::rngInt(0, $w);
+            $cy = self::rngInt(0, $h);
+            $size = self::rngInt(intdiv($w, 10), intdiv($w, 3));
+            $thickness = self::rngInt(2, 8);
+            $opacity = self::rngInt(10, 30) / 100;
+            $color = $i % 2 === 0 ? $fg : $accent;
+            $out .= '<rect x="' . ($cx - $thickness) . '" y="' . ($cy - $size) . '" width="' . ($thickness * 2) . self::SVG_HEIGHT . ($size * 2) . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '" rx="2"/>';
+            $out .= '<rect x="' . ($cx - $size) . '" y="' . ($cy - $thickness) . '" width="' . ($size * 2) . self::SVG_HEIGHT . ($thickness * 2) . self::SVG_FILL . $color . self::SVG_OPACITY . $opacity . '" rx="2"/>';
+        }
+        return $out;
     }
 }

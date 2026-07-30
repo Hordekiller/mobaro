@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 $title = e($course['title']) . ' | مشاهده دوره';
-$currentGlobalIndex = 0;
 $lessonMap = [];
 foreach ($curriculum as $mi => $module) {
     foreach (($module['lessons'] ?? []) as $li => $lesson) {
@@ -18,7 +17,6 @@ foreach ($lessonMap as $idx => $lm) {
     }
 }
 $activeLessonData = $lessonMap[$activeIdx] ?? ($lessonMap[0] ?? null);
-$activeGlobalKey = $activeModule . '-' . $activeLesson;
 ?>
 
 <div class="max-w-screen-2xl mx-auto px-4 lg:px-8 py-6">
@@ -41,9 +39,9 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                 <div class="aspect-video">
                     <?php $videoType = $course['video_type'] ?? 'upload'; ?>
                     <?php if ($videoType === 'youtube') : ?>
-                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>?autoplay=1" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video" title="ویدیوی دوره"></iframe>
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>?autoplay=1" allowfullscreen allow="autoplay; encrypted-media" id="course-video" title="ویدیوی دوره"></iframe>
                     <?php elseif ($videoType === 'aparat') : ?>
-                    <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" id="course-video" title="ویدیوی دوره"></iframe>
+                    <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" allowfullscreen allow="autoplay; encrypted-media" id="course-video" title="ویدیوی دوره"></iframe>
                     <?php elseif (!empty($courseMedia)) : ?>
                     <video controls autoplay id="course-video" class="w-full h-full object-contain"
                            data-course-id="<?= $course['id'] ?>"
@@ -161,10 +159,12 @@ $activeGlobalKey = $activeModule . '-' . $activeLesson;
                                 $globIdx += $li;
                                 $isActive = ($mi === $activeModule && $li === $activeLesson);
                                 $isDone = in_array($globIdx, $completedIndexes);
+                                $rowClass = $isActive ? 'bg-rose-50 text-rose-700 font-semibold' : ($isDone ? 'bg-emerald-50/50 text-emerald-700' : 'hover:bg-zinc-50 text-zinc-600');
+                                $badgeClass = $isDone ? 'bg-emerald-500 text-white' : ($isActive ? 'bg-rose-500 text-white' : 'bg-zinc-100 text-zinc-400');
                                 ?>
                             <a href="/course/<?= e($course['slug'] ?: $course['id']) ?>/watch?module=<?= $mi ?>&lesson=<?= $li ?>"
-                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all <?= $isActive ? 'bg-rose-50 text-rose-700 font-semibold' : ($isDone ? 'bg-emerald-50/50 text-emerald-700' : 'hover:bg-zinc-50 text-zinc-600') ?>">
-                                <span class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs <?= $isDone ? 'bg-emerald-500 text-white' : ($isActive ? 'bg-rose-500 text-white' : 'bg-zinc-100 text-zinc-400') ?>">
+                               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all <?= $rowClass ?>">
+                                <span class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs <?= $badgeClass ?>">
                                     <?php if ($isDone) :
                                         ?><i class="fa-solid fa-check"></i><?php
                                     else :

@@ -39,6 +39,12 @@ class AdminController extends BaseController
     private const MIME_WEBM = 'video/webm';
     private const MIME_OGG = 'video/ogg';
     private const EXT_WEBM = '.webm';
+    private const PATH_GALLERY = '/admin/gallery';
+    private const PATH_BLOG_CATEGORIES = '/admin/blog-categories';
+    private const PATH_SMS = '/admin/sms';
+    private const PATH_SMS_TAB_SEND = '/admin/sms?tab=send';
+    private const PATH_SMS_TAB_TEMPLATES = '/admin/sms?tab=templates';
+    private const PATH_SEO = '/admin/seo';
 
     private function requireAdmin(): void
     {
@@ -758,7 +764,7 @@ class AdminController extends BaseController
     {
         if (empty($_FILES['file']['name'])) {
             flash('error', 'فایلی انتخاب نشده است.');
-            redirect('/admin/gallery');
+            redirect(self::PATH_GALLERY);
             return;
         }
 
@@ -774,7 +780,7 @@ class AdminController extends BaseController
 
         if (!in_array($mimeType, $allowedImageMime) && !in_array($mimeType, $allowedVideoMime)) {
             flash('error', 'نوع فایل مجاز نیست. فقط تصاویر (jpg, png, gif, webp) و ویدیو (mp4, webm, ogg, mov)');
-            redirect('/admin/gallery');
+            redirect(self::PATH_GALLERY);
             return;
         }
 
@@ -811,7 +817,7 @@ class AdminController extends BaseController
         } else {
             flash('error', 'خطا در آپلود فایل.');
         }
-        redirect('/admin/gallery');
+        redirect(self::PATH_GALLERY);
     }
 
     private function saveGenericSection(string $section): void
@@ -1136,7 +1142,7 @@ class AdminController extends BaseController
         $name = trim($data['name'] ?? '');
         if ($name === '') {
             flash('error', 'نام دسته الزامی است.');
-            redirect('/admin/blog-categories');
+            redirect(self::PATH_BLOG_CATEGORIES);
             return true;
         }
 
@@ -1153,7 +1159,7 @@ class AdminController extends BaseController
         $exists = Database::fetch("SELECT id FROM blog_categories WHERE name = ? AND id != ?", [$name, $id ?: 0]);
         if ($exists) {
             flash('error', 'این نام دسته قبلاً استفاده شده است.');
-            redirect('/admin/blog-categories');
+            redirect(self::PATH_BLOG_CATEGORIES);
             return true;
         }
 
@@ -1172,7 +1178,7 @@ class AdminController extends BaseController
 
         $this->clearCache('blog-categories');
         flash('success', 'دسته با موفقیت ذخیره شد.');
-        redirect('/admin/blog-categories');
+        redirect(self::PATH_BLOG_CATEGORIES);
         return true;
     }
 
@@ -1181,13 +1187,13 @@ class AdminController extends BaseController
         $postCount = Database::fetch("SELECT COUNT(*) as cnt FROM blog_posts WHERE category = (SELECT name FROM blog_categories WHERE id = ?)", [$id]);
         if ($postCount && $postCount['cnt'] > 0) {
             flash('error', 'این دسته دارای پست است و قابل حذف نیست.');
-            redirect('/admin/blog-categories');
+            redirect(self::PATH_BLOG_CATEGORIES);
             return;
         }
         Database::query("DELETE FROM blog_categories WHERE id = ?", [$id]);
         $this->clearCache('blog-categories');
         flash('success', 'دسته حذف شد.');
-        redirect('/admin/blog-categories');
+        redirect(self::PATH_BLOG_CATEGORIES);
     }
 
     private function saveAppointments(int $id, array $data, string $table): bool
@@ -2120,7 +2126,6 @@ class AdminController extends BaseController
 
         $smsEnabled = isset($_POST['sms_enabled']) && $_POST['sms_enabled'] === '1';
         $apiKey = trim($_POST['sms_api_key'] ?? '');
-        $lineNumber = trim($_POST['sms_line_number'] ?? '');
         $templateId = trim($_POST['sms_template_id'] ?? '');
         $lineNumber = trim($_POST['sms_line_number'] ?? '');
         $otpTtl = $_POST['sms_otp_ttl'] ?? '';
@@ -2129,20 +2134,20 @@ class AdminController extends BaseController
         if ($smsEnabled) {
             if ($apiKey === '') {
                 flash('error', 'کلید API نمی‌تواند خالی باشد.');
-                redirect('/admin/sms');
+                redirect(self::PATH_SMS);
                 return;
             }
         }
 
         if ($otpTtl !== '' && (!ctype_digit($otpTtl) || (int)$otpTtl < 60 || (int)$otpTtl > 600)) {
             flash('error', 'مدت اعتبار کد تأیید باید عددی بین ۶۰ تا ۶۰۰ ثانیه باشد.');
-            redirect('/admin/sms');
+            redirect(self::PATH_SMS);
             return;
         }
 
         if ($otpLength !== '' && (!ctype_digit($otpLength) || (int)$otpLength < 4 || (int)$otpLength > 6)) {
             flash('error', 'طول کد تأیید باید عددی بین ۴ تا ۶ رقم باشد.');
-            redirect('/admin/sms');
+            redirect(self::PATH_SMS);
             return;
         }
 
@@ -2172,7 +2177,7 @@ class AdminController extends BaseController
         Settings::invalidate();
         Config::reset();
         flash('success', 'تنظیمات پیامک با موفقیت ذخیره شد.');
-        redirect('/admin/sms');
+        redirect(self::PATH_SMS);
     }
 
     public function sendBulkSms(): void
@@ -2185,13 +2190,13 @@ class AdminController extends BaseController
 
         if (empty($phones)) {
             flash('error', 'شماره تلفن‌ها را وارد کنید.');
-            redirect('/admin/sms?tab=send');
+            redirect(self::PATH_SMS_TAB_SEND);
             return;
         }
 
         if (empty($message)) {
             flash('error', 'متن پیام را وارد کنید.');
-            redirect('/admin/sms?tab=send');
+            redirect(self::PATH_SMS_TAB_SEND);
             return;
         }
 
@@ -2200,7 +2205,7 @@ class AdminController extends BaseController
 
         if (empty($phoneList)) {
             flash('error', 'شماره تلفن معتبری یافت نشد.');
-            redirect('/admin/sms?tab=send');
+            redirect(self::PATH_SMS_TAB_SEND);
             return;
         }
 
@@ -2213,7 +2218,7 @@ class AdminController extends BaseController
             flash('error', 'خطا در ارسال پیامک: ' . ($result['message'] ?? 'خطای ناشناخته'));
         }
 
-        redirect('/admin/sms?tab=send');
+        redirect(self::PATH_SMS_TAB_SEND);
     }
 
     public function saveSmsTemplate(): void
@@ -2229,7 +2234,7 @@ class AdminController extends BaseController
 
         if (empty($name) || empty($body)) {
             flash('error', 'نام و متن قالب الزامی است.');
-            redirect('/admin/sms?tab=templates');
+            redirect(self::PATH_SMS_TAB_TEMPLATES);
             return;
         }
 
@@ -2252,7 +2257,7 @@ class AdminController extends BaseController
             flash('success', 'قالب جدید با موفقیت ایجاد شد.');
         }
 
-        redirect('/admin/sms?tab=templates');
+        redirect(self::PATH_SMS_TAB_TEMPLATES);
     }
 
     public function deleteSmsTemplate(int $id): void
@@ -2262,7 +2267,7 @@ class AdminController extends BaseController
 
         Database::query("DELETE FROM sms_templates WHERE id = ?", [$id]);
         flash('success', 'قالب حذف شد.');
-        redirect('/admin/sms?tab=templates');
+        redirect(self::PATH_SMS_TAB_TEMPLATES);
     }
 
     public function refreshSmsCredit(): void
@@ -2331,22 +2336,22 @@ class AdminController extends BaseController
         // ——— Validate global SEO fields ———
         if (!empty($globalSeo['meta_title']) && mb_strlen($globalSeo['meta_title']) > 255) {
             flash('error', 'عنوان متا پیش‌فرض حداکثر ۲۵۵ کاراکتر می‌تواند باشد.');
-            redirect('/admin/seo');
+            redirect(self::PATH_SEO);
             return;
         }
         if (!empty($globalSeo['og_title']) && mb_strlen($globalSeo['og_title']) > 255) {
             flash('error', 'عنوان Open Graph پیش‌فرض حداکثر ۲۵۵ کاراکتر می‌تواند باشد.');
-            redirect('/admin/seo');
+            redirect(self::PATH_SEO);
             return;
         }
         if (!empty($globalSeo['title_prefix']) && mb_strlen($globalSeo['title_prefix']) > 100) {
             flash('error', 'پیشوند عنوان حداکثر ۱۰۰ کاراکتر می‌تواند باشد.');
-            redirect('/admin/seo');
+            redirect(self::PATH_SEO);
             return;
         }
         if (!empty($globalSeo['title_suffix']) && mb_strlen($globalSeo['title_suffix']) > 100) {
             flash('error', 'پسوند عنوان حداکثر ۱۰۰ کاراکتر می‌تواند باشد.');
-            redirect('/admin/seo');
+            redirect(self::PATH_SEO);
             return;
         }
 
@@ -2444,6 +2449,6 @@ class AdminController extends BaseController
         Cache::flushByTag('blog');
         Settings::invalidate();
         flash('success', 'تنظیمات سئو با موفقیت ذخیره شد.');
-        redirect('/admin/seo');
+        redirect(self::PATH_SEO);
     }
 }

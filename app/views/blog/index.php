@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+$brandName = $settings['brand_name'] ?? 'موبارو';
+$dateFormat = 'Y/m/d';
 ?>
 <style>
     .gradient-text {
@@ -55,7 +57,7 @@ declare(strict_types=1);
 <section class="pt-28 pb-16 bg-gradient-to-b from-rose-50 to-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
-            <span class="inline-block px-4 py-1 rounded-full bg-rose-100 text-rose-700 text-sm font-medium mb-4">مجله زیبایی <?= e($settings['brand_name'] ?? 'موبارو') ?></span>
+            <span class="inline-block px-4 py-1 rounded-full bg-rose-100 text-rose-700 text-sm font-medium mb-4">مجله زیبایی <?= e($brandName) ?></span>
             <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
                 رازهای <span class="gradient-text">زیبایی و سلامت</span><br>
                 را با ما کشف کنید
@@ -91,7 +93,7 @@ declare(strict_types=1);
                 <div class="p-8 md:p-12 flex flex-col justify-center">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="px-3 py-1 bg-gold-100 text-gold-600 rounded-full text-sm font-medium" style="background:#fae8b8;color:#b88d2e;">ویژه</span>
-                        <span class="text-gray-500 text-sm"><i class="far fa-calendar-alt ml-1"></i> <?= jdate('Y/m/d', strtotime($featured['published_at'])) ?></span>
+                        <span class="text-gray-500 text-sm"><i class="far fa-calendar-alt ml-1"></i> <?= jdate($dateFormat, strtotime($featured['published_at'])) ?></span>
                     </div>
                     <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4 group-hover:text-rose-600 transition-colors">
                         <?= e($featured['title']) ?>
@@ -196,7 +198,7 @@ declare(strict_types=1);
                         <div class="text-center">
                             <img src="/assets/images/cache/400x300_1562322140.svg" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-rose-100" alt="Salon">
                             <p class="text-gray-600 text-sm leading-relaxed mb-4">
-                                <?= e($settings['blog_sidebar_about'] ?? 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بیش از ۱۰ سال تجربه، ارائه دهنده خدمات تخصصی آرایش و زیبایی با جدیدترین متدهای روز دنیا.') ?>
+                                <?= e($settings['blog_sidebar_about'] ?? 'سالن زیبایی ' . $brandName . ' با بیش از ۱۰ سال تجربه، ارائه دهنده خدمات تخصصی آرایش و زیبایی با جدیدترین متدهای روز دنیا.') ?>
                             </p>
                             <div class="flex justify-center gap-3">
                                 <a href="<?= e($settings['brand_instagram'] ?? '#') ?>" class="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors">
@@ -245,7 +247,7 @@ declare(strict_types=1);
                                     <h5 class="text-sm font-bold text-gray-900 group-hover:text-rose-600 transition-colors line-clamp-2 mb-1">
                                         <?= e($pp['title']) ?>
                                     </h5>
-                                    <span class="text-xs text-gray-500"><?= jdate('Y/m/d', strtotime($pp['published_at'])) ?></span>
+                                    <span class="text-xs text-gray-500"><?= jdate($dateFormat, strtotime($pp['published_at'])) ?></span>
                                 </div>
                             </a>
                             <?php endforeach; ?>

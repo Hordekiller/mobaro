@@ -6,7 +6,7 @@ declare(strict_types=1);
 <div class="min-h-screen bg-rose-50 flex" dir="rtl">
     <aside class="w-72 bg-white shadow-[0_0_40px_rgba(225,29,72,0.08)] min-h-screen flex flex-col flex-shrink-0">
         <div class="p-6 border-b border-rose-100">
-            <h1 class="text-xl font-extrabold text-rose-600"><i class="fa-solid fa-crown ml-2"></i>مدیریت <?= e($settings['brand_name'] ?? 'موبارو') ?></h1>
+            <h1 class="text-xl font-extrabold text-rose-600"><i class="fa-solid fa-crown ml-2"></i>مدیریت <?= e($brandName) ?></h1>
         </div>
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             <?php
@@ -802,7 +802,8 @@ declare(strict_types=1);
                             </script>
                             <?php endif; ?>
                             
-                            <?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
+                            
+<?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
                             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="hpService" class="block text-sm font-semibold mb-1.5">خدمت</label>

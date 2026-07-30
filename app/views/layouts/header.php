@@ -14,18 +14,21 @@ use App\Database;
     <?php
     $settings = $settings ?? [];
     $seo = $seo ?? [];
+    $brandName = $settings['brand_name'] ?? 'موبارو';
     $titlePrefix = $settings['title_prefix'] ?? '';
     $titleSuffix = $settings['title_suffix'] ?? '';
-    $rawTitle = $seo['title'] ?: ($title ?: ($settings['meta_title'] ?: ($settings['brand_name'] ?? 'موبارو')));
+    $metaTitle = $settings['meta_title'] ?: $brandName;
+    $rawTitle = $seo['title'] ?: ($title ?: $metaTitle);
     $fullTitle = $titlePrefix . $rawTitle . $titleSuffix;
+    $metaDescDefault = 'سالن زیبایی ' . $brandName . ' با بهترین آرایشگران و محصولات حرفه‌ای';
     ?>
     <title><?= e($fullTitle) ?></title>
-    <meta name="description" content="<?= e($seo['description'] ?: ($settings['meta_description'] ?: 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای')) ?>">
+    <meta name="description" content="<?= e($seo['description'] ?: ($settings['meta_description'] ?: $metaDescDefault)) ?>">
     <?php if (!empty($seo['canonical'])) : ?>
     <link rel="canonical" href="<?= e($seo['canonical']) ?>">
     <?php endif; ?>
     <meta property="og:title" content="<?= e($seo['og_title'] ?: ($settings['og_title'] ?: $rawTitle)) ?>">
-    <meta property="og:description" content="<?= e($seo['og_desc'] ?: ($settings['og_description'] ?: 'سالن زیبایی ' . ($settings['brand_name'] ?? 'موبارو') . ' با بهترین آرایشگران و محصولات حرفه‌ای')) ?>">
+    <meta property="og:description" content="<?= e($seo['og_desc'] ?: ($settings['og_description'] ?: $metaDescDefault)) ?>">
     <meta property="og:image" content="<?= e($seo['og_image'] ?: ($settings['og_image'] ?: '/favicon/og-image.png')) ?>">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
@@ -65,10 +68,10 @@ use App\Database;
             <div class="px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-x-3">
                     <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner overflow-hidden">
-                        <img src="/assets/images/logo.png" alt="<?= e($settings['brand_name'] ?? 'موبارو') ?>" class="w-full h-full object-cover" data-fallback-icon="<i class='fa-solid fa-spa text-white text-3xl'></i>">
+                        <img src="/assets/images/logo.png" alt="<?= e($brandName) ?>" class="w-full h-full object-cover" data-fallback-icon="<i class='fa-solid fa-spa text-white text-3xl'></i>">
                     </div>
                     <span class="logo-font text-4xl font-bold tracking-tighter text-rose-600">
-                        <?= e($settings['brand_name'] ?? 'موبارو') ?>
+                        <?= e($brandName) ?>
                     </span>
                 </a>
 

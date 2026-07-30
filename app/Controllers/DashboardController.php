@@ -247,6 +247,7 @@ class DashboardController extends BaseController
         Auth::requireAuth();
         $this->verifyCsrf();
         $userId = Auth::id();
+        $user = Auth::user();
 
         $name = sanitize($_POST['name'] ?? '');
         $family = sanitize($_POST['family'] ?? '');

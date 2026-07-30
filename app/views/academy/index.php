@@ -219,4 +219,3 @@ function filterByCategory(cat) {
     window.location.href = '/academy?tab=<?= e($tab) ?>&category=' + encodeURIComponent(cat);
 }
 </script>
-</script>

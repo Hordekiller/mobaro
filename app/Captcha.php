@@ -9,8 +9,6 @@ use Throwable;
 
 class Captcha
 {
-    private static int $min = 1;
-    private static int $max = 30;
     private static ?array $settingsCache = null;
     private const DIFFICULTY_RANGES = [
         'easy' => [1, 10],

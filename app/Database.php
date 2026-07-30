@@ -83,7 +83,7 @@ class Database
     private static function validateColumns(array $columns): void
     {
         foreach ($columns as $col) {
-            if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $col)) {
+            if (!preg_match('/^[a-zA-Z_]\w*$/', $col)) {
                 throw new InvalidArgumentException("Invalid column name: {$col}");
             }
         }

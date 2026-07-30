@@ -67,9 +67,9 @@ if (isset($_SESSION['user'])) {
             </div>
             <div class="aspect-video bg-zinc-900">
                 <?php if (($course['video_type'] ?? 'upload') === 'youtube') : ?>
-                <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
                 <?php elseif (($course['video_type'] ?? 'upload') === 'aparat') : ?>
-                <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
+                <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
                 <?php else : ?>
                 <video controls preload="metadata" id="preview-video" class="w-full h-full object-contain" poster="/assets/images/<?= e($course['image'] ?? '') ?>">
                     <source src="<?= e($course['video_url']) ?>" type="video/mp4">
@@ -156,7 +156,7 @@ if (isset($_SESSION['user'])) {
                     <div class="flex items-center gap-2 text-xs">
                         <span class="w-6 text-zinc-500"><?= $i ?></span>
                         <div class="flex-1 h-2 bg-zinc-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-amber-400 rounded-full" style="width: <?= $i === 5 ? '65' : ($i === 4 ? '25' : ($i === 3 ? '7' : ($i === 2 ? '2' : '1'))) ?>%"></div>
+                            <div class="h-full bg-amber-400 rounded-full" style="width: <?= [1 => '1', 2 => '2', 3 => '7', 4 => '25', 5 => '65'][$i] ?>%"></div>
                         </div>
                     </div>
                     <?php endfor; ?>

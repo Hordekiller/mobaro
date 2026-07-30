@@ -202,7 +202,7 @@ class ShopController extends BaseController
 
     public function postReview(int $productId): void
     {
-        header('Content-Type: application/json');
+        header(self::CONTENT_TYPE_JSON);
 
         if (!Auth::check()) {
             http_response_code(401);

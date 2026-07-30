@@ -95,7 +95,6 @@ class BlogController extends BaseController
         }, 'blog');
 
         $posts = $cached['posts'];
-        $totalPosts = $cached['totalPosts'];
         $totalPages = $cached['totalPages'];
 
         $sidebar = $this->getSidebar();
@@ -111,7 +110,7 @@ class BlogController extends BaseController
 
     public function postComment(string $slug): void
     {
-        header('Content-Type: application/json');
+        header(self::CONTENT_TYPE_JSON);
         $this->verifyCsrf();
 
         $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
@@ -176,7 +175,7 @@ class BlogController extends BaseController
 
     public function likeComment(): void
     {
-        header('Content-Type: application/json');
+        header(self::CONTENT_TYPE_JSON);
         $this->verifyCsrf();
 
         $commentId = (int) ($_POST['comment_id'] ?? 0);
@@ -198,7 +197,7 @@ class BlogController extends BaseController
 
     public function uploadImage(): void
     {
-        header('Content-Type: application/json');
+        header(self::CONTENT_TYPE_JSON);
         $this->requireAdmin();
 
         $token = $_POST['_csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';

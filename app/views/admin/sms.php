@@ -68,31 +68,31 @@ $search = $search ?? '';
             <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">تنظیمات اتصال</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">فعال‌سازی سرویس پیامک</label>
-                    <select name="sms_enabled" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                    <label for="sms_enabled" class="block text-sm font-semibold mb-1.5">فعال‌سازی سرویس پیامک</label>
+                    <select id="sms_enabled" name="sms_enabled" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                         <option value="1" <?= ($smsSettings['sms_enabled'] ?? '') === '1' ? 'selected' : '' ?>>فعال</option>
                         <option value="0" <?= ($smsSettings['sms_enabled'] ?? '') !== '1' ? 'selected' : '' ?>>غیرفعال</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">کلید API (X-API-KEY)</label>
-                    <input type="text" name="sms_api_key" value="<?= e($smsSettings['sms_api_key'] ?? '') ?>" placeholder="کلید API sms.ir" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
+                    <label for="sms_api_key" class="block text-sm font-semibold mb-1.5">کلید API (X-API-KEY)</label>
+                    <input id="sms_api_key" type="text" name="sms_api_key" value="<?= e($smsSettings['sms_api_key'] ?? '') ?>" placeholder="کلید API sms.ir" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">شماره خط ارسال</label>
-                    <input type="text" name="sms_line_number" value="<?= e($smsSettings['sms_line_number'] ?? '') ?>" placeholder="مثال: 30004505000017" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
+                    <label for="sms_line_number" class="block text-sm font-semibold mb-1.5">شماره خط ارسال</label>
+                    <input id="sms_line_number" type="text" name="sms_line_number" value="<?= e($smsSettings['sms_line_number'] ?? '') ?>" placeholder="مثال: 30004505000017" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">شناسه قالب OTP (Template ID)</label>
-                    <input type="text" name="sms_template_id" value="<?= e($smsSettings['sms_template_id'] ?? '') ?>" placeholder="شناسه قالب در پنل sms.ir" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
+                    <label for="sms_template_id" class="block text-sm font-semibold mb-1.5">شناسه قالب OTP (Template ID)</label>
+                    <input id="sms_template_id" type="text" name="sms_template_id" value="<?= e($smsSettings['sms_template_id'] ?? '') ?>" placeholder="شناسه قالب در پنل sms.ir" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">مدت اعتبار کد تأیید (ثانیه)</label>
-                    <input type="number" name="sms_otp_ttl" value="<?= e($smsSettings['sms_otp_ttl'] ?? '180') ?>" min="60" max="600" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                    <label for="sms_otp_ttl" class="block text-sm font-semibold mb-1.5">مدت اعتبار کد تأیید (ثانیه)</label>
+                    <input id="sms_otp_ttl" type="number" name="sms_otp_ttl" value="<?= e($smsSettings['sms_otp_ttl'] ?? '180') ?>" min="60" max="600" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1.5">طول کد تأیید (رقم)</label>
-                    <input type="number" name="sms_otp_length" value="<?= e($smsSettings['sms_otp_length'] ?? '5') ?>" min="4" max="6" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                    <label for="sms_otp_length" class="block text-sm font-semibold mb-1.5">طول کد تأیید (رقم)</label>
+                    <input id="sms_otp_length" type="number" name="sms_otp_length" value="<?= e($smsSettings['sms_otp_length'] ?? '5') ?>" min="4" max="6" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                 </div>
             </div>
         </div>
@@ -108,12 +108,12 @@ $search = $search ?? '';
     <form action="/admin/sms/send" method="POST" class="space-y-4">
         <?= csrf() ?>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">شماره تلفن‌ها (هر خط یک شماره)</label>
-            <textarea name="phones" rows="5" placeholder="09121234567&#10;09191234567&#10;09351234567" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" required></textarea>
+            <label for="sms_phones" class="block text-sm font-semibold mb-1.5">شماره تلفن‌ها (هر خط یک شماره)</label>
+            <textarea id="sms_phones" name="phones" rows="5" placeholder="09121234567&#10;09191234567&#10;09351234567" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" required></textarea>
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">متن پیام</label>
-            <textarea name="message" rows="4" placeholder="متن پیامک خود را اینجا بنویسید..." class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required></textarea>
+            <label for="sms_message" class="block text-sm font-semibold mb-1.5">متن پیام</label>
+            <textarea id="sms_message" name="message" rows="4" placeholder="متن پیامک خود را اینجا بنویسید..." class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required></textarea>
         </div>
         <div class="flex items-center gap-4">
             <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all" onclick="return confirm('آیا از ارسال پیامک اطمینان دارید؟')">
@@ -184,11 +184,23 @@ $search = $search ?? '';
         </thead>
         <tbody>
             <?php foreach ($templates as $tpl) : ?>
+            <?php
+            $tplTypeClass = match ($tpl['sms_type']) {
+                'verify' => 'bg-blue-50 text-blue-700',
+                'bulk' => 'bg-amber-50 text-amber-700',
+                default => 'bg-green-50 text-green-700',
+            };
+            $tplTypeLabel = match ($tpl['sms_type']) {
+                'verify' => 'تأییدیه',
+                'bulk' => 'انبوه',
+                default => 'اعلان',
+            };
+            ?>
             <tr class="border-b border-rose-100 hover:bg-rose-50/50 transition-all">
                 <td class="py-3 px-4 font-semibold text-sm"><?= e($tpl['name']) ?></td>
                 <td class="py-3 px-4">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $tpl['sms_type'] === 'verify' ? 'bg-blue-50 text-blue-700' : ($tpl['sms_type'] === 'bulk' ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700') ?>">
-                        <?= $tpl['sms_type'] === 'verify' ? 'تأییدیه' : ($tpl['sms_type'] === 'bulk' ? 'انبوه' : 'اعلان') ?>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $tplTypeClass ?>">
+                        <?= $tplTypeLabel ?>
                     </span>
                 </td>
                 <td class="py-3 px-4 text-sm text-zinc-400 max-w-xs truncate"><?= e($tpl['body']) ?></td>
@@ -220,7 +232,7 @@ $search = $search ?? '';
 <div class="mb-4">
     <form method="GET" action="/admin/sms" class="flex items-center gap-2">
         <input type="hidden" name="tab" value="logs">
-        <input type="text" name="s" value="<?= e($search) ?>" placeholder="جستجوی شماره یا متن..." class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-64">
+        <input type="text" name="s" value="<?= e($search) ?>" placeholder="جستجوی شماره یا متن..." aria-label="جستجوی پیامک‌ها" class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-64">
         <button type="submit" class="px-3 py-2.5 bg-zinc-100 text-zinc-600 rounded-xl text-sm hover:bg-rose-50 hover:text-rose-600 transition-all"><i class="fa-solid fa-search"></i></button>
         <?php if (!empty($search)) : ?>
         <a href="/admin/sms?tab=logs" class="px-3 py-2.5 bg-red-50 text-red-500 rounded-xl text-sm hover:bg-red-100 transition-all"><i class="fa-solid fa-xmark"></i></a>
@@ -243,17 +255,39 @@ $search = $search ?? '';
         </thead>
         <tbody>
             <?php foreach ($items as $item) : ?>
+            <?php
+            $logTypeClass = match ($item['type']) {
+                'verify' => 'bg-blue-50 text-blue-700',
+                'bulk' => 'bg-amber-50 text-amber-700',
+                default => 'bg-green-50 text-green-700',
+            };
+            $logTypeLabel = match ($item['type']) {
+                'verify' => 'تأییدیه',
+                'bulk' => 'انبوه',
+                default => 'اعلان',
+            };
+            $statusClass = match ($item['status']) {
+                'sent' => 'bg-green-50 text-green-700',
+                'delivered' => 'bg-blue-50 text-blue-700',
+                default => 'bg-red-50 text-red-500',
+            };
+            $statusLabel = match ($item['status']) {
+                'sent' => 'ارسال شده',
+                'delivered' => 'تحویل شده',
+                default => 'ناموفق',
+            };
+            ?>
             <tr class="border-b border-rose-100 hover:bg-rose-50/50 transition-all">
                 <td class="py-3 px-4 font-mono text-sm" dir="ltr"><?= e($item['phone']) ?></td>
                 <td class="py-3 px-4 text-sm text-zinc-400 max-w-xs truncate"><?= e($item['message']) ?></td>
                 <td class="py-3 px-4">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $item['type'] === 'verify' ? 'bg-blue-50 text-blue-700' : ($item['type'] === 'bulk' ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700') ?>">
-                        <?= $item['type'] === 'verify' ? 'تأییدیه' : ($item['type'] === 'bulk' ? 'انبوه' : 'اعلان') ?>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $logTypeClass ?>">
+                        <?= $logTypeLabel ?>
                     </span>
                 </td>
                 <td class="py-3 px-4">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $item['status'] === 'sent' ? 'bg-green-50 text-green-700' : ($item['status'] === 'delivered' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-500') ?>">
-                        <?= $item['status'] === 'sent' ? 'ارسال شده' : ($item['status'] === 'delivered' ? 'تحویل شده' : 'ناموفق') ?>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $statusClass ?>">
+                        <?= $statusLabel ?>
                     </span>
                 </td>
                 <td class="py-3 px-4 text-sm"><?= faNum($item['credits']) ?></td>

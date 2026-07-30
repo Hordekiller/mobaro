@@ -8,6 +8,7 @@ use App\Settings;
 
 class BaseController
 {
+    protected const CONTENT_TYPE_JSON = 'Content-Type: application/json';
     private static array $protectedVars = ['view', 'data', 'hideFooter', 'this'];
 
     protected function view(string $view, array $data = []): void
@@ -35,7 +36,7 @@ class BaseController
     protected function json(mixed $data, int $status = 200): void
     {
         http_response_code($status);
-        header('Content-Type: application/json; charset=utf-8');
+        header(self::CONTENT_TYPE_JSON . '; charset=utf-8');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
         exit;
     }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+$brandName = $settings['brand_name'] ?? 'موبارو';
 ?>
 <section class="relative overflow-hidden bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 text-white">
     <div class="absolute inset-0 opacity-10">
@@ -28,7 +29,7 @@ declare(strict_types=1);
         <?php else : ?>
         <div class="bg-rose-50 border border-rose-100 rounded-2xl p-6 mb-12">
             <p class="text-sm text-zinc-600 leading-relaxed">
-                سالن زیبایی <?= e($settings['brand_name'] ?? 'موبارو') ?> («ما»، «<?= e($settings['brand_name'] ?? 'موبارو') ?>»، «وب‌سایت») متعهد به حفاظت از حریم خصوصی کاربران خود است.
+                سالن زیبایی <?= e($brandName) ?> («ما»، «<?= e($brandName) ?>»، «وب‌سایت») متعهد به حفاظت از حریم خصوصی کاربران خود است.
                 این سند توضیح می‌دهد که چه اطلاعاتی جمع‌آوری می‌شود، چگونه استفاده می‌شود و چه حقوقی دارید.
             </p>
         </div>

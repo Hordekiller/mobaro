@@ -170,15 +170,15 @@ function timeAgo(string $datetime): string
     $timestamp = strtotime($datetime);
     $diff = time() - $timestamp;
     if ($diff < 60) {
-        return 'لحظاتی پیش';
+        $result = 'لحظاتی پیش';
+    } elseif ($diff < 3600) {
+        $result = floor($diff / 60) . ' دقیقه پیش';
+    } elseif ($diff < 86400) {
+        $result = floor($diff / 3600) . ' ساعت پیش';
+    } else {
+        $result = jdate('Y/m/d', $timestamp);
     }
-    if ($diff < 3600) {
-        return floor($diff / 60) . ' دقیقه پیش';
-    }
-    if ($diff < 86400) {
-        return floor($diff / 3600) . ' ساعت پیش';
-    }
-    return jdate('Y/m/d', $timestamp);
+    return $result;
 }
 
 function jdate(string $format, ?int $timestamp = null): string
@@ -276,13 +276,13 @@ function getVideoEmbedHtml(string $url, string $type = 'upload'): string
     if ($type === 'youtube') {
         $id = getYoutubeId($url);
         if ($id) {
-            return '<iframe class="w-full h-full" src="https://www.youtube.com/embed/' . e($id) . '" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+            return '<iframe class="w-full h-full" src="https://www.youtube.com/embed/' . e($id) . '" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
         }
     }
     if ($type === 'aparat') {
         $hash = getAparatHash($url);
         if ($hash) {
-            return '<iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/' . e($hash) . '/vt/frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+            return '<iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/' . e($hash) . '/vt/frame" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
         }
     }
     return '<video controls class="w-full h-full object-contain"><source src="' . e($url) . '" type="video/mp4">مرورگر شما پخش ویدیو را پشتیبانی نمی‌کند.</video>';

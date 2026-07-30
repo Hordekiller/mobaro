@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+$brandName = $settings['brand_name'] ?? 'موبارو';
+$authorName = $post['author'] ?: 'تیم موبارو';
+$dateFormat = 'Y/m/d';
 ?>
 <style>
     .blog-content p {
@@ -155,17 +158,17 @@ declare(strict_types=1);
         <div class="flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-8 gap-y-4 mt-10 text-sm">
             <div class="flex items-center gap-x-3">
                 <div class="w-9 h-9 bg-rose-200 rounded-2xl overflow-hidden">
-                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/72" alt="<?= e($post['author'] ?: 'تیم موبارو')?>" class="w-full h-full object-cover">
+                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/72" alt="<?= e($authorName) ?>" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <div class="font-semibold text-gray-700"><?= e($post['author'] ?: 'تیم موبارو') ?></div>
+                    <div class="font-semibold text-gray-700"><?= e($authorName) ?></div>
                     <div class="text-xs text-gray-500 -mt-0.5">نویسنده</div>
                 </div>
             </div>
             <div class="h-5 w-px bg-gray-200"></div>
             <div class="flex items-center gap-x-2 text-gray-500">
                 <i class="fa-solid fa-calendar text-xs"></i>
-                <span class="text-sm"><?= $post['published_at'] ? jdate('Y/m/d', strtotime($post['published_at'])) : '' ?></span>
+                <span class="text-sm"><?= $post['published_at'] ? jdate($dateFormat, strtotime($post['published_at'])) : '' ?></span>
             </div>
             <div class="flex items-center gap-x-2 text-gray-500">
                 <i class="fa-solid fa-clock text-xs"></i>
@@ -188,12 +191,12 @@ declare(strict_types=1);
         <div class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl shadow flex items-center gap-x-3 text-xs">
             <div class="flex -space-x-4">
                 <div class="w-6 h-6 bg-rose-300 border-2 border-white rounded-2xl overflow-hidden">
-                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/48" alt="<?= e($post['author'] ?: 'تیم موبارو') ?>" class="object-cover">
+                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/48" alt="<?= e($authorName) ?>" class="object-cover">
                 </div>
             </div>
             <div class="text-gray-500 text-[10px] leading-none">
                 عکس از<br>
-                <span class="font-medium text-gray-700">تیم <?= e($settings['brand_name'] ?? 'موبارو') ?></span>
+                <span class="font-medium text-gray-700">تیم <?= e($brandName) ?></span>
             </div>
         </div>
         <?php if ($post['is_featured']) : ?>
@@ -228,17 +231,17 @@ declare(strict_types=1);
 
             <div class="mt-16 sm:mt-24 border-t border-b py-8 flex gap-4 sm:gap-6">
                 <div class="w-14 h-14 sm:w-16 sm:h-16 bg-rose-200 rounded-3xl overflow-hidden flex-shrink-0">
-                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/80" alt="<?= e($post['author'] ?: 'تیم موبارو') ?>" class="w-full h-full object-cover">
+                    <img src="/avatar/<?= urlencode($post['author'] ?: 'team') ?>/80" alt="<?= e($authorName) ?>" class="w-full h-full object-cover">
                 </div>
                 <div>
                     <div class="flex justify-between">
                         <div>
-                            <span class="font-medium"><?= e($post['author'] ?: 'تیم موبارو') ?></span>
+                            <span class="font-medium"><?= e($authorName) ?></span>
                             <span class="block text-xs text-rose-500">نویسنده و متخصص حوزه زیبایی</span>
                         </div>
                     </div>
                     <p class="text-xs leading-relaxed text-gray-500 mt-5">
-                        <?= e($post['author'] ?: 'تیم موبارو') ?> با سال‌ها تجربه در زمینه آرایش و زیبایی، مطالب تخصصی و کاربردی را برای شما آماده می‌کند.
+                        <?= e($authorName) ?> با سال‌ها تجربه در زمینه آرایش و زیبایی، مطالب تخصصی و کاربردی را برای شما آماده می‌کند.
                     </p>
                 </div>
             </div>
@@ -274,7 +277,7 @@ declare(strict_types=1);
                             <div class="flex-1">
                                 <div class="flex items-center justify-between">
                                     <div class="font-medium text-sm"><?= e($comment['name']) ?></div>
-                                    <div class="text-[10px] text-gray-400"><?= $comment['created_at'] ? jdate('Y/m/d', strtotime($comment['created_at'])) : '' ?></div>
+                                    <div class="text-[10px] text-gray-400"><?= $comment['created_at'] ? jdate($dateFormat, strtotime($comment['created_at'])) : '' ?></div>
                                 </div>
                                 <p class="text-sm text-gray-600 mt-2"><?= e($comment['text']) ?></p>
                                 <button onclick="likeComment(<?= $comment['id'] ?>, this)"
@@ -314,7 +317,7 @@ declare(strict_types=1);
 
             <div class="bg-white border border-rose-200 rounded-3xl p-7">
                 <div class="text-center">
-                    <span class="px-4 py-1 text-xs bg-rose-100 text-rose-600 rounded-3xl">خبرنامه <?= e($settings['brand_name'] ?? 'موبارو') ?></span>
+                    <span class="px-4 py-1 text-xs bg-rose-100 text-rose-600 rounded-3xl">خبرنامه <?= e($brandName) ?></span>
                 </div>
                 <div class="text-2xl font-bold text-center mt-5 leading-none text-gray-800">
                     آخرین نکات زیبایی را دریافت کنید
@@ -346,7 +349,7 @@ declare(strict_types=1);
                         <div class="line-clamp-2 text-sm font-medium leading-tight group-hover:text-rose-600 transition-colors">
                             <?= e($pp['title']) ?>
                         </div>
-                        <div class="text-rose-400 text-xs mt-4"><?= $pp['published_at'] ? jdate('Y/m/d', strtotime($pp['published_at'])) : '' ?> <?= $pp['published_at'] && $pp['reading_time'] ? '•' : '' ?> <?= e($pp['reading_time'] ?: '۵') ?> دقیقه</div>
+                        <div class="text-rose-400 text-xs mt-4"><?= $pp['published_at'] ? jdate($dateFormat, strtotime($pp['published_at'])) : '' ?> <?= $pp['published_at'] && $pp['reading_time'] ? '•' : '' ?> <?= e($pp['reading_time'] ?: '۵') ?> دقیقه</div>
                     </div>
                 </a>
                 <?php endforeach; ?>
@@ -375,7 +378,7 @@ declare(strict_types=1);
                 <div class="flex justify-center -mt-2">
                     <i class="fa-solid fa-spa text-6xl text-rose-300"></i>
                 </div>
-                <div class="text-center mt-6 text-xl font-medium">خدمات ویژه <?= e($settings['brand_name'] ?? 'موبارو') ?></div>
+                <div class="text-center mt-6 text-xl font-medium">خدمات ویژه <?= e($brandName) ?></div>
                 <ul class="mt-7 space-y-6 text-sm">
                     <li class="flex justify-between items-center border-b border-dotted pb-6">
                         <span><?= e($settings['blog_service_1_name'] ?? 'کراتین تراپی') ?></span>
@@ -444,7 +447,7 @@ declare(strict_types=1);
                 <div class="text-xs text-rose-500"><?= e($rp['category'] ?: 'وبلاگ') ?></div>
                 <div class="font-medium text-lg sm:text-xl leading-6 mt-2 line-clamp-2"><?= e($rp['title']) ?></div>
                 <div class="flex justify-between items-center text-xs text-gray-400 mt-6 sm:mt-8">
-                    <div><?= $rp['published_at'] ? jdate('Y/m/d', strtotime($rp['published_at'])) : '' ?></div>
+                    <div><?= $rp['published_at'] ? jdate($dateFormat, strtotime($rp['published_at'])) : '' ?></div>
                     <div class="flex items-center gap-x-1">
                         <i class="fa-solid fa-eye"></i>
                         <span><?= faNum((int) ($rp['views'] > 999 ? round($rp['views'] / 1000, 1) . 'k' : $rp['views'])) ?></span>
@@ -461,7 +464,7 @@ declare(strict_types=1);
 function shareArticle(network) {
     let message = '';
     switch(network) {
-        case 'twitter': message = 'مقاله "<?= e($post['title']) ?>" از وبلاگ <?= e($settings['brand_name'] ?? 'موبارو') ?> را بخوانید!'; break;
+        case 'twitter': message = 'مقاله "<?= e($post['title']) ?>" از وبلاگ <?= e($brandName) ?> را بخوانید!'; break;
         case 'facebook': message = 'اشتراک گذاری در فیسبوک'; break;
         case 'instagram': message = 'این پست را در اینستاگرام ذخیره کنید'; break;
         case 'whatsapp': message = 'مقاله را از طریق واتس‌اپ بفرستید'; break;
