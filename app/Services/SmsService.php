@@ -15,6 +15,7 @@ class SmsService
     private const BASE_URL = 'https://api.sms.ir/v1';
     private const MSG_API_KEY_MISSING = 'کلید API تنظیم نشده است.';
     private const MSG_NOT_CONFIGURED = 'سرویس پیامک فعال نیست.';
+    private const BULK_MAX = 100;
 
     private string $apiKey;
     private int $templateId;
@@ -60,8 +61,17 @@ class SmsService
             return ['status' => false, 'message' => self::MSG_API_KEY_MISSING];
         }
 
+        $mobile = phoneForSms($phone);
+        if ($mobile === '') {
+            return ['status' => false, 'message' => 'شماره موبایل نامعتبر است.'];
+        }
+
+        if ($this->templateId <= 0) {
+            return ['status' => false, 'message' => 'شناسه قالب OTP (Template ID) در تنظیمات پیامک تنظیم نشده است.'];
+        }
+
         $params = [
-            'mobile' => $this->normalizePhone($phone),
+            'mobile' => $mobile,
             'templateId' => $this->templateId,
             'parameters' => !empty($parameters) ? $parameters : [
                 ['name' => 'Code', 'value' => $code],
@@ -70,9 +80,7 @@ class SmsService
 
         $result = $this->request(self::BASE_URL . '/send/verify', $params);
 
-        if ($result['status']) {
-            $this->logSms($phone, 'کد تأیید: ****', 'verify', $result);
-        }
+        $this->logSms($phone, 'کد تأیید: ****', 'verify', $result, $result['status'] ? 'sent' : 'failed');
 
         return $result;
     }
@@ -91,23 +99,53 @@ class SmsService
             return ['status' => false, 'message' => 'شماره خط ارسال تنظیم نشده است.'];
         }
 
-        $normalizedPhones = array_map([$this, 'normalizePhone'], $phones);
+        $normalizedPhones = array_values(array_unique(array_map('normalizePhone', $phones)));
+        $normalizedPhones = array_values(array_filter($normalizedPhones));
 
-        $params = [
-            'lineNumber' => (int) $this->lineNumber,
-            'messageText' => $message,
-            'mobiles' => $normalizedPhones,
-        ];
+        if (empty($normalizedPhones)) {
+            return ['status' => false, 'message' => 'شماره موبایل نامعتبر است.'];
+        }
 
-        $result = $this->request(self::BASE_URL . '/send/bulk', $params);
+        $apiPhones = array_map('phoneForSms', $normalizedPhones);
+        $chunks = self::chunkPhones($apiPhones);
 
-        if ($result['status']) {
-            foreach ($normalizedPhones as $phone) {
-                $this->logSms($phone, $message, 'bulk', $result);
+        $errors = [];
+        $sentCount = 0;
+
+        foreach ($chunks as $chunk) {
+            $params = [
+                'lineNumber' => (int) $this->lineNumber,
+                'messageText' => $message,
+                'mobiles' => $chunk,
+            ];
+
+            $result = $this->request(self::BASE_URL . '/send/bulk', $params);
+
+            foreach ($chunk as $apiPhone) {
+                $canonical = '0' . substr($apiPhone, 2);
+                $this->logSms($canonical, $message, 'bulk', $result, $result['status'] ? 'sent' : 'failed');
+            }
+
+            if ($result['status']) {
+                $sentCount += count($chunk);
+            } else {
+                $errors[] = $result['message'];
             }
         }
 
-        return $result;
+        if ($sentCount === 0) {
+            return [
+                'status' => false,
+                'message' => $errors ? implode(' | ', array_values(array_unique($errors))) : 'خطا در ارسال پیامک.',
+            ];
+        }
+
+        return [
+            'status' => true,
+            'sent' => $sentCount,
+            'message' => empty($errors) ? 'موفق' : 'موفق با ' . count($errors) . ' خطا',
+            'errors' => $errors,
+        ];
     }
 
     public function sendSingle(string $phone, string $message): array
@@ -124,19 +162,85 @@ class SmsService
             return ['status' => false, 'message' => 'شماره خط ارسال تنظیم نشده است.'];
         }
 
+        $mobile = $this->normalizePhone($phone);
+        if ($mobile === '') {
+            return ['status' => false, 'message' => 'شماره موبایل نامعتبر است.'];
+        }
+
         $params = [
             'lineNumber' => (int) $this->lineNumber,
             'messageText' => $message,
-            'mobiles' => [$this->normalizePhone($phone)],
+            'mobiles' => [$mobile],
         ];
 
         $result = $this->request(self::BASE_URL . '/send/bulk', $params);
 
-        if ($result['status']) {
-            $this->logSms($phone, $message, 'bulk', $result);
-        }
+        $canonical = '0' . substr($mobile, 2);
+        $this->logSms($canonical, $message, 'bulk', $result, $result['status'] ? 'sent' : 'failed');
 
         return $result;
+    }
+
+    public function sendTemplate(string $slug, array $recipients, array $variables = []): array
+    {
+        try {
+            $template = Database::fetch(
+                "SELECT * FROM sms_templates WHERE slug = ? AND is_active = 1 LIMIT 1",
+                [$slug]
+            );
+        } catch (Throwable $e) {
+            error_log("SMS template lookup failed: " . $e->getMessage());
+            return ['status' => false, 'message' => 'خطا در خواندن قالب پیامک.'];
+        }
+
+        if (!$template) {
+            return ['status' => false, 'message' => 'قالب پیامک یافت نشد: ' . $slug];
+        }
+
+        $message = self::renderTemplate($template['body'] ?? '', $variables);
+        if ($message === '') {
+            return ['status' => false, 'message' => 'متن قالب پیامک خالی است.'];
+        }
+
+        $recipients = array_values(array_unique(array_filter(array_map('normalizePhone', $recipients))));
+        if (empty($recipients)) {
+            return ['status' => false, 'message' => 'شماره موبایل معتبری یافت نشد.'];
+        }
+
+        if (count($recipients) === 1) {
+            return $this->sendSingle($recipients[0], $message);
+        }
+
+        return $this->sendBulk($message, $recipients);
+    }
+
+    public static function renderTemplate(string $body, array $variables = []): string
+    {
+        $message = $body;
+        foreach ($variables as $key => $value) {
+            $message = str_ireplace('{' . $key . '}', (string) $value, $message);
+        }
+        $message = preg_replace('/\{[A-Za-z_\x{0600}-\x{06FF}][A-Za-z0-9_\x{0600}-\x{06FF}]*\}/u', '', $message);
+        return trim((string) $message);
+    }
+
+    public static function chunkPhones(array $phones): array
+    {
+        return array_chunk(array_values($phones), self::BULK_MAX);
+    }
+
+    public static function notify(string $slug, array $recipients, array $variables = []): array
+    {
+        try {
+            $service = new self();
+            if (!$service->isConfigured()) {
+                return ['status' => false, 'message' => self::MSG_NOT_CONFIGURED];
+            }
+            return $service->sendTemplate($slug, $recipients, $variables);
+        } catch (Throwable $e) {
+            error_log("SMS notify failed: " . $e->getMessage());
+            return ['status' => false, 'message' => 'خطا در ارسال پیامک اطلاع‌رسانی.'];
+        }
     }
 
     public function getCredit(): array
@@ -235,19 +339,7 @@ class SmsService
 
     private function normalizePhone(string $phone): string
     {
-        $phone = preg_replace('/[^0-9]/', '', $phone);
-
-        if (strlen($phone) === 10 && $phone[0] === '0') {
-            $phone = '98' . $phone;
-        } elseif (strlen($phone) === 11 && $phone[0] === '0') {
-            $phone = '98' . substr($phone, 1);
-        } elseif (strlen($phone) === 12 && substr($phone, 0, 2) === '98') {
-            // already correct
-        } elseif (strlen($phone) === 13 && substr($phone, 0, 3) === '+98') {
-            $phone = substr($phone, 1);
-        }
-
-        return $phone;
+        return phoneForSms($phone);
     }
 
     private function request(string $url, array $params = [], string $method = 'POST'): array
@@ -304,7 +396,7 @@ class SmsService
         return ['status' => false, 'message' => $errorMessage, 'code' => $errorCode];
     }
 
-    private function logSms(string $phone, string $message, string $type, array $apiResult): void
+    private function logSms(string $phone, string $message, string $type, array $apiResult, string $status = 'sent'): void
     {
         try {
             $apiMessageId = null;
@@ -317,7 +409,7 @@ class SmsService
             }
 
             $adminId = null;
-            if (Auth::check() && Auth::user('level') === 'admin') {
+            if (Auth::check() && (Auth::user()['role'] ?? 'user') === 'admin') {
                 $adminId = Auth::id();
             }
 
@@ -325,7 +417,7 @@ class SmsService
                 'phone' => $phone,
                 'message' => mb_substr($message, 0, 1000),
                 'type' => $type,
-                'status' => 'sent',
+                'status' => $status,
                 'credits' => $credits,
                 'api_message_id' => $apiMessageId ? (string) $apiMessageId : null,
                 'api_response' => json_encode($apiResult, JSON_UNESCAPED_UNICODE),

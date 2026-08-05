@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Config;
 use App\Database;
+use App\Settings;
 
 function env(string $key, mixed $default = null): mixed
 {
@@ -112,6 +113,50 @@ function sanitize(string $input): string
     $english = ['0','1','2','3','4','5','6','7','8','9'];
     $input = str_replace($persian, $english, $input);
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+}
+
+function faToEnDigits(string $input): string
+{
+    $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    $arabic = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    $english = ['0','1','2','3','4','5','6','7','8','9'];
+    return str_replace($arabic, $english, str_replace($persian, $english, $input));
+}
+
+function normalizePhone(string $input): string
+{
+    $input = trim(faToEnDigits($input));
+    $input = preg_replace('/[\s\-().،,]/u', '', $input);
+    $input = ltrim($input, '+');
+
+    if (!ctype_digit($input)) {
+        return '';
+    }
+
+    if (str_starts_with($input, '0098')) {
+        $input = substr($input, 4);
+    } elseif (str_starts_with($input, '98') && strlen($input) >= 12) {
+        $input = substr($input, 2);
+    }
+
+    if (strlen($input) === 10 && $input[0] === '9') {
+        $input = '0' . $input;
+    }
+
+    if (!preg_match('/^09\d{9}$/', $input)) {
+        return '';
+    }
+
+    return $input;
+}
+
+function phoneForSms(string $phone): string
+{
+    $phone = normalizePhone($phone);
+    if ($phone === '' || !str_starts_with($phone, '09')) {
+        return '';
+    }
+    return '98' . substr($phone, 1);
 }
 
 function e(mixed $value): string
@@ -249,10 +294,20 @@ function truncate(string $text, int $length = 100): string
     return mb_substr($text, 0, $length) . '...';
 }
 
-function faNum(int|string $num): string
+function faNum(int|string|float $num): string
 {
     $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    if (is_float($num)) {
+        $num = normalizeDecimal($num);
+    } elseif (is_string($num) && str_contains($num, '.') && is_numeric($num)) {
+        $num = normalizeDecimal((float) $num);
+    }
     return str_replace(range(0, 9), $persian, (string) $num);
+}
+
+function normalizeDecimal(int|string|float $num): string
+{
+    return rtrim(rtrim(sprintf('%.2F', (float) $num), '0'), '.');
 }
 
 function getYoutubeId(string $url): string
@@ -308,4 +363,26 @@ function slugify(string $text): string
         $text = 'item-' . bin2hex(random_bytes(4));
     }
     return $text;
+}
+
+function smsStatusLabel(string $status): string
+{
+    return match (strtolower($status)) {
+        'pending' => 'در انتظار',
+        'processing' => 'در حال پردازش',
+        'confirmed' => 'تأیید شد',
+        'shipped' => 'ارسال شد',
+        'delivered' => 'تحویل شد',
+        'completed', 'done' => 'تکمیل شد',
+        'cancelled' => 'لغو شد',
+        'rejected' => 'رد شد',
+        'failed' => 'ناموفق',
+        'active' => 'فعال',
+        default => $status,
+    };
+}
+
+function smsOwnerPhone(): string
+{
+    return normalizePhone(Settings::get('sms_admin_phone', ''));
 }

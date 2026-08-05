@@ -13,6 +13,15 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/SEOService.php';
 
+spl_autoload_register(function (string $class): void {
+    if (str_starts_with($class, 'App\\')) {
+        $file = __DIR__ . '/' . str_replace('\\', '/', substr($class, 4)) . '.php';
+        if (is_file($file)) {
+            require $file;
+        }
+    }
+});
+
 $envFile = __DIR__ . '/../.env';
 if (is_file($envFile)) {
     \Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->load();
@@ -47,7 +56,7 @@ header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; frame-src https://www.youtube.com https://www.aparat.com; connect-src 'self';");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://www.google.com https://www.gstatic.com https://cdn.tiny.cloud; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com https://cdn.tiny.cloud; font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com https://cdn.tiny.cloud; img-src 'self' data: blob: https:; frame-src https://www.youtube.com https://www.aparat.com; connect-src 'self' https://cdn.tiny.cloud;");
 header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 
 $uri = $_SERVER['REQUEST_URI'] ?? '';

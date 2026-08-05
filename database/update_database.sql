@@ -1,0 +1,182 @@
+-- ============================================================
+-- Rozhin (mobaro.ir) — Database update (additive only)
+-- Safe to run in phpMyAdmin. Adds missing columns/tables only.
+-- NEVER deletes or overwrites existing data.
+-- Compatible with MySQL 5.7+ / MariaDB 10.2+.
+-- ============================================================
+
+SET @dbname = DATABASE();
+SET @current_db = DATABASE();
+
+-- ------------------------------------------------------------
+-- Helper procedure: add a column only if it does not exist
+-- ------------------------------------------------------------
+DROP PROCEDURE IF EXISTS add_column_if_missing;
+DELIMITER $$
+CREATE PROCEDURE add_column_if_missing(
+    IN p_table VARCHAR(64),
+    IN p_column VARCHAR(64),
+    IN p_ddl TEXT
+)
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @current_db
+          AND TABLE_NAME = p_table
+          AND COLUMN_NAME = p_column
+    ) THEN
+        SET @sql = CONCAT('ALTER TABLE `', p_table, '` ', p_ddl);
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END$$
+DELIMITER ;
+
+-- ------------------------------------------------------------
+-- 1) blog_posts — SEO / OG / image_alt columns (fixes the 404
+--    when saving a blog post: "Unknown column 'robots'")
+-- ------------------------------------------------------------
+CALL add_column_if_missing('blog_posts', 'image_alt',        'ADD COLUMN `image_alt` VARCHAR(500) DEFAULT NULL AFTER `image`');
+CALL add_column_if_missing('blog_posts', 'meta_title',       'ADD COLUMN `meta_title` VARCHAR(255) DEFAULT NULL AFTER `image_alt`');
+CALL add_column_if_missing('blog_posts', 'meta_description', 'ADD COLUMN `meta_description` TEXT DEFAULT NULL AFTER `meta_title`');
+CALL add_column_if_missing('blog_posts', 'canonical_url',    'ADD COLUMN `canonical_url` VARCHAR(500) DEFAULT NULL AFTER `meta_description`');
+CALL add_column_if_missing('blog_posts', 'og_title',         'ADD COLUMN `og_title` VARCHAR(255) DEFAULT NULL AFTER `canonical_url`');
+CALL add_column_if_missing('blog_posts', 'og_description',   'ADD COLUMN `og_description` TEXT DEFAULT NULL AFTER `og_title`');
+CALL add_column_if_missing('blog_posts', 'og_image',         'ADD COLUMN `og_image` VARCHAR(500) DEFAULT NULL AFTER `og_description`');
+CALL add_column_if_missing('blog_posts', 'robots',           'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');
+
+-- ------------------------------------------------------------
+-- 2) seo_meta — robots column
+-- ------------------------------------------------------------
+CALL add_column_if_missing('seo_meta', 'robots', 'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');
+
+-- ------------------------------------------------------------
+-- 3) users — phone_verified column
+-- ------------------------------------------------------------
+CALL add_column_if_missing('users', 'phone_verified', 'ADD COLUMN `phone_verified` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_active`');
+
+-- ------------------------------------------------------------
+-- 4) sms_templates — slug column + unique index
+-- ------------------------------------------------------------
+CALL add_column_if_missing('sms_templates', 'slug', 'ADD COLUMN `slug` VARCHAR(120) DEFAULT NULL AFTER `name`');
+
+SET @db = @current_db;
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.STATISTICS
+                   WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sms_templates' AND INDEX_NAME = 'uq_sms_templates_slug');
+SET @sql = IF(@idx_exists = 0,
+              'ALTER TABLE `sms_templates` ADD UNIQUE KEY `uq_sms_templates_slug` (`slug`)',
+              'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Backfill slugs for existing templates (does not overwrite existing slugs)
+UPDATE sms_templates SET slug = CONCAT('tpl-', id) WHERE slug IS NULL OR TRIM(slug) = '';
+
+-- ------------------------------------------------------------
+-- 5) Missing SMS tables (created only if absent)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS sms_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    phone VARCHAR(20) NOT NULL,
+    message TEXT NOT NULL,
+    template_id INT DEFAULT NULL,
+    type ENUM('verify', 'bulk', 'notification') NOT NULL DEFAULT 'bulk',
+    status ENUM('sent', 'delivered', 'failed') NOT NULL DEFAULT 'sent',
+    credits DECIMAL(10,2) DEFAULT 0,
+    api_message_id VARCHAR(100) DEFAULT NULL,
+    api_response TEXT DEFAULT NULL,
+    sent_by INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_phone (phone),
+    INDEX idx_status (status),
+    INDEX idx_type (type),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS sms_templates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(120) DEFAULT NULL,
+    body TEXT NOT NULL,
+    variables JSON DEFAULT NULL,
+    sms_type ENUM('bulk', 'notification') NOT NULL DEFAULT 'bulk',
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_sms_templates_slug (slug)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS sms_credits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    amount INT NOT NULL,
+    cost DECIMAL(15,0) DEFAULT 0,
+    description VARCHAR(255) DEFAULT '',
+    payment_id VARCHAR(255) DEFAULT NULL,
+    status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS verification_codes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    phone VARCHAR(20) NOT NULL,
+    code VARCHAR(10) NOT NULL,
+    purpose ENUM('register', 'login', 'reset_password') NOT NULL DEFAULT 'register',
+    expires_at DATETIME NOT NULL,
+    used TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_phone_purpose (phone, purpose),
+    INDEX idx_expires (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seed SMS notification templates only if their slug is missing
+INSERT INTO sms_templates (name, slug, body, variables, sms_type, is_active)
+SELECT * FROM (SELECT 'نوبت جدید', 'booking_new', 'نوبت جدید ثبت شد: {Service} | تاریخ: {Date} | ساعت: {Time} | مشتری: {Name} ({Phone})', '["Service","Date","Time","Name","Phone"]', 'notification', 1) t
+WHERE NOT EXISTS (SELECT 1 FROM sms_templates WHERE slug = 'booking_new');
+
+INSERT INTO sms_templates (name, slug, body, variables, sms_type, is_active)
+SELECT * FROM (SELECT 'رسید سفارش', 'order_receipt', 'سفارش {Code} شما با موفقیت ثبت و پرداخت شد. مبلغ: {Total}', '["Code","Total"]', 'notification', 1) t
+WHERE NOT EXISTS (SELECT 1 FROM sms_templates WHERE slug = 'order_receipt');
+
+INSERT INTO sms_templates (name, slug, body, variables, sms_type, is_active)
+SELECT * FROM (SELECT 'سفارش جدید', 'order_new', 'سفارش جدید {Code} به مبلغ {Total} توسط {Name} ثبت شد.', '["Code","Total","Name"]', 'notification', 1) t
+WHERE NOT EXISTS (SELECT 1 FROM sms_templates WHERE slug = 'order_new');
+
+INSERT INTO sms_templates (name, slug, body, variables, sms_type, is_active)
+SELECT * FROM (SELECT 'وضعیت سفارش', 'order_status', 'وضعیت سفارش {Code} شما: {Status}', '["Code","Status"]', 'notification', 1) t
+WHERE NOT EXISTS (SELECT 1 FROM sms_templates WHERE slug = 'order_status');
+
+INSERT INTO sms_templates (name, slug, body, variables, sms_type, is_active)
+SELECT * FROM (SELECT 'وضعیت نوبت', 'booking_status', 'وضعیت نوبت شما در تاریخ {Date} ساعت {Time}: {Status}', '["Date","Time","Status"]', 'notification', 1) t
+WHERE NOT EXISTS (SELECT 1 FROM sms_templates WHERE slug = 'booking_status');
+
+-- ------------------------------------------------------------
+-- 6) seo_meta table (created only if absent) + default rows
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS seo_meta (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    page_slug VARCHAR(100) NOT NULL UNIQUE,
+    meta_title VARCHAR(255) DEFAULT NULL,
+    meta_description TEXT DEFAULT NULL,
+    canonical_url VARCHAR(500) DEFAULT NULL,
+    og_title VARCHAR(255) DEFAULT NULL,
+    og_description TEXT DEFAULT NULL,
+    og_image VARCHAR(500) DEFAULT NULL,
+    robots VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('contact'), ('about'), ('academy');
+
+-- ------------------------------------------------------------
+-- Cleanup helper procedure
+-- ------------------------------------------------------------
+DROP PROCEDURE IF EXISTS add_column_if_missing;
+
+-- ============================================================
+-- Done.
+-- ============================================================

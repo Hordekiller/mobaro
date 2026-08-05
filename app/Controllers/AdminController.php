@@ -1120,10 +1120,33 @@ class AdminController extends BaseController
             $updateData['payment_status'] = $data['payment_status'];
         }
         Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+
+        $this->notifyOrderStatusChange($id, $data['status']);
+
         $this->clearCache('orders');
         flash('success', 'وضعیت سفارش به‌روزرسانی شد.');
         redirect('/admin/orders');
         return true;
+    }
+
+    private function notifyOrderStatusChange(int $orderId, string $status): void
+    {
+        try {
+            $order = Database::fetch("SELECT id, tracking_code, user_id FROM orders WHERE id = ?", [$orderId]);
+            if (!$order) {
+                return;
+            }
+            $user = Database::fetch("SELECT phone FROM users WHERE id = ?", [$order['user_id']]);
+            if (!$user) {
+                return;
+            }
+            SmsService::notify('order_status', [$user['phone']], [
+                'Code' => $order['tracking_code'] ?? $order['id'],
+                'Status' => smsStatusLabel($status),
+            ]);
+        } catch (Throwable $e) {
+            error_log("SMS order status notify failed: " . $e->getMessage());
+        }
     }
 
     private function saveBlogComments(int $id, array $data, string $table): bool
@@ -1208,12 +1231,38 @@ class AdminController extends BaseController
             }
             if (!empty($updateData)) {
                 Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+                if (isset($data['status'])) {
+                    $this->notifyAppointmentStatusChange($id, $data['status']);
+                }
                 flash('success', 'نوبت با موفقیت به‌روزرسانی شد.');
             }
         }
         $this->clearCache('appointments');
         redirect('/admin/appointments');
         return true;
+    }
+
+    private function notifyAppointmentStatusChange(int $appointmentId, string $status): void
+    {
+        try {
+            $apt = Database::fetch(
+                "SELECT a.user_id, a.appointment_date, a.appointment_time, u.phone
+                 FROM appointments a
+                 JOIN users u ON u.id = a.user_id
+                 WHERE a.id = ?",
+                [$appointmentId]
+            );
+            if (!$apt) {
+                return;
+            }
+            SmsService::notify('booking_status', [$apt['phone']], [
+                'Date' => $apt['appointment_date'] ?? '',
+                'Time' => $apt['appointment_time'] ?? '',
+                'Status' => smsStatusLabel($status),
+            ]);
+        } catch (Throwable $e) {
+            error_log("SMS appointment status notify failed: " . $e->getMessage());
+        }
     }
 
     private function saveEnrollments(int $id, array $data, string $table): bool
@@ -1433,37 +1482,6 @@ class AdminController extends BaseController
 
                 $htmlKeys = ['about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'hero_customers_text', 'blog_sidebar_about', 'academy_instructor_bio'];
         $toggleKeys = [];
-
-        $smsEnabled = isset($_POST['setting_sms_enabled']);
-        $apiKey = trim($_POST['setting_sms_api_key'] ?? '');
-        $sender = trim($_POST['setting_sms_sender'] ?? '');
-        $otpTtl = $_POST['setting_sms_otp_ttl'] ?? '';
-        $otpLength = $_POST['setting_sms_otp_length'] ?? '';
-
-        if ($smsEnabled) {
-            if ($apiKey === '') {
-                flash('error', 'کلید API کاوه‌نگار نمی‌تواند خالی باشد.');
-                redirect(self::PATH_SETTINGS);
-                return;
-            }
-            if ($sender === '') {
-                flash('error', 'شماره فرستنده نمی‌تواند خالی باشد.');
-                redirect(self::PATH_SETTINGS);
-                return;
-            }
-        }
-
-        if ($otpTtl !== '' && (!ctype_digit($otpTtl) || (int)$otpTtl < 60 || (int)$otpTtl > 600)) {
-            flash('error', 'مدت اعتبار کد تأیید باید عددی بین ۶۰ تا ۶۰۰ ثانیه باشد.');
-            redirect(self::PATH_SETTINGS);
-            return;
-        }
-
-        if ($otpLength !== '' && (!ctype_digit($otpLength) || (int)$otpLength < 4 || (int)$otpLength > 6)) {
-            flash('error', 'طول کد تأیید باید عددی بین ۴ تا ۶ رقم باشد.');
-            redirect(self::PATH_SETTINGS);
-            return;
-        }
 
         $upserts = [];
         $upsertParams = [];
@@ -2027,7 +2045,7 @@ class AdminController extends BaseController
         $smsService = new SmsService();
 
         $data['smsSettings'] = [];
-        $smsKeys = ['sms_enabled', 'sms_api_key', 'sms_template_id', 'sms_line_number', 'sms_otp_ttl', 'sms_otp_length'];
+        $smsKeys = ['sms_enabled', 'sms_api_key', 'sms_template_id', 'sms_line_number', 'sms_admin_phone', 'sms_otp_ttl', 'sms_otp_length'];
         foreach ($smsKeys as $key) {
             $data['smsSettings'][$key] = Settings::get($key, '');
         }
@@ -2130,10 +2148,26 @@ class AdminController extends BaseController
         $lineNumber = trim($_POST['sms_line_number'] ?? '');
         $otpTtl = $_POST['sms_otp_ttl'] ?? '';
         $otpLength = $_POST['sms_otp_length'] ?? '';
+        $adminPhone = trim($_POST['sms_admin_phone'] ?? '');
 
         if ($smsEnabled) {
             if ($apiKey === '') {
                 flash('error', 'کلید API نمی‌تواند خالی باشد.');
+                redirect(self::PATH_SMS);
+                return;
+            }
+
+            if ($templateId === '') {
+                flash('error', 'شناسه قالب OTP (Template ID) برای ارسال کد تأیید الزامی است.');
+                redirect(self::PATH_SMS);
+                return;
+            }
+        }
+
+        if ($adminPhone !== '') {
+            $adminPhone = normalizePhone($adminPhone);
+            if ($adminPhone === '') {
+                flash('error', 'شماره موبایل صاحب سالن نامعتبر است.');
                 redirect(self::PATH_SMS);
                 return;
             }
@@ -2156,6 +2190,7 @@ class AdminController extends BaseController
             'sms_api_key' => sanitize($apiKey),
             'sms_template_id' => sanitize($templateId),
             'sms_line_number' => sanitize($lineNumber),
+            'sms_admin_phone' => $adminPhone,
             'sms_otp_ttl' => sanitize($otpTtl ?: '180'),
             'sms_otp_length' => sanitize($otpLength ?: '5'),
         ];
@@ -2201,7 +2236,8 @@ class AdminController extends BaseController
         }
 
         $phoneList = array_filter(array_map('trim', preg_split('/[\n,;]+/', $phones)));
-        $phoneList = array_unique($phoneList);
+        $phoneList = array_unique(array_map('normalizePhone', $phoneList));
+        $phoneList = array_values(array_filter($phoneList));
 
         if (empty($phoneList)) {
             flash('error', 'شماره تلفن معتبری یافت نشد.');
@@ -2238,18 +2274,22 @@ class AdminController extends BaseController
             return;
         }
 
+        $slug = $this->uniqueTemplateSlug(slugify($name), $id);
+        $smsType = in_array($smsType, ['bulk', 'notification']) ? $smsType : 'bulk';
+
         $data = [
             'name' => sanitize($name),
             'body' => sanitize($body),
-            'sms_type' => in_array($smsType, ['verify', 'bulk', 'notification']) ? $smsType : 'bulk',
+            'sms_type' => $smsType,
             'variables' => $variables ?: null,
+            'slug' => $slug,
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ];
 
         if ($id > 0) {
             Database::query(
-                "UPDATE sms_templates SET name = ?, body = ?, sms_type = ?, variables = ?, is_active = ? WHERE id = ?",
-                [$data['name'], $data['body'], $data['sms_type'], $data['variables'], $data['is_active'], $id]
+                "UPDATE sms_templates SET name = ?, body = ?, sms_type = ?, variables = ?, slug = ?, is_active = ? WHERE id = ?",
+                [$data['name'], $data['body'], $data['sms_type'], $data['variables'], $data['slug'], $data['is_active'], $id]
             );
             flash('success', 'قالب با موفقیت بروزرسانی شد.');
         } else {
@@ -2258,6 +2298,20 @@ class AdminController extends BaseController
         }
 
         redirect(self::PATH_SMS_TAB_TEMPLATES);
+    }
+
+    private function uniqueTemplateSlug(string $slug, int $ignoreId = 0): string
+    {
+        $base = $slug;
+        $i = 2;
+        while (true) {
+            $row = Database::fetch("SELECT id FROM sms_templates WHERE slug = ? AND id != ? LIMIT 1", [$slug, $ignoreId]);
+            if (!$row) {
+                return $slug;
+            }
+            $slug = $base . '-' . $i;
+            $i++;
+        }
     }
 
     public function deleteSmsTemplate(int $id): void

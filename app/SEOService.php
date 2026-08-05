@@ -29,7 +29,7 @@ class SEOService
     {
         $cacheKey = 'seo_page_' . $pageSlug;
         return Cache::remember($cacheKey, 86400, function () use ($pageSlug) {
-            $row = Database::fetch("SELECT * FROM seo_meta WHERE page_slug = ?", [$pageSlug]);
+            $row = Database::fetch("SELECT * FROM seo_meta WHERE page_slug = ?", [$pageSlug]) ?? [];
             $settings = Settings::all();
 
             $canonical = match ($pageSlug) {

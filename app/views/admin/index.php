@@ -673,7 +673,7 @@ declare(strict_types=1);
                             <div class="<?= in_array($col['type'], ['textarea', 'image', 'file']) ? 'md:col-span-2' : '' ?>">
                                 <label for="<?= $col['key'] ?>" class="block text-sm font-semibold mb-1.5"><?= $col['label'] ?></label>
                                 <?php if ($col['type'] === 'textarea') : ?>
-                                    <?php if ($section === 'blog' && $col['key'] === 'content') : ?>
+                                    <?php if (($section === 'blog' && $col['key'] === 'content') || (in_array($section, ['products', 'courses']) && $col['key'] === 'description')) : ?>
                                     <textarea id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" class="form-input w-full tinymce-editor" <?= ($col['required'] ?? false) ? 'required' : '' ?>></textarea>
                                     <?php else : ?>
                                     <textarea id="<?= $col['key'] ?>" name="<?= $col['key'] ?>" rows="3" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" <?= ($col['required'] ?? false) ? 'required' : '' ?>></textarea>
@@ -1059,14 +1059,19 @@ function closeItemModal(e) {
 </script>
 <?php endif; ?>
 
-<?php if ($section === 'blog') : ?>
+<?php if (in_array($section, ['blog', 'products', 'courses'])) : ?>
+<?php $tinymceKey = \App\Config::get('tinymce.api_key', ''); ?>
+<?php if ($tinymceKey) : ?>
+<script src="https://cdn.tiny.cloud/1/<?= e($tinymceKey) ?>/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<?php else : ?>
 <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" integrity="sha384-Ovv1ZPEkpW4ElBKDKaEIPkNfTTadFpifFwNJOBnuStg0PQ0RBln5Lsf9AI8BsCmx" crossorigin="anonymous"></script>
+<?php endif; ?>
 <script>
-function initBlogEditor(content) {
+function initRichEditor(selector, content) {
     if (tinymce.activeEditor) tinymce.remove();
     setTimeout(function() {
         tinymce.init({
-            selector: '.tinymce-editor',
+            selector: selector,
             height: 500,
             directionality: 'rtl',
             plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen media table wordcount',
@@ -1107,28 +1112,34 @@ function initBlogEditor(content) {
         });
     }, 200);
 }
-function destroyBlogEditor() {
+function destroyRichEditor() {
     if (tinymce.activeEditor) tinymce.remove();
 }
 
 var _origShowAdd = showAddModal;
 showAddModal = function() {
     _origShowAdd();
-    <?php if ($section === 'blog') :
-        ?>initBlogEditor('');<?php
-    endif; ?>
+    <?php if ($section === 'blog') : ?>
+    initRichEditor('.tinymce-editor', '');
+    <?php elseif ($section === 'products' || $section === 'courses') : ?>
+    var el = document.getElementById('description');
+    if (el) initRichEditor('#description', '');
+    <?php endif; ?>
 };
 var _origShowEdit = showEditModal;
 showEditModal = function(item) {
     _origShowEdit(item);
-    <?php if ($section === 'blog') :
-        ?>initBlogEditor(item.content || '');<?php
-    endif; ?>
+    <?php if ($section === 'blog') : ?>
+    initRichEditor('.tinymce-editor', item.content || '');
+    <?php elseif ($section === 'products' || $section === 'courses') : ?>
+    var el = document.getElementById('description');
+    if (el) initRichEditor('#description', item.description || '');
+    <?php endif; ?>
 };
 var _origClose = closeItemModal;
 closeItemModal = function(e) {
     _origClose(e);
-    destroyBlogEditor();
+    destroyRichEditor();
 };
 document.addEventListener('submit', function(e) {
     var form = e.target;

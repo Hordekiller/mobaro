@@ -44,7 +44,12 @@ if (isset($_SESSION['user'])) {
                     <span class="bg-white/15 text-white/90 text-xs px-3 py-1 rounded-full border border-white/20"><?= e($course['level']) ?></span>
                 </div>
                 <h1 class="text-2xl md:text-4xl font-bold leading-tight tracking-tight"><?= e($course['title']) ?></h1>
-                <p class="mt-4 text-white/70 leading-relaxed max-w-2xl"><?= e($course['description']) ?></p>
+                <?php $desc = $course['description'] ?? ''; ?>
+                <?php if (!empty($desc)) : ?>
+                <div class="mt-4 rich-description rich-description-invert max-w-2xl">
+                    <?= str_contains($desc, '<') ? $desc : nl2br(e($desc)) ?>
+                </div>
+                <?php endif; ?>
                 <div class="mt-6 flex flex-wrap items-center gap-6 text-sm text-white/70">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-user text-amber-300"></i>

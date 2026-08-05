@@ -8,7 +8,9 @@ use App\Auth;
 use App\Database;
 use App\FileUploader;
 use App\Config;
+use App\Services\SmsService;
 use App\Services\ZarinPal;
+use Throwable;
 
 class DashboardController extends BaseController
 {
@@ -416,7 +418,7 @@ class DashboardController extends BaseController
         }
 
         $apt = Database::fetch(
-            "SELECT id, user_id, status FROM appointments WHERE id = ? AND user_id = ?",
+            "SELECT id, user_id, status, appointment_date, appointment_time FROM appointments WHERE id = ? AND user_id = ?",
             [$id, Auth::id()]
         );
         if (!$apt) {
@@ -429,6 +431,14 @@ class DashboardController extends BaseController
         }
 
         Database::update('appointments', ['status' => 'cancelled'], self::WHERE_ID, ['id' => $id]);
+
+        $user = Auth::user();
+        $this->notifyUser('booking_status', $user['phone'] ?? '', [
+            'Date' => $apt['appointment_date'] ?? '',
+            'Time' => $apt['appointment_time'] ?? '',
+            'Status' => 'لغو شد',
+        ]);
+
         $this->json(['success' => true, 'message' => 'نوبت با موفقیت لغو شد.']);
     }
 
@@ -444,7 +454,7 @@ class DashboardController extends BaseController
         }
 
         $order = Database::fetch(
-            "SELECT id, user_id, status FROM orders WHERE id = ? AND user_id = ?",
+            "SELECT id, user_id, status, tracking_code FROM orders WHERE id = ? AND user_id = ?",
             [$id, Auth::id()]
         );
         if (!$order) {
@@ -457,7 +467,26 @@ class DashboardController extends BaseController
         }
 
         Database::update('orders', ['status' => 'cancelled'], self::WHERE_ID, ['id' => $id]);
+
+        $user = Auth::user();
+        $this->notifyUser('order_status', $user['phone'] ?? '', [
+            'Code' => $order['tracking_code'] ?? $order['id'],
+            'Status' => 'لغو شد',
+        ]);
+
         $this->json(['success' => true, 'message' => 'سفارش با موفقیت لغو شد.']);
+    }
+
+    private function notifyUser(string $slug, string $phone, array $variables): void
+    {
+        try {
+            if ($phone === '') {
+                return;
+            }
+            SmsService::notify($slug, [$phone], $variables);
+        } catch (Throwable $e) {
+            error_log("SMS user notify failed: " . $e->getMessage());
+        }
     }
 
     public function rescheduleAppointment(): void

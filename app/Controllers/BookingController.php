@@ -10,8 +10,10 @@ use App\Database;
 use App\Settings;
 use App\Captcha;
 use App\Auth;
+use App\Services\SmsService;
 use DateTime;
 use DateTimeZone;
+use Throwable;
 
 class BookingController extends BaseController
 {
@@ -202,6 +204,8 @@ class BookingController extends BaseController
             'notes' => $notes ?: null,
         ]);
 
+        $this->notifyNewBooking($appointmentId, $service['title'], $date, $time);
+
         $bookingPhone = Settings::get('booking_phone', '۰۳۱-۳۶۶۶۲۱۲۲');
 
         $this->json([
@@ -213,6 +217,30 @@ class BookingController extends BaseController
             'date' => $date,
             'time' => $time,
         ]);
+    }
+
+    private function notifyNewBooking(int $appointmentId, string $serviceTitle, string $date, string $time): void
+    {
+        try {
+            $ownerPhone = smsOwnerPhone();
+            if ($ownerPhone === '') {
+                return;
+            }
+
+            $user = Auth::user();
+            $name = $user['name'] ?? 'کاربر';
+            $phone = $user['phone'] ?? '';
+
+            SmsService::notify('booking_new', [$ownerPhone], [
+                'Service' => $serviceTitle,
+                'Date' => $date,
+                'Time' => $time,
+                'Name' => $name,
+                'Phone' => $phone,
+            ]);
+        } catch (Throwable $e) {
+            error_log("SMS new booking notify failed: " . $e->getMessage());
+        }
     }
 
     private function validateTimeSlot(string $date, string $time): ?string

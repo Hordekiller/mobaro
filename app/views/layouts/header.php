@@ -17,19 +17,19 @@ use App\Database;
     $brandName = $settings['brand_name'] ?? 'موبارو';
     $titlePrefix = $settings['title_prefix'] ?? '';
     $titleSuffix = $settings['title_suffix'] ?? '';
-    $metaTitle = $settings['meta_title'] ?: $brandName;
-    $rawTitle = $seo['title'] ?: ($title ?: $metaTitle);
+    $metaTitle = ($settings['meta_title'] ?? '') ?: $brandName;
+    $rawTitle = ($seo['title'] ?? '') ?: (($title ?? '') ?: $metaTitle);
     $fullTitle = $titlePrefix . $rawTitle . $titleSuffix;
     $metaDescDefault = 'سالن زیبایی ' . $brandName . ' با بهترین آرایشگران و محصولات حرفه‌ای';
     ?>
     <title><?= e($fullTitle) ?></title>
-    <meta name="description" content="<?= e($seo['description'] ?: ($settings['meta_description'] ?: $metaDescDefault)) ?>">
+    <meta name="description" content="<?= e(($seo['description'] ?? '') ?: (($settings['meta_description'] ?? '') ?: $metaDescDefault)) ?>">
     <?php if (!empty($seo['canonical'])) : ?>
     <link rel="canonical" href="<?= e($seo['canonical']) ?>">
     <?php endif; ?>
-    <meta property="og:title" content="<?= e($seo['og_title'] ?: ($settings['og_title'] ?: $rawTitle)) ?>">
-    <meta property="og:description" content="<?= e($seo['og_desc'] ?: ($settings['og_description'] ?: $metaDescDefault)) ?>">
-    <meta property="og:image" content="<?= e($seo['og_image'] ?: ($settings['og_image'] ?: '/favicon/og-image.png')) ?>">
+    <meta property="og:title" content="<?= e(($seo['og_title'] ?? '') ?: (($settings['og_title'] ?? '') ?: $rawTitle)) ?>">
+    <meta property="og:description" content="<?= e(($seo['og_desc'] ?? '') ?: (($settings['og_description'] ?? '') ?: $metaDescDefault)) ?>">
+    <meta property="og:image" content="<?= e(($seo['og_image'] ?? '') ?: (($settings['og_image'] ?? '') ?: '/favicon/og-image.png')) ?>">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <?php

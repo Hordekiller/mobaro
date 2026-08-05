@@ -10,7 +10,9 @@ use App\Database;
 use App\Settings;
 use App\SEOService;
 use App\Auth;
+use App\Services\SmsService;
 use App\Services\ZarinPal;
+use Throwable;
 
 class ShopController extends BaseController
 {
@@ -616,8 +618,9 @@ class ShopController extends BaseController
         return ['error' => null, 'discount' => $discount, 'code' => $couponCode];
     }
 
-    private function resolveAddress(array $cart, int $userId): array
+    private function resolveAddress(array $cart, int|string $userId): array
     {
+        $userId = (int) $userId;
         $addressId = (int) ($_POST['address_id'] ?? 0);
         $hasPhysicalProducts = !empty(array_filter($cart, fn($item) => ($item['type'] ?? 'product') === 'product'));
 
@@ -773,10 +776,41 @@ class ShopController extends BaseController
 
             $_SESSION['cart'] = [];
 
+            $this->notifyPaidOrder($order);
+
             $this->renderPaymentResult('success', null, null, $result['ref_id'], $order['tracking_code']);
         } else {
             Database::update('orders', ['payment_status' => 'failed'], self::WHERE_ID, ['id' => $orderId]);
             $this->renderPaymentResult('error', $result['message'], null);
+        }
+    }
+
+    private function notifyPaidOrder(array $order): void
+    {
+        try {
+            $user = Auth::user();
+            $userPhone = $user['phone'] ?? '';
+            $userName = $user['name'] ?? 'کاربر';
+            $total = faNum(number_format((int) ($order['total'] ?? 0))) . ' تومان';
+            $code = $order['tracking_code'] ?? $order['id'];
+
+            if ($userPhone !== '') {
+                SmsService::notify('order_receipt', [$userPhone], [
+                    'Code' => $code,
+                    'Total' => $total,
+                ]);
+            }
+
+            $ownerPhone = smsOwnerPhone();
+            if ($ownerPhone !== '') {
+                SmsService::notify('order_new', [$ownerPhone], [
+                    'Code' => $code,
+                    'Total' => $total,
+                    'Name' => $userName,
+                ]);
+            }
+        } catch (Throwable $e) {
+            error_log("SMS paid order notify failed: " . $e->getMessage());
         }
     }
 

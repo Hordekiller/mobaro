@@ -6,7 +6,7 @@ namespace App;
 
 class Config
 {
-    public const VERSION = '1.0.2';
+    public const VERSION = '1.0.3';
 
     private static array $cache = [];
 
@@ -52,7 +52,6 @@ class Config
 
             // SMS (sms.ir)
             'sms.api_key' => env('SMS_API_KEY', ''),
-            'sms.sender' => env('SMS_SENDER', ''),
             'sms.template_id' => (int) (env('SMS_TEMPLATE_ID', '0') ?: '0'),
             'sms.enabled' => env('SMS_ENABLED', 'false') === 'true',
             'sms.otp_ttl' => (int) (env('SMS_OTP_TTL', '180') ?: '180'),
@@ -65,6 +64,9 @@ class Config
             'cache.ttl.default' => (int) (env('CACHE_TTL_DEFAULT') ?: 3600),
             'cache.ttl.page' => (int) (env('CACHE_TTL_PAGE') ?: 600),
             'cache.ttl.admin' => (int) (env('CACHE_TTL_ADMIN') ?: 300),
+
+            // TinyMCE
+            'tinymce.api_key' => env('TINYMCE_API_KEY', ''),
         ];
     }
 }

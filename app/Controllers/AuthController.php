@@ -60,20 +60,23 @@ class AuthController extends BaseController
             return;
         }
 
+        $loginLookup = normalizePhone($login) ?: $login;
+        $loginKey = $loginLookup;
+
         RateLimiter::init();
         RateLimiter::cleanup();
-        if (RateLimiter::isLocked('user_' . $login)) {
+        if (RateLimiter::isLocked('user_' . $loginKey)) {
             $_SESSION['captcha_question'] = Captcha::store();
             $this->redirectWithErrors(self::PATH_LOGIN, ['rate_limit' => 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
             return;
         }
 
-        $user = Database::fetch("SELECT * FROM users WHERE (phone = ? OR name = ?) AND (is_active IS NULL OR is_active = 1)", [$login, $login]);
+        $user = Database::fetch("SELECT * FROM users WHERE (phone = ? OR name = ?) AND (is_active IS NULL OR is_active = 1)", [$loginLookup, $login]);
 
         if (!$user || !Auth::verify($password, $user['password'])) {
-            RateLimiter::recordAttempt('user_' . $login, false);
+            RateLimiter::recordAttempt('user_' . $loginKey, false);
             $_SESSION['captcha_question'] = Captcha::store();
-            $remaining = RateLimiter::remainingAttempts('user_' . $login);
+            $remaining = RateLimiter::remainingAttempts('user_' . $loginKey);
             $msg = 'شماره تلفن / نام کاربری یا رمز عبور اشتباه است.';
             if ($remaining <= 2 && $remaining > 0) {
                 $msg .= " ({$remaining} تلاش باقی‌مانده)";
@@ -82,7 +85,7 @@ class AuthController extends BaseController
             return;
         }
 
-        RateLimiter::recordAttempt('user_' . $login, true);
+        RateLimiter::recordAttempt('user_' . $loginKey, true);
         Auth::login($user['id'], $user);
         $this->syncSessionWishlist();
 
@@ -114,6 +117,13 @@ class AuthController extends BaseController
         if (!empty($errors)) {
             $_SESSION['captcha_question'] = Captcha::store();
             $this->redirectWithErrors(self::PATH_REGISTER, $errors);
+            return;
+        }
+
+        $phone = normalizePhone($phone);
+        if ($phone === '') {
+            $_SESSION['captcha_question'] = Captcha::store();
+            $this->redirectWithErrors(self::PATH_REGISTER, ['phone' => 'شماره موبایل معتبر نیست.']);
             return;
         }
 
@@ -177,6 +187,7 @@ class AuthController extends BaseController
         }
 
         $phone = sanitize($_POST['phone'] ?? '');
+        $phoneKey = normalizePhone($phone) ?: $phone;
 
         if (empty($phone)) {
             $_SESSION['captcha_question'] = Captcha::store();
@@ -185,13 +196,13 @@ class AuthController extends BaseController
         }
 
         RateLimiter::init();
-        if (RateLimiter::isLocked('forgot_' . $phone)) {
+        if (RateLimiter::isLocked('forgot_' . $phoneKey)) {
             $_SESSION['captcha_question'] = Captcha::store();
             $this->redirectWithErrors(self::PATH_LOGIN, ['rate_limit' => 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
             return;
         }
 
-        RateLimiter::recordAttempt('forgot_' . $phone, false);
+        RateLimiter::recordAttempt('forgot_' . $phoneKey, false);
 
         flash('success', 'اگر این شماره در سیستم ثبت شده باشد، لطفاً با شماره تماس سالن هماهنگ کنید.');
         $_SESSION['captcha_question'] = Captcha::store();
@@ -297,8 +308,9 @@ class AuthController extends BaseController
 
         $phone = $_POST['phone'] ?? $_SESSION['verify_phone'] ?? '';
         $code = trim($_POST['code'] ?? '');
+        $phone = normalizePhone($phone);
 
-        if (empty($phone) || empty($code)) {
+        if ($phone === '' || empty($code)) {
             $this->redirectWithErrors('/verify-otp?phone=' . urlencode($phone), ['code' => 'کد تأیید را وارد کنید.']);
             $_SESSION['verify_phone'] = $phone;
             return;

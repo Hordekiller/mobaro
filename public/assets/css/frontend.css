@@ -400,6 +400,100 @@ html {
     margin-bottom: 1rem;
 }
 
+.rich-description {
+    line-height: 1.9;
+}
+.rich-description h2,
+.rich-description h3,
+.rich-description h4 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    color: #18181b;
+}
+.rich-description h2 {
+    font-size: 1.35rem;
+}
+.rich-description h3 {
+    font-size: 1.15rem;
+}
+.rich-description p {
+    margin-bottom: 1rem;
+}
+.rich-description a {
+    color: #e11d48;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s ease;
+}
+.rich-description a:hover {
+    color: #be123c;
+}
+.rich-description ul,
+.rich-description ol {
+    margin-bottom: 1rem;
+    padding-right: 1.5rem;
+}
+.rich-description ul {
+    list-style: disc;
+}
+.rich-description ol {
+    list-style: decimal;
+}
+.rich-description img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+}
+.rich-description iframe {
+    max-width: 100%;
+}
+.rich-description blockquote {
+    border-right: 3px solid #e11d48;
+    padding-right: 1rem;
+    color: #71717a;
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+.rich-description table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+.rich-description th,
+.rich-description td {
+    border: 1px solid #e4e4e7;
+    padding: 0.5rem 0.75rem;
+}
+.rich-description th {
+    font-weight: 700;
+    background: #fafafa;
+}
+
+.rich-description-invert h2,
+.rich-description-invert h3,
+.rich-description-invert h4 {
+    color: #ffffff;
+}
+.rich-description-invert a {
+    color: #fda4af;
+}
+.rich-description-invert a:hover {
+    color: #fecdd3;
+}
+.rich-description-invert blockquote {
+    color: #d4d4d8;
+    border-right-color: #fda4af;
+}
+.rich-description-invert th,
+.rich-description-invert td {
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #f4f4f5;
+}
+.rich-description-invert th {
+    background: rgba(255, 255, 255, 0.08);
+}
+
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

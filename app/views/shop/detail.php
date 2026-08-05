@@ -104,7 +104,9 @@ $inWishlist = Auth::check()
 
                     <?php $desc = $product['description'] ?? ''; ?>
                     <?php if (!empty($desc)) : ?>
-                    <p class="text-zinc-600 leading-relaxed mb-8 whitespace-pre-line"><?= e($desc) ?></p>
+                    <div class="rich-description mb-8">
+                        <?= str_contains($desc, '<') ? $desc : nl2br(e($desc)) ?>
+                    </div>
                     <?php endif; ?>
 
                     <!-- Qty + Add to Cart -->

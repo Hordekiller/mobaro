@@ -1,6 +1,7 @@
 <?php
 
 use App\Auth;
+use App\Controllers\ShopController;
 use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase
@@ -51,5 +52,20 @@ class AuthTest extends TestCase
         }
         $hash = password_hash('test', PASSWORD_ARGON2ID);
         $this->assertTrue(Auth::verify('test', $hash));
+    }
+
+    public function testLoginAcceptsStringUserId(): void
+    {
+        Auth::login('5', ['id' => '5', 'name' => 'Test']);
+        $this->assertSame(5, $_SESSION['user_id']);
+        $this->assertTrue($_SESSION['logged_in']);
+    }
+
+    public function testResolveAddressAcceptsStringUserId(): void
+    {
+        $controller = new ShopController();
+        $method = new ReflectionMethod($controller, 'resolveAddress');
+        $result = $method->invoke($controller, [], '5');
+        $this->assertSame(['text' => '', 'postal' => ''], $result);
     }
 }

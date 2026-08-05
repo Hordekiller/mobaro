@@ -356,7 +356,7 @@ const shopProducts = <?= json_encode(array_map(function ($p) {
         'is_sale' => (!empty($p['old_price']) && $p['old_price'] > $p['price']),
         'description' => $p['description'] ?? '',
     ];
-                     }, $products), JSON_UNESCAPED_UNICODE) ?>;
+}, $products), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
 </script>
 
 <!-- Quick View Modal -->

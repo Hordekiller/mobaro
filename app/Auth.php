@@ -39,8 +39,9 @@ class Auth
         }
     }
 
-    public static function login(int $userId, array $userData = []): void
+    public static function login(int|string $userId, array $userData = []): void
     {
+        $userId = (int) $userId;
         self::start();
         session_regenerate_id(true);
         $_SESSION['user_id'] = $userId;

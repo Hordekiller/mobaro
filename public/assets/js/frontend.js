@@ -1179,13 +1179,20 @@ function refreshCaptcha()
         window.location.href = '/academy';
     }
 // ========== PHONE VALIDATION ==========
-    document.addEventListener('keyup', function (e) {
+    document.addEventListener('input', function (e) {
         const input = e.target;
-        if (input.matches('input[name="phone"], input[name="mobile"], #newsletter-input')) {
-            let val = input.value.replace(/\D/g, '');
-            if (val.length > 11) {
-                val = val.substring(0, 11);
-            }
+        if (!input.matches('input[name="phone"], input[name="mobile"]')) {
+            return;
+        }
+        let val = input.value;
+        const digits = { '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9' };
+        val = val.replace(/[۰-۹٠-٩]/g, function (ch) { return digits[ch]; });
+        const hadPlus = val.trimStart().charAt(0) === '+';
+        val = val.replace(/[^\d]/g, '');
+        if (hadPlus) {
+            val = '+' + val;
+        }
+        if (val !== input.value) {
             input.value = val;
         }
     });

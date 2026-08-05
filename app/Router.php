@@ -35,8 +35,9 @@ class Router
     public static function dispatch(): void
     {
         $method = $_SERVER['REQUEST_METHOD'];
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $uri = rtrim($uri, '/') ?: '/';
+        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        $uri = is_string($uri) ? rtrim($uri, '/') : '';
+        $uri = $uri !== '' ? $uri : '/';
 
         foreach (self::$routes as $route) {
             if ($route['method'] !== $method) {
@@ -48,7 +49,7 @@ class Router
 
                 $numericNames = ['id', 'size', 'width', 'height', 'seed'];
                 foreach ($params as $k => $v) {
-                    if (is_numeric($v) || in_array($k, $numericNames, true)) {
+                    if (in_array($k, $numericNames, true) && is_numeric($v)) {
                         $params[$k] = (int) $v;
                     }
                 }
@@ -71,7 +72,7 @@ class Router
                         $e->getFile(),
                         $e->getLine()
                     ));
-                    self::renderError(404);
+                    self::renderError(500);
                     return;
                 }
                 return;
@@ -85,6 +86,8 @@ class Router
     {
         http_response_code($code);
         $settings = Settings::all();
+        $seo = [];
+        $title = 'موبارو';
         require_once __DIR__ . '/views/layouts/header.php';
 
         $messages = [

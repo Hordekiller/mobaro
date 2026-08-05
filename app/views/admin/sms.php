@@ -83,6 +83,10 @@ $search = $search ?? '';
                     <input id="sms_line_number" type="text" name="sms_line_number" value="<?= e($smsSettings['sms_line_number'] ?? '') ?>" placeholder="مثال: 30004505000017" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
                 </div>
                 <div>
+                    <label for="sms_admin_phone" class="block text-sm font-semibold mb-1.5">موبایل صاحب سالن (برای اطلاع‌رسانی نوبت و سفارش)</label>
+                    <input id="sms_admin_phone" type="text" name="sms_admin_phone" value="<?= e($smsSettings['sms_admin_phone'] ?? '') ?>" placeholder="مثال: 09121234567" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
+                </div>
+                <div>
                     <label for="sms_template_id" class="block text-sm font-semibold mb-1.5">شناسه قالب OTP (Template ID)</label>
                     <input id="sms_template_id" type="text" name="sms_template_id" value="<?= e($smsSettings['sms_template_id'] ?? '') ?>" placeholder="شناسه قالب در پنل sms.ir" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" dir="ltr">
                 </div>
@@ -125,6 +129,10 @@ $search = $search ?? '';
 </div>
 
 <?php elseif ($smsTab === 'templates') : ?>
+<div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm mb-4">
+    <i class="fa-solid fa-circle-info ml-1"></i>
+    متن‌های این تب برای پیامک‌های اطلاع‌رسانی (نوبت و سفارش) استفاده می‌شوند. قالب کد تأیید (OTP) فقط در پنل sms.ir ساخته می‌شود و شناسه آن را در تب «تنظیمات» (Template ID) وارد می‌کنید.
+</div>
 <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)] mb-6">
     <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">ایجاد/ویرایش قالب</h3>
     <form action="/admin/sms/template/save" method="POST" class="space-y-4" id="templateForm">
@@ -138,15 +146,14 @@ $search = $search ?? '';
             <div>
                 <label class="block text-sm font-semibold mb-1.5">نوع</label>
                 <select name="sms_type" id="template-type" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
-                    <option value="verify">تأییدیه (OTP)</option>
-                    <option value="bulk">انبوه</option>
                     <option value="notification">اعلان</option>
+                    <option value="bulk">انبوه</option>
                 </select>
             </div>
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">متن قالب (از #Variable# برای متغیرها استفاده کنید)</label>
-            <textarea name="body" id="template-body" rows="3" placeholder="کد تأیید شما: #Code#" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required></textarea>
+            <label class="block text-sm font-semibold mb-1.5">متن قالب (از {Variable} برای متغیرها استفاده کنید)</label>
+            <textarea name="body" id="template-body" rows="3" placeholder="وضعیت سفارش {Code} شما: {Status}" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required></textarea>
         </div>
         <div>
             <label class="block text-sm font-semibold mb-1.5">متغیرها ( جدا شده با کاما)</label>
@@ -186,12 +193,10 @@ $search = $search ?? '';
             <?php foreach ($templates as $tpl) : ?>
             <?php
             $tplTypeClass = match ($tpl['sms_type']) {
-                'verify' => 'bg-blue-50 text-blue-700',
                 'bulk' => 'bg-amber-50 text-amber-700',
                 default => 'bg-green-50 text-green-700',
             };
             $tplTypeLabel = match ($tpl['sms_type']) {
-                'verify' => 'تأییدیه',
                 'bulk' => 'انبوه',
                 default => 'اعلان',
             };
