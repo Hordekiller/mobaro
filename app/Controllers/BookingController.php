@@ -327,9 +327,9 @@ class BookingController extends BaseController
         }
 
         $this->json([
-            'price' => $priceData['price'],
-            'duration' => $priceData['duration_modifier'],
-            'formatted_price' => number_format($priceData['price']) . ' تومان'
+            'price' => (int) $priceData['price'],
+            'duration' => (float) $priceData['duration_modifier'],
+            'formatted_price' => priceFormat($priceData['price']),
         ]);
     }
 

@@ -44,13 +44,13 @@ class SEOService
             };
 
             return [
-                'title'       => $row['meta_title']       ?: $settings['meta_title'] ?? '',
-                'description' => $row['meta_description']  ?: $settings['meta_description'] ?? '',
-                'canonical'   => $row['canonical_url']     ?: $canonical,
-                'og_title'    => $row['og_title']          ?: ($row['meta_title'] ?: $settings['og_title'] ?? ''),
-                'og_desc'     => $row['og_description']    ?: ($row['meta_description'] ?: $settings['og_description'] ?? ''),
-                'og_image'    => $row['og_image']          ?: $settings['og_image'] ?? '/favicon/og-image.png',
-                'robots'      => $row['robots']            ?? $settings['default_robots'] ?? '',
+                'title'       => ($row['meta_title'] ?? '')       ?: $settings['meta_title'] ?? '',
+                'description' => ($row['meta_description'] ?? '')  ?: $settings['meta_description'] ?? '',
+                'canonical'   => ($row['canonical_url'] ?? '')     ?: $canonical,
+                'og_title'    => ($row['og_title'] ?? '')          ?: (($row['meta_title'] ?? '') ?: $settings['og_title'] ?? ''),
+                'og_desc'     => ($row['og_description'] ?? '')    ?: (($row['meta_description'] ?? '') ?: $settings['og_description'] ?? ''),
+                'og_image'    => ($row['og_image'] ?? '')          ?: $settings['og_image'] ?? '/favicon/og-image.png',
+                'robots'      => $row['robots']                    ?? $settings['default_robots'] ?? '',
             ];
         });
     }

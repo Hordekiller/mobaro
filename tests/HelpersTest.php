@@ -46,6 +46,11 @@ class HelpersTest extends TestCase
         $this->assertSame('0 تومان', priceFormat(0));
     }
 
+    public function testPriceFormatAcceptsString(): void
+    {
+        $this->assertSame('150,000 تومان', priceFormat('150000'));
+    }
+
     public function testSlugifyNormalizesText(): void
     {
         $result = slugify('Hello World');

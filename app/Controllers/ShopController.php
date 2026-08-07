@@ -275,7 +275,7 @@ class ShopController extends BaseController
             "SELECT COUNT(*) as cnt FROM reviews WHERE product_id = ?",
             [$productId]
         )['cnt'];
-        Database::update('products', ['rating' => round($avg, 1), 'reviews' => $cnt], self::WHERE_ID, ['id' => $productId]);
+        Database::update('products', ['rating' => round((float) $avg, 1), 'reviews' => $cnt], self::WHERE_ID, ['id' => $productId]);
 
         Cache::forget('product_' . $productId);
         Cache::flushByTag('products');
@@ -619,7 +619,7 @@ class ShopController extends BaseController
         }
 
         if ($coupon['min_order'] > 0 && $total < $coupon['min_order']) {
-            return ['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format($coupon['min_order']) . ' تومان است.', 'discount' => 0, 'code' => ''];
+            return ['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format((int) $coupon['min_order']) . ' تومان است.', 'discount' => 0, 'code' => ''];
         }
 
         $discount = $coupon['discount_type'] === 'percentage'
@@ -947,7 +947,7 @@ class ShopController extends BaseController
         $total = array_sum(array_map(fn($item) => $item['price'] * $item['qty'], $cart));
 
         if ($coupon['min_order'] > 0 && $total < $coupon['min_order']) {
-            $this->json(['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format($coupon['min_order']) . ' تومان است.'], 400);
+            $this->json(['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format((int) $coupon['min_order']) . ' تومان است.'], 400);
             return;
         }
 
