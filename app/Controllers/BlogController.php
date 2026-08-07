@@ -11,6 +11,7 @@ use App\Settings;
 use App\SEOService;
 use App\RateLimiter;
 use App\Auth;
+use App\StructuredData;
 use App\FileUploader;
 
 class BlogController extends BaseController
@@ -277,9 +278,19 @@ class BlogController extends BaseController
 
         $seo = SEOService::forBlogPost($post);
 
+        $jsonLd = StructuredData::render(
+            StructuredData::organization(),
+            StructuredData::breadcrumb([
+                ['name' => 'خانه', 'url' => url('/')],
+                ['name' => 'وبلاگ', 'url' => url('/blog')],
+                ['name' => (string) $post['title'], 'url' => url('/blog/' . $slug)],
+            ]),
+            StructuredData::blogPosting($post)
+        );
+
         $this->view('blog/show', [
             'post' => $post, 'relatedPosts' => $relatedPosts, 'settings' => $settings, 'tags' => $tags,
-            'comments' => $comments, 'commentCount' => $commentCount, 'seo' => $seo,
+            'comments' => $comments, 'commentCount' => $commentCount, 'seo' => $seo, 'jsonLd' => $jsonLd,
         ] + $sidebar);
     }
 }

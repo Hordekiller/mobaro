@@ -50,6 +50,7 @@ declare(strict_types=1);
                     'settings' => ['fa-gear', 'تنظیمات'],
                     'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
                     'seo' => ['fa-globe', 'مدیریت سئو'],
+                    'payment' => ['fa-credit-card', 'پرداخت'],
                 ]],
             ];
 
@@ -319,6 +320,7 @@ declare(strict_types=1);
                                 'captcha_enabled_admin' => ['ورود ادمین', 'فعال بودن کپچا برای ورود به پنل مدیریت'],
                                 'captcha_enabled_booking' => ['رزرو نوبت', 'فعال بودن کپچا در فرم رزرو آنلاین'],
                                 'captcha_enabled_newsletter' => ['خبرنامه', 'فعال بودن کپچا در فرم عضویت خبرنامه'],
+                                'captcha_enabled_contact' => ['فرم تماس', 'فعال بودن کپچا در فرم تماس با ما'],
                             ];
                             foreach ($captchaToggles as $key => $info) :
                                 $val = $captcha_settings[$key] ?? '1';
@@ -455,6 +457,16 @@ declare(strict_types=1);
                     </div>
                 </div>
 
+                <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
+                    <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">
+                        <i class="fa-solid fa-file-lines ml-1 text-rose-500"></i>محتوای llms.txt
+                    </h3>
+                    <div>
+                        <textarea name="seo_global[llms_txt]" rows="8" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" placeholder="# موبارو"><?= e($globalSeo['llms_txt'] ?? '') ?></textarea>
+                        <p class="text-xs text-zinc-400 mt-2">خالی بگذارید تا نسخهٔ خودکار (صفحات اصلی، محصولات، دوره‌ها و وبلاگ) استفاده شود.</p>
+                    </div>
+                </div>
+
                 <!-- Page-specific SEO -->
                 <?php foreach ($seoPages as $seoPage) :
                     $slug = $seoPage['page_slug'];
@@ -503,6 +515,8 @@ declare(strict_types=1);
                 <?php endforeach; ?>
                 <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات سئو</button>
             </form>
+        <?php elseif ($section === 'payment') : ?>
+            <?php require_once __DIR__ . '/payment.php'; ?>
         <?php else : ?>
             <?php $table = $section;
             if (in_array($section, ['hair-models'])) {

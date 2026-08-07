@@ -57,27 +57,12 @@ $brandName = $settings['brand_name'] ?? 'موبارو';
                 تعریف خدمات
             </h2>
             <p class="text-zinc-600 leading-relaxed mb-4">
-                <?= e($brandName) ?> پلتفرمی آنلاین برای مدیریت سالن زیبایی است که خدمات زیر را ارائه می‌دهد:
+                <?= e($brandName) ?> سامانه‌ای است که خدمات و امکانات آنلاین در حوزه زیبایی و آرایشی ارائه می‌دهد؛ از جمله رزرو آنلاین نوبت سالن زیبایی، خرید محصولات آرایشی و بهداشتی از فروشگاه، شرکت در دوره‌های آموزشی مجازی و استفاده از کیف پول اعتباری.
             </p>
-            <ul class="space-y-3">
-                <li class="flex items-start gap-3 text-zinc-600 leading-relaxed">
-                    <i class="fa-solid fa-spa text-rose-500 mt-1.5 text-sm"></i>
-                    <span><strong>سالن زیبایی:</strong> رزرو آنلاین نوبت و مشاهده لیست خدمات و قیمت‌ها</span>
-                </li>
-                <li class="flex items-start gap-3 text-zinc-600 leading-relaxed">
-                    <i class="fa-solid fa-cart-shopping text-rose-500 mt-1.5 text-sm"></i>
-                    <span><strong>فروشگاه:</strong> خرید محصولات آرایشی و بهداشتی با ارسال سراسر کشور</span>
-                </li>
-                <li class="flex items-start gap-3 text-zinc-600 leading-relaxed">
-                    <i class="fa-solid fa-graduation-cap text-rose-500 mt-1.5 text-sm"></i>
-                    <span><strong>آکادمی:</strong> دوره‌های آموزشی مجازی مربوط به حوزه زیبایی</span>
-                </li>
-                <li class="flex items-start gap-3 text-zinc-600 leading-relaxed">
-                    <i class="fa-solid fa-wallet text-rose-500 mt-1.5 text-sm"></i>
-                    <span><strong>کیف پول:</strong> شارژ حساب و استفاده از اعتبار برای خرید و رزرو</span>
-                </li>
-            </ul>
-            <p class="text-zinc-500 text-sm mt-4">
+            <p class="text-zinc-600 leading-relaxed mb-4">
+                استفاده از هر یک از خدمات <?= e($brandName) ?> صرفاً تحت همین شرایط انجام می‌شود. در صورت عدم موافقت با تمام یا بخشی از این شرایط، از استفاده از خدمات خودداری کنید.
+            </p>
+            <p class="text-zinc-500 text-sm">
                 ما حق تغییر، محدود کردن یا تعلیق هر یک از خدمات را در هر زمان با اطلاع‌رسانی قبلی داریم.
             </p>
         </section>

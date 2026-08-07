@@ -16,7 +16,7 @@ $title = e($settings['about_title'] ?? 'درباره ما') . ' | ' . $brandName
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 -mt-10 pb-20">
+    <div class="max-w-7xl mx-auto px-4 -mt-6 pb-20">
         <div class="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-10">
             <div class="grid md:grid-cols-2 gap-10 items-start">
                 <div>

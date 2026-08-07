@@ -85,6 +85,9 @@ REPORT-PRODUCTION-ISSUES.md
 # Image cache
 public/assets/images/cache/
 
+# Generated sitemap (Cache-on-Demand artifact)
+public/sitemap.xml
+
 # PHPUnit cache
 .phpunit.cache/
 .phpunit.coverage/

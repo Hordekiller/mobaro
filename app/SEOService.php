@@ -20,7 +20,7 @@ class SEOService
             'canonical'   => $post['canonical_url']     ?: url('/blog/' . $post['slug']),
             'og_title'    => $post['og_title']          ?: ($post['meta_title'] ?: $post['title']),
             'og_desc'     => $post['og_description']    ?: ($post['meta_description'] ?: ($post['excerpt'] ?: $defaultDesc)),
-            'og_image'    => $post['og_image']          ?: ($post['image'] ? asset('assets/images/' . $post['image']) : Settings::get('og_image', '/favicon/og-image.png')),
+            'og_image'    => $post['og_image']          ?: ($post['image'] ? asset('images/' . $post['image']) : Settings::get('og_image', '/favicon/og-image.png')),
             'robots'      => $post['robots']            ?? '',
         ];
     }
@@ -38,6 +38,8 @@ class SEOService
                 'about'   => url('/about'),
                 'contact' => url('/contact'),
                 'academy' => url('/academy'),
+                'terms'   => url('/terms'),
+                'privacy' => url('/privacy'),
                 default   => url('/'),
             };
 

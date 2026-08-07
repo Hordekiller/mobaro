@@ -104,6 +104,12 @@ class AuthController extends BaseController
             return;
         }
 
+        if (($_POST['accept_terms'] ?? '') !== '1') {
+            $_SESSION['captcha_question'] = Captcha::store();
+            $this->redirectWithErrors(self::PATH_REGISTER, ['terms' => 'برای ثبت‌نام باید شرایط و قوانین و حریم خصوصی را بپذیرید.']);
+            return;
+        }
+
         $name = sanitize($_POST['name'] ?? '');
         $family = sanitize($_POST['family'] ?? '');
         $phone = sanitize($_POST['phone'] ?? '');

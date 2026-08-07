@@ -12,7 +12,7 @@ $title = e($pageTitle ?? 'تماس با ما') . ' | ' . ($settings['brand_name'
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 -mt-10 pb-20">
+    <div class="max-w-7xl mx-auto px-4 -mt-6 pb-20">
         <div class="grid md:grid-cols-3 gap-6 mb-10">
             <div class="bg-white rounded-2xl p-6 shadow-lg text-center">
                 <div class="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -86,10 +86,39 @@ $title = e($pageTitle ?? 'تماس با ما') . ' | ' . ($settings['brand_name'
                             ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
                         endif; ?>
                     </div>
+                    <?php if ($captchaEnabled ?? false) : ?>
+                    <div>
+                        <label for="contact-captcha" class="text-sm text-zinc-600 block mb-2">کد امنیتی</label>
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg font-bold text-zinc-700 whitespace-nowrap" id="contact-captcha-question"><?= e($captchaQuestion ?? '') ?> = ?</span>
+                            <button type="button" onclick="refreshContactCaptcha()" class="text-xs text-rose-500 hover:underline">تغییر</button>
+                        </div>
+                        <input id="contact-captcha" name="captcha" type="text" inputmode="numeric" placeholder="پاسخ"
+                               class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all mt-2 text-center text-lg font-bold"
+                               required>
+                    </div>
+                    <?php endif; ?>
                     <button type="submit" class="w-full py-3.5 bg-rose-600 text-white rounded-xl font-bold hover:shadow-lg transition-all">
                         <i class="fa-solid fa-paper-plane ml-2"></i>ارسال پیام
                     </button>
                 </form>
+                <script>
+                function refreshContactCaptcha() {
+                    var csrf = document.querySelector('meta[name="csrf"]');
+                    var body = csrf ? '_csrf=' + encodeURIComponent(csrf.getAttribute('content')) : '';
+                    fetch('/booking/captcha/refresh', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: body
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(d) {
+                        var el = document.getElementById('contact-captcha-question');
+                        if (el && d.question) el.textContent = d.question + ' = ?';
+                    })
+                    .catch(function() {});
+                }
+                </script>
             </div>
 
             <div class="bg-white rounded-2xl p-8 shadow-lg">

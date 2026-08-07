@@ -5,18 +5,27 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Config;
+use App\Settings;
 
 class ZarinPal
 {
+    private const TOMAN_TO_RIAL = 10;
+
+    private const MSG_MERCHANT_MISSING = 'مرچنت کد زرین‌پال در تنظیمات پرداخت تنظیم نشده است.';
+
     private bool $sandbox;
     private string $merchantId;
     private string $baseUrl;
     private string $apiUrl;
+    private array $lastRequest = [];
+    private ?array $lastResponse = null;
 
     public function __construct()
     {
-        $this->sandbox = Config::get('zarinpal.sandbox', true);
-        $this->merchantId = Config::get('zarinpal.merchant_id', '');
+        $this->sandbox = (Settings::get('zarinpal_sandbox', '') !== ''
+            ? Settings::get('zarinpal_sandbox', '0') === '1'
+            : Config::get('zarinpal.sandbox', true));
+        $this->merchantId = Settings::get('zarinpal_merchant_id', '') ?: (string) Config::get('zarinpal.merchant_id', '');
         $this->baseUrl = $this->sandbox
             ? 'https://sandbox.zarinpal.com/pg/StartPay/'
             : 'https://www.zarinpal.com/pg/StartPay/';
@@ -25,21 +34,48 @@ class ZarinPal
             : 'https://www.zarinpal.com/pg/rest/WebGate/';
     }
 
+    public static function tomanToRial(int $toman): int
+    {
+        return $toman * self::TOMAN_TO_RIAL;
+    }
+
+    public function isConfigured(): bool
+    {
+        return $this->merchantId !== '';
+    }
+
+    public function isSandbox(): bool
+    {
+        return $this->sandbox;
+    }
+
+    public function getLastRequest(): array
+    {
+        return $this->lastRequest;
+    }
+
+    public function getLastResponse(): ?array
+    {
+        return $this->lastResponse;
+    }
+
     public function requestPayment(int $amount, string $description, string $callbackUrl, ?string $email = null, ?string $mobile = null): array
     {
-        $data = [
+        if (!$this->isConfigured()) {
+            return ['status' => false, 'message' => self::MSG_MERCHANT_MISSING];
+        }
+
+        $this->lastRequest = [
             'MerchantID' => $this->merchantId,
-            'Amount' => $amount,
+            'Amount' => self::tomanToRial($amount),
             'Description' => $description,
             'CallbackURL' => $callbackUrl,
+            'Email' => $email,
+            'Mobile' => $mobile,
         ];
+        $this->lastResponse = null;
 
-        if ($email) {
-            $data['Email'] = $email;
-        }
-        if ($mobile) {
-            $data['Mobile'] = $mobile;
-        }
+        $data = array_filter($this->lastRequest, fn($v) => $v !== null && $v !== '');
 
         $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
         $ch = curl_init($this->apiUrl . 'Request.json');
@@ -47,6 +83,8 @@ class ZarinPal
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
             'Content-Length: ' . strlen($jsonData),
@@ -57,12 +95,14 @@ class ZarinPal
         curl_close($ch);
 
         if ($err) {
+            $this->lastResponse = ['curl_error' => $err];
             return ['status' => false, 'message' => 'خطا در اتصال به درگاه: ' . $err];
         }
 
-        $response = json_decode($result, true);
+        $response = json_decode((string) $result, true);
+        $this->lastResponse = is_array($response) ? $response : ['raw' => (string) $result];
 
-        if (!empty($response['Status']) && $response['Status'] === 100) {
+        if (!empty($response['Status']) && (int) $response['Status'] === 100) {
             return [
                 'status' => true,
                 'authority' => $response['Authority'],
@@ -70,6 +110,64 @@ class ZarinPal
             ];
         }
 
+        $code = (int) ($response['Status'] ?? -99);
+        return ['status' => false, 'message' => self::requestErrorMessage($code)];
+    }
+
+    public function verifyPayment(int $amount, string $authority): array
+    {
+        if (!$this->isConfigured()) {
+            return ['status' => false, 'message' => self::MSG_MERCHANT_MISSING];
+        }
+
+        $this->lastRequest = [
+            'MerchantID' => $this->merchantId,
+            'Amount' => self::tomanToRial($amount),
+            'Authority' => $authority,
+        ];
+        $this->lastResponse = null;
+
+        $data = array_filter($this->lastRequest, fn($v) => $v !== null && $v !== '');
+
+        $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $ch = curl_init($this->apiUrl . 'Verification.json');
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mobaro');
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($jsonData),
+        ]);
+
+        $result = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        if ($err) {
+            $this->lastResponse = ['curl_error' => $err];
+            return ['status' => false, 'message' => 'خطا در تایید پرداخت: ' . $err];
+        }
+
+        $response = json_decode((string) $result, true);
+        $this->lastResponse = is_array($response) ? $response : ['raw' => (string) $result];
+
+        if (!empty($response['Status']) && (int) $response['Status'] === 100) {
+            return [
+                'status' => true,
+                'ref_id' => $response['RefID'],
+                'card_pan' => $response['CardPan'] ?? '',
+            ];
+        }
+
+        $code = (int) ($response['Status'] ?? -99);
+        return ['status' => false, 'message' => self::verifyErrorMessage($code)];
+    }
+
+    public static function requestErrorMessage(int $code): string
+    {
         $errors = [
             -1 => 'اطلاعات ارسال شده ناقص است.',
             -2 => 'IP یا مرچنت کد صحیح نیست.',
@@ -83,47 +181,11 @@ class ZarinPal
             -54 => 'درخواست نامعتبر (آرایشگر مورد نظر وجود ندارد).',
         ];
 
-        $code = $response['Status'] ?? -99;
-        return ['status' => false, 'message' => $errors[$code] ?? 'خطای ناشناخته (کد: ' . $code . ')'];
+        return $errors[$code] ?? 'خطای ناشناخته (کد: ' . $code . ')';
     }
 
-    public function verifyPayment(int $amount, string $authority): array
+    public static function verifyErrorMessage(int $code): string
     {
-        $data = [
-            'MerchantID' => $this->merchantId,
-            'Amount' => $amount,
-            'Authority' => $authority,
-        ];
-
-        $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
-        $ch = curl_init($this->apiUrl . 'Verification.json');
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mobaro');
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($jsonData),
-        ]);
-
-        $result = curl_exec($ch);
-        $err = curl_error($ch);
-        curl_close($ch);
-
-        if ($err) {
-            return ['status' => false, 'message' => 'خطا در تایید پرداخت: ' . $err];
-        }
-
-        $response = json_decode($result, true);
-
-        if (!empty($response['Status']) && $response['Status'] === 100) {
-            return [
-                'status' => true,
-                'ref_id' => $response['RefID'],
-                'card_pan' => $response['CardPan'] ?? '',
-            ];
-        }
-
         $errors = [
             -1 => 'اطلاعات ارسال شده ناقص است.',
             -2 => 'IP یا مرچنت کد صحیح نیست.',
@@ -137,12 +199,6 @@ class ZarinPal
             -55 => 'تراکنش در مدت زمان مجاز به اتمام نرسیده (timeout).',
         ];
 
-        $code = $response['Status'] ?? -99;
-        return ['status' => false, 'message' => $errors[$code] ?? 'خطای ناشناخته (کد: ' . $code . ')'];
-    }
-
-    public function isSandbox(): bool
-    {
-        return $this->sandbox;
+        return $errors[$code] ?? 'خطای ناشناخته (کد: ' . $code . ')';
     }
 }

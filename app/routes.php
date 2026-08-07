@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Router;
-use App\Settings;
 
 Router::get('/', ['App\Controllers\HomeController', 'index']);
 
@@ -74,6 +73,7 @@ Router::get('/about', ['App\Controllers\AboutController', 'index']);
 
 Router::get('/sitemap.xml', ['App\Controllers\SitemapController', 'index']);
 Router::get('/robots.txt', ['App\Controllers\RobotsController', 'index']);
+Router::get('/llms.txt', ['App\Controllers\LlmsController', 'index']);
 
 Router::get('/models', ['App\Controllers\ModelsController', 'index']);
 
@@ -112,22 +112,8 @@ Router::get('/api/artists', [API, 'artists']);
 Router::get('/api/products', [API, 'products']);
 Router::get('/api/user/addresses', [API, 'userAddresses']);
 
-Router::get('/privacy', function () {
-    $settings = Settings::all();
-    $brandName = $settings['brand_name'] ?? 'موبارو';
-    $title = 'حریم خصوصی | ' . $brandName;
-    require __DIR__ . '/views/layouts/header.php';
-    echo '<div class="max-w-3xl mx-auto px-4 py-20"><h1 class="text-2xl font-bold mb-4">حریم خصوصی</h1><p class="text-zinc-600 leading-relaxed">اطلاعات کاربران ' . e($brandName) . ' نزد ما محفوظ است و بدون رضایت شما در اختیار شخص ثالث قرار نخواهد گرفت.</p></div>';
-    require __DIR__ . '/views/layouts/footer.php';
-});
-Router::get('/terms', function () {
-    $settings = Settings::all();
-    $brandName = $settings['brand_name'] ?? 'موبارو';
-    $title = 'شرایط استفاده | ' . $brandName;
-    require __DIR__ . '/views/layouts/header.php';
-    echo '<div class="max-w-3xl mx-auto px-4 py-20"><h1 class="text-2xl font-bold mb-4">شرایط و قوانین</h1><p class="text-zinc-600 leading-relaxed">استفاده از خدمات ' . e($brandName) . ' به معنی پذیرش قوانین و مقررات زیر است. لطفاً پیش از استفاده مطالعه کنید.</p></div>';
-    require __DIR__ . '/views/layouts/footer.php';
-});
+Router::get('/privacy', ['App\Controllers\PagesController', 'privacy']);
+Router::get('/terms', ['App\Controllers\PagesController', 'terms']);
 
 Router::get('/academy', [ACADEMY, 'index']);
 Router::get('/course/{slug}', [ACADEMY, 'show']);

@@ -10,8 +10,10 @@ use App\Database;
 use App\Settings;
 use App\SEOService;
 use App\Auth;
+use App\StructuredData;
 use App\Services\SmsService;
 use App\Services\ZarinPal;
+use App\Services\PaymentLogger;
 use Throwable;
 
 class ShopController extends BaseController
@@ -199,7 +201,16 @@ class ShopController extends BaseController
         $cart = $_SESSION['cart'] ?? [];
         $seo = SEOService::forPage('shop');
 
-        $this->view('shop/detail', compact('product', 'related', 'settings', 'cart', 'reviews', 'avgRating', 'reviewCount', 'gallery', 'productMedia', 'seo'));
+        $jsonLd = StructuredData::render(
+            StructuredData::organization(),
+            StructuredData::breadcrumb([
+                ['name' => 'خانه', 'url' => url('/')],
+                ['name' => (string) $product['name'], 'url' => url('/product/' . $id)],
+            ]),
+            StructuredData::product($product, $reviews, (float) $avgRating, $reviewCount)
+        );
+
+        $this->view('shop/detail', compact('product', 'related', 'settings', 'cart', 'reviews', 'avgRating', 'reviewCount', 'gallery', 'productMedia', 'seo', 'jsonLd'));
     }
 
     public function postReview(int $productId): void
@@ -698,11 +709,26 @@ class ShopController extends BaseController
     private function processZarinPalPayment(int $orderId, int $finalTotal, string $trackingCode, array $user): void
     {
         $zpl = new ZarinPal();
-        $callbackUrl = Config::get('app.url') . '/shop/payment/callback?order_id=' . $orderId;
+        $callbackUrl = url('/shop/payment/callback');
         $result = $zpl->requestPayment($finalTotal, "سفارش {$trackingCode}", $callbackUrl, null, $user['phone'] ?? null);
 
+        PaymentLogger::log([
+            'user_id' => $user['id'] ?? null,
+            'order_id' => $orderId,
+            'action' => 'request',
+            'amount' => $finalTotal,
+            'authority' => $result['authority'] ?? null,
+            'status' => $result['status'] ? 'sent' : 'failed',
+            'request_data' => $zpl->getLastRequest(),
+            'response_data' => $zpl->getLastResponse(),
+        ]);
+
         if ($result['status']) {
-            Database::update('orders', ['payment_id' => $result['authority']], self::WHERE_ID, ['id' => $orderId]);
+            Database::update('orders', [
+                'authority' => $result['authority'],
+                'payment_method' => 'zarinpal',
+            ], self::WHERE_ID, ['id' => $orderId]);
+            $_SESSION['pending_payment_order_id'] = $orderId;
             $this->json([
                 'success' => true,
                 'payment_required' => true,
@@ -727,6 +753,15 @@ class ShopController extends BaseController
         $status = $_GET['Status'] ?? '';
         $orderId = (int) ($_GET['order_id'] ?? 0);
 
+        if ($orderId === 0 && $authority !== '') {
+            $pending = PaymentLogger::findPendingRequest(Auth::id(), $authority);
+            $orderId = (int) ($pending['order_id'] ?? 0);
+        }
+        if ($orderId === 0) {
+            $orderId = (int) ($_SESSION['pending_payment_order_id'] ?? 0);
+        }
+        unset($_SESSION['pending_payment_order_id']);
+
         if (!$orderId || !$authority) {
             $this->renderPaymentResult('error', 'درخواست نامعتبر است.', null);
             return;
@@ -738,25 +773,59 @@ class ShopController extends BaseController
             return;
         }
 
+        if ($order['authority'] && $order['authority'] !== $authority) {
+            $this->renderPaymentResult('error', 'اطلاعات پرداخت نامعتبر است.', $orderId);
+            return;
+        }
+
         if ($order['payment_status'] === 'paid') {
             redirect('/dashboard/orders');
             return;
         }
 
         if ($status !== 'OK') {
-            Database::update('orders', ['payment_status' => 'failed'], self::WHERE_ID, ['id' => $orderId]);
+            Database::update('orders', [
+                'payment_status' => 'failed',
+                'authority' => $authority ?: $order['authority'],
+            ], self::WHERE_ID, ['id' => $orderId]);
+
+            PaymentLogger::log([
+                'user_id' => Auth::id(),
+                'order_id' => $orderId,
+                'action' => 'callback',
+                'amount' => (int) ($order['total'] ?? 0),
+                'authority' => $authority ?: $order['authority'],
+                'status' => 'cancelled',
+                'request_data' => $_GET,
+            ]);
+
             $this->renderPaymentResult('cancelled', null, $orderId);
             return;
         }
 
         $zpl = new ZarinPal();
-        $result = $zpl->verifyPayment($order['total'], $authority);
+        $result = $zpl->verifyPayment((int) $order['total'], $authority);
+
+        PaymentLogger::log([
+            'user_id' => Auth::id(),
+            'order_id' => $orderId,
+            'action' => 'verify',
+            'amount' => (int) ($order['total'] ?? 0),
+            'authority' => $authority,
+            'ref_id' => $result['ref_id'] ?? null,
+            'status' => $result['status'] ? 'verified' : 'failed',
+            'request_data' => $zpl->getLastRequest(),
+            'response_data' => $zpl->getLastResponse(),
+        ]);
 
         if ($result['status']) {
             Database::update('orders', [
                 'payment_status' => 'paid',
                 'payment_method' => 'zarinpal',
                 'status' => 'processing',
+                'authority' => $authority,
+                'payment_id' => $result['ref_id'],
+                'ref_id' => $result['ref_id'],
             ], self::WHERE_ID, ['id' => $orderId]);
 
             $cartItems = Database::fetchAll("SELECT * FROM order_items WHERE order_id = ?", [$orderId]);
@@ -778,9 +847,12 @@ class ShopController extends BaseController
 
             $this->notifyPaidOrder($order);
 
-            $this->renderPaymentResult('success', null, null, $result['ref_id'], $order['tracking_code']);
+            $this->renderPaymentResult('success', null, null, (int) ($result['ref_id'] ?? 0), $order['tracking_code']);
         } else {
-            Database::update('orders', ['payment_status' => 'failed'], self::WHERE_ID, ['id' => $orderId]);
+            Database::update('orders', [
+                'payment_status' => 'failed',
+                'authority' => $authority ?: $order['authority'],
+            ], self::WHERE_ID, ['id' => $orderId]);
             $this->renderPaymentResult('error', $result['message'], null);
         }
     }

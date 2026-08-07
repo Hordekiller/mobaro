@@ -26,7 +26,11 @@ class GoogleAuth
 
     public static function getRedirectUri(): string
     {
-        return getenv('GOOGLE_REDIRECT_URI') ?: (Config::get('app.url') . '/auth/google/callback');
+        $redirectUri = (string) getenv('GOOGLE_REDIRECT_URI');
+        if ($redirectUri !== '' && str_starts_with($redirectUri, 'http')) {
+            return $redirectUri;
+        }
+        return url('/auth/google/callback');
     }
 
     public static function isConfigured(): bool

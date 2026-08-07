@@ -47,15 +47,15 @@ class ImageController
         return $items[self::rngInt(0, count($items) - 1)];
     }
 
-    public function random(int $width, int $height): void
+    public function random(int|string $width, int|string $height): void
     {
         $seed = random_int(1, 999999);
-        self::serve($width, $height, $seed);
+        self::serve((int) $width, (int) $height, $seed);
     }
 
-    public function seeded(int $width, int $height, int $seed): void
+    public function seeded(int|string $width, int|string $height, int|string $seed): void
     {
-        self::serve($width, $height, $seed);
+        self::serve((int) $width, (int) $height, (int) $seed);
     }
 
     private const MAX_DIM = 2000;

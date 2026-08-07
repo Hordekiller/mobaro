@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Captcha;
 use App\Settings;
 use App\SEOService;
 use App\RateLimiter;
@@ -19,7 +20,9 @@ class ContactController extends BaseController
         $seo = SEOService::forPage('contact');
 
         $pageTitle = $settings['contact_header_text'] ?? 'تماس با ما';
-        $this->view('contact/index', compact('settings', 'seo', 'pageTitle'));
+        $captchaEnabled = Captcha::isEnabled('contact');
+        $captchaQuestion = $captchaEnabled ? Captcha::store() : '';
+        $this->view('contact/index', compact('settings', 'seo', 'pageTitle', 'captchaEnabled', 'captchaQuestion'));
     }
 
     public function send(): void
@@ -33,6 +36,12 @@ class ContactController extends BaseController
             return;
         }
         RateLimiter::recordAttempt('contact:' . $ip);
+
+        if (Captcha::isEnabled('contact') && !Captcha::verify($_POST['captcha'] ?? '')) {
+            flash('error', 'پاسخ کد امنیتی اشتباه است.');
+            redirect(self::PATH_CONTACT);
+            return;
+        }
 
         $name = sanitize($_POST['name'] ?? '');
         $email = sanitize($_POST['email'] ?? '');

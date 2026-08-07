@@ -19,7 +19,10 @@ use App\Database;
     $titleSuffix = $settings['title_suffix'] ?? '';
     $metaTitle = ($settings['meta_title'] ?? '') ?: $brandName;
     $rawTitle = ($seo['title'] ?? '') ?: (($title ?? '') ?: $metaTitle);
-    $fullTitle = $titlePrefix . $rawTitle . $titleSuffix;
+    $fullTitle = $titlePrefix . $rawTitle;
+    if ($titleSuffix !== '' && !str_contains($rawTitle, $titleSuffix) && !str_contains($rawTitle, $brandName)) {
+        $fullTitle .= $titleSuffix;
+    }
     $metaDescDefault = 'سالن زیبایی ' . $brandName . ' با بهترین آرایشگران و محصولات حرفه‌ای';
     ?>
     <title><?= e($fullTitle) ?></title>
@@ -59,6 +62,11 @@ use App\Database;
         body { font-family: 'Vazirmatn', system-ui, sans-serif; }
         .logo-font { font-family: 'Playfair Display', serif; }
     </style>
+    <?php if (!empty($jsonLd)): ?>
+        <?php foreach ((array) $jsonLd as $block): ?>
+            <script type="application/ld+json"><?= json_encode($block, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
 <body class="bg-zinc-50 text-zinc-800 overflow-x-hidden pb-20 md:pb-0">
     <div id="progress-bar" class="scroll-progress w-0"></div>

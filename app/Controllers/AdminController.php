@@ -13,6 +13,7 @@ use App\Cache;
 use App\Config;
 use App\FileUploader;
 use App\Services\SmsService;
+use App\Services\ZarinPal;
 use Throwable;
 use finfo;
 
@@ -45,6 +46,7 @@ class AdminController extends BaseController
     private const PATH_SMS_TAB_SEND = '/admin/sms?tab=send';
     private const PATH_SMS_TAB_TEMPLATES = '/admin/sms?tab=templates';
     private const PATH_SEO = '/admin/seo';
+    private const PATH_PAYMENT = '/admin/payment';
 
     private function requireAdmin(): void
     {
@@ -158,7 +160,7 @@ class AdminController extends BaseController
     public function section(string $section): void
     {
         $this->requireAdmin();
-        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices', 'sms', 'blog-categories', 'seo'];
+        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices', 'sms', 'blog-categories', 'seo', 'payment'];
 
         if (!in_array($section, $validSections)) {
             redirect(self::PATH_ADMIN);
@@ -193,6 +195,7 @@ class AdminController extends BaseController
             'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
             'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
             'seo' => ['fa-globe', 'مدیریت سئو'],
+            'payment' => ['fa-credit-card', 'پرداخت'],
         ];
 
         $method = 'section' . str_replace('-', '', ucwords($section, '-'));
@@ -735,9 +738,15 @@ class AdminController extends BaseController
         $extraKeys = [
             'home_data', 'booking_form_data', 'booking_services',
             'admin_stats', 'admin_recent_appointments', 'admin_recent_orders',
+            'sitemap.xml',
         ];
         foreach ($extraKeys as $key) {
             Cache::forget($key);
+        }
+
+        $sitemapFile = __DIR__ . '/../../public/sitemap.xml';
+        if (is_file($sitemapFile)) {
+            @unlink($sitemapFile);
         }
 
         if (in_array($section, ['products', 'services', 'blog', 'courses', 'settings', 'captcha', 'gallery', 'sms'])) {
@@ -756,6 +765,7 @@ class AdminController extends BaseController
             'gallery' => $this->saveGallery(),
             'sms' => $this->updateSmsSettings(),
             'seo' => $this->saveSeo(),
+            'payment' => $this->updatePaymentSettings(),
             default => $this->saveGenericSection($section),
         };
     }
@@ -1445,7 +1455,7 @@ class AdminController extends BaseController
         $this->verifyCsrf();
 
         $captchaKeys = [
-            'captcha_enabled_admin', 'captcha_enabled_booking', 'captcha_enabled_newsletter',
+            'captcha_enabled_admin', 'captcha_enabled_booking', 'captcha_enabled_newsletter', 'captcha_enabled_contact',
             'captcha_difficulty',
         ];
         for ($i = 1; $i <= 10; $i++) {
@@ -2347,6 +2357,80 @@ class AdminController extends BaseController
         redirect('/admin/sms?tab=credit');
     }
 
+    private function sectionPayment(array &$data): void
+    {
+        $data['paymentSettings'] = [];
+        $paymentKeys = ['zarinpal_merchant_id', 'zarinpal_sandbox'];
+        foreach ($paymentKeys as $key) {
+            $data['paymentSettings'][$key] = Settings::get($key, '');
+        }
+
+        $zpl = new ZarinPal();
+        $data['paymentConfigured'] = $zpl->isConfigured();
+        $data['paymentSandbox'] = $zpl->isSandbox();
+        $data['callbackUrl'] = url('/shop/payment/callback');
+
+        $data['paymentLogs'] = [];
+        $data['paymentStats'] = ['total' => 0, 'success' => 0, 'failed' => 0];
+        try {
+            $data['paymentLogs'] = Database::fetchAll(
+                "SELECT * FROM payment_logs ORDER BY id DESC LIMIT 50"
+            );
+            $stats = Database::fetch(
+                "SELECT
+                    COUNT(*) as total,
+                    COALESCE(SUM(CASE WHEN status IN ('verified','sent') THEN 1 ELSE 0 END), 0) as success,
+                    COALESCE(SUM(CASE WHEN status IN ('failed','cancelled','invalid') THEN 1 ELSE 0 END), 0) as failed
+                 FROM payment_logs"
+            );
+            if ($stats) {
+                $data['paymentStats'] = $stats;
+            }
+        } catch (Throwable $e) {
+            error_log("Payment stats query failed: " . $e->getMessage());
+        }
+
+        $this->view(self::VIEW_ADMIN, $data);
+    }
+
+    private function updatePaymentSettings(): void
+    {
+        $this->requireAdmin();
+        $this->verifyCsrf();
+
+        $merchantId = trim($_POST['zarinpal_merchant_id'] ?? '');
+        $sandbox = isset($_POST['zarinpal_sandbox']) && $_POST['zarinpal_sandbox'] === '1';
+
+        if ($merchantId !== '' && !preg_match('/^[0-9a-f-]{1,64}$/i', $merchantId)) {
+            flash('error', 'کد مرچنت زرین‌پال نامعتبر است.');
+            redirect(self::PATH_PAYMENT);
+            return;
+        }
+
+        $settingsMap = [
+            'zarinpal_merchant_id' => sanitize($merchantId),
+            'zarinpal_sandbox' => $sandbox ? '1' : '0',
+        ];
+
+        $upserts = [];
+        $upsertParams = [];
+        foreach ($settingsMap as $key => $value) {
+            $upserts[] = '(?, ?)';
+            $upsertParams[] = $key;
+            $upsertParams[] = $value;
+        }
+
+        Database::query(
+            "INSERT INTO settings (setting_key, setting_value) VALUES " . implode(', ', $upserts) . " ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+            $upsertParams
+        );
+
+        Settings::invalidate();
+        Config::reset();
+        flash('success', 'تنظیمات پرداخت با موفقیت ذخیره شد.');
+        redirect(self::PATH_PAYMENT);
+    }
+
     private function sectionSeo(array &$data): void
     {
         $defaultSlugs = ['home', 'shop', 'blog', 'contact', 'about', 'academy'];
@@ -2454,6 +2538,17 @@ class AdminController extends BaseController
             $upsertParams[] = $robotsTxt;
         }
 
+        // ——— Save llms.txt content (newlines preserved, like robots.txt) ———
+        if (isset($globalSeo['llms_txt'])) {
+            $llmsTxt = str_replace(["<?php", "<?", "?>"], "", $globalSeo['llms_txt']);
+            $llmsTxt = str_replace("\r\n", "\n", $llmsTxt);
+            $llmsTxt = trim($llmsTxt);
+            $llmsTxt = mb_substr($llmsTxt, 0, 8192);
+            $upserts[] = self::PLACEHOLDER_PAIR;
+            $upsertParams[] = 'llms_txt';
+            $upsertParams[] = $llmsTxt;
+        }
+
         if (!empty($upserts)) {
             $values = implode(', ', $upserts);
             Database::query(
@@ -2461,6 +2556,7 @@ class AdminController extends BaseController
                 $upsertParams
             );
             Cache::forget('robots.txt');
+            Cache::forget('llms.txt');
             Settings::invalidate();
         }
 

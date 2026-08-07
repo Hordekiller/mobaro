@@ -7,9 +7,9 @@ namespace App\Controllers;
 use App\Auth;
 use App\Database;
 use App\FileUploader;
-use App\Config;
 use App\Services\SmsService;
 use App\Services\ZarinPal;
+use App\Services\PaymentLogger;
 use Throwable;
 
 class DashboardController extends BaseController
@@ -572,8 +572,18 @@ class DashboardController extends BaseController
         }
 
         $zpl = new ZarinPal();
-        $callbackUrl = Config::get('app.url') . '/dashboard/wallet/payment/callback';
+        $callbackUrl = url('/dashboard/wallet/payment/callback');
         $result = $zpl->requestPayment($amount, 'افزایش موجودی کیف پول', $callbackUrl, null, Auth::user()['phone'] ?? null);
+
+        PaymentLogger::log([
+            'user_id' => Auth::id(),
+            'action' => 'request',
+            'amount' => $amount,
+            'authority' => $result['authority'] ?? null,
+            'status' => $result['status'] ? 'sent' : 'failed',
+            'request_data' => $zpl->getLastRequest(),
+            'response_data' => $zpl->getLastResponse(),
+        ]);
 
         if ($result['status']) {
             $_SESSION['wallet_topup_amount'] = $amount;
@@ -597,13 +607,38 @@ class DashboardController extends BaseController
         $status = $_GET['Status'] ?? '';
 
         if (!$authority || $status !== 'OK') {
+            PaymentLogger::log([
+                'user_id' => Auth::id(),
+                'action' => 'callback',
+                'authority' => $authority,
+                'status' => 'cancelled',
+                'request_data' => $_GET,
+            ]);
+            unset($_SESSION['wallet_topup_amount'], $_SESSION['wallet_topup_authority']);
             flash('error', 'پرداخت لغو شد.');
             redirect(self::PATH_WALLET);
             return;
         }
 
         $amount = (int) ($_SESSION['wallet_topup_amount'] ?? 0);
+
         if (!$amount) {
+            $pending = PaymentLogger::findPendingRequest(Auth::id(), $authority);
+            $amount = (int) ($pending['amount'] ?? 0);
+            if ($amount > 0) {
+                $_SESSION['wallet_topup_amount'] = $amount;
+            }
+        }
+
+        if (!$amount) {
+            PaymentLogger::log([
+                'user_id' => Auth::id(),
+                'action' => 'callback',
+                'authority' => $authority,
+                'status' => 'invalid',
+                'request_data' => $_GET,
+            ]);
+            unset($_SESSION['wallet_topup_amount'], $_SESSION['wallet_topup_authority']);
             flash('error', 'اطلاعات پرداخت نامعتبر است.');
             redirect(self::PATH_WALLET);
             return;
@@ -611,6 +646,17 @@ class DashboardController extends BaseController
 
         $zpl = new ZarinPal();
         $result = $zpl->verifyPayment($amount, $authority);
+
+        PaymentLogger::log([
+            'user_id' => Auth::id(),
+            'action' => 'verify',
+            'amount' => $amount,
+            'authority' => $authority,
+            'ref_id' => $result['ref_id'] ?? null,
+            'status' => $result['status'] ? 'verified' : 'failed',
+            'request_data' => $zpl->getLastRequest(),
+            'response_data' => $zpl->getLastResponse(),
+        ]);
 
         if ($result['status']) {
             Database::insert('transactions', [

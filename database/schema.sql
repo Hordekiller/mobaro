@@ -153,6 +153,8 @@ CREATE TABLE IF NOT EXISTS orders (
     payment_status VARCHAR(50) DEFAULT 'pending',
     payment_method VARCHAR(50) DEFAULT NULL,
     payment_id VARCHAR(255) DEFAULT NULL,
+    authority VARCHAR(255) DEFAULT NULL,
+    ref_id VARCHAR(255) DEFAULT NULL,
     coupon_code VARCHAR(100) DEFAULT NULL,
     coupon_discount DECIMAL(15,0) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -239,6 +241,26 @@ CREATE TABLE IF NOT EXISTS transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Payment Logs (ZarinPal gateway audit)
+CREATE TABLE IF NOT EXISTS payment_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT DEFAULT NULL,
+    order_id INT DEFAULT NULL,
+    gateway VARCHAR(50) NOT NULL DEFAULT 'zarinpal',
+    action VARCHAR(50) NOT NULL DEFAULT 'verify',
+    amount DECIMAL(15,0) DEFAULT 0,
+    authority VARCHAR(255) DEFAULT NULL,
+    ref_id VARCHAR(255) DEFAULT NULL,
+    status VARCHAR(50) DEFAULT NULL,
+    request_data TEXT DEFAULT NULL,
+    response_data TEXT DEFAULT NULL,
+    ip VARCHAR(45) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user (user_id),
+    INDEX idx_order (order_id),
+    INDEX idx_authority (authority)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Testimonials

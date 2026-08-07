@@ -17,7 +17,7 @@ declare(strict_types=1);
         <button onclick="showTopUp()" class="px-4 py-2.5 bg-white/25 text-white rounded-xl font-semibold backdrop-blur hover:bg-white/40 transition-all relative">افزایش موجودی</button>
     </div>
     <div class="bg-white p-6 rounded-[20px] border-2 border-[#D4AF37]">
-        <h2 class="text-3xl font-extrabold text-[#D4AF37] mb-1"><?= e(number_format($user['points'])) ?></h2>
+        <h2 class="text-3xl font-extrabold text-[#D4AF37] mb-1"><?= e(number_format((int) $user['points'])) ?></h2>
         <p class="text-[#9e9e9e] mb-3.5">امتیازات شما</p>
         <p class="text-sm leading-relaxed">با هر خرید و رزرو نوبت امتیاز جمع کنید و از تخفیف‌های ویژه بهره‌مند شوید.</p>
     </div>

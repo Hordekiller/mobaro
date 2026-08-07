@@ -10,6 +10,7 @@ use App\Database;
 use App\Settings;
 use App\SEOService;
 use App\Captcha;
+use App\StructuredData;
 
 class HomeController extends BaseController
 {
@@ -54,6 +55,7 @@ class HomeController extends BaseController
             'educationCourses' => $homeData['educationCourses'],
             'products' => $homeData['products'],
             'testimonials' => $homeData['testimonials'],
+            'jsonLd' => StructuredData::render(StructuredData::organization()),
         ]);
     }
 }

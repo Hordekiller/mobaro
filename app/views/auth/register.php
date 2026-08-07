@@ -74,6 +74,17 @@ $title = 'ثبت‌نام | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
                         ?><p class="text-red-500 text-xs mt-2"><?= e($err) ?></p><?php
                     endif; ?>
                 </div>
+                <div>
+                    <label class="flex items-start gap-2 text-xs text-zinc-500 cursor-pointer">
+                        <input type="checkbox" name="accept_terms" value="1"
+                               class="mt-0.5 accent-rose-600"
+                               <?= !empty(old('accept_terms')) ? 'checked' : '' ?> required>
+                        <span>شرایط و قوانین و <a href="/terms" class="underline hover:text-rose-500">شرایط استفاده</a> و <a href="/privacy" class="underline hover:text-rose-500">حریم خصوصی</a> را مطالعه کرده‌ام و می‌پذیرم.</span>
+                    </label>
+                    <?php if ($err = flashError('terms')) :
+                        ?><p class="text-red-500 text-xs mt-1"><?= e($err) ?></p><?php
+                    endif; ?>
+                </div>
                 <button type="submit" class="w-full py-7 bg-zinc-900 hover:bg-black transition-all rounded-3xl text-white font-semibold text-lg">
                     ثبت‌نام رایگان
                 </button>

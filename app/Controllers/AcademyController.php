@@ -9,6 +9,7 @@ use App\Config;
 use App\Database;
 use App\Settings;
 use App\SEOService;
+use App\StructuredData;
 
 class AcademyController extends BaseController
 {
@@ -115,7 +116,16 @@ class AcademyController extends BaseController
         $settings = Settings::all();
 
         $seo = SEOService::forPage('academy');
-        $this->view('academy/detail', compact('course', 'related', 'settings', 'seo'));
+        $jsonLd = StructuredData::render(
+            StructuredData::organization(),
+            StructuredData::breadcrumb([
+                ['name' => 'خانه', 'url' => url('/')],
+                ['name' => 'آکادمی', 'url' => url('/academy')],
+                ['name' => (string) $course['title'], 'url' => url('/course/' . $slug)],
+            ]),
+            StructuredData::course($course)
+        );
+        $this->view('academy/detail', compact('course', 'related', 'settings', 'seo', 'jsonLd'));
     }
 
     public function enroll(string $slug): void
