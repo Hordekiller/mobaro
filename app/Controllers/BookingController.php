@@ -157,13 +157,19 @@ class BookingController extends BaseController
         }
 
         if ($artistId) {
-            $validAssignment = Database::fetch(
-                "SELECT id FROM artist_services WHERE artist_id = ? AND service_id = ?",
-                [$artistId, $serviceId]
+            $hasAnyAssignment = Database::fetch(
+                "SELECT id FROM artist_services WHERE service_id = ? LIMIT 1",
+                [$serviceId]
             );
-            if (!$validAssignment) {
-                $this->json(['error' => 'آرایشگر انتخاب شده برای این خدمت فعال نیست.'], 400);
-                return;
+            if ($hasAnyAssignment) {
+                $validAssignment = Database::fetch(
+                    "SELECT id FROM artist_services WHERE artist_id = ? AND service_id = ?",
+                    [$artistId, $serviceId]
+                );
+                if (!$validAssignment) {
+                    $this->json(['error' => 'آرایشگر انتخاب شده برای این خدمت فعال نیست.'], 400);
+                    return;
+                }
             }
         }
 
