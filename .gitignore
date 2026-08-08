@@ -45,6 +45,9 @@ temp/
 # Storage sessions
 storage/sessions/
 
+# PHPStan temp dir
+storage/phpstan/
+
 # Temporary/dev files at root
 home.html
 Profile.html
@@ -78,6 +81,9 @@ skills/
 
 # DB backups
 rozhin_db_backup.sql
+
+# Legacy / dev artifacts
+legacy/
 
 # Report / audit files
 REPORT-PRODUCTION-ISSUES.md

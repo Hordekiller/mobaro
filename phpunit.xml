@@ -14,12 +14,6 @@
             <directory>app</directory>
         </include>
     </source>
-    <coverage>
-        <report>
-            <clover outputFile="coverage.xml"/>
-            <html outputDirectory=".phpunit.coverage"/>
-        </report>
-    </coverage>
     <php>
         <env name="APP_ENV" value="testing"/>
     </php>

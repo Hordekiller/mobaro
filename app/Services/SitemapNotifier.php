@@ -58,7 +58,7 @@ class SitemapNotifier
                 'host' => $host,
                 'key' => $key,
                 'keyLocation' => 'https://' . $host . '/' . $key . '.txt',
-                'urlList' => array_values(array_slice($locs, 0, 10000)),
+                'urlList' => array_slice($locs, 0, 10000),
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
             $context = stream_context_create([

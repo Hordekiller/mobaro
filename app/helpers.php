@@ -302,7 +302,7 @@ function faNum(int|string|float $num): string
     } elseif (is_string($num) && str_contains($num, '.') && is_numeric($num)) {
         $num = normalizeDecimal((float) $num);
     }
-    return str_replace(range(0, 9), $persian, (string) $num);
+    return str_replace(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], $persian, (string) $num);
 }
 
 function normalizeDecimal(int|string|float $num): string

@@ -6,7 +6,7 @@ namespace App;
 
 class Config
 {
-    public const VERSION = '1.0.3';
+    public const VERSION = '1.0.8';
 
     private static array $cache = [];
 

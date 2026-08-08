@@ -100,9 +100,9 @@ class BookingController extends BaseController
             $currentMinutes = (int) $tehranNow->format('G') * 60 + (int) $tehranNow->format('i');
             $allSlots = array_values(array_filter($allSlots, function ($slot) use ($currentMinutes) {
                 $e = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                $en = str_replace($e, range(0, 9), $slot);
+                $en = str_replace($e, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], $slot);
                 $parts = explode(':', $en);
-                $slotMinutes = (int) ($parts[0] ?? 0) * 60 + (int) ($parts[1] ?? 0);
+                $slotMinutes = (int) $parts[0] * 60 + (int) ($parts[1] ?? 0);
                 return $slotMinutes > $currentMinutes;
             }));
         }
@@ -112,7 +112,7 @@ class BookingController extends BaseController
         $this->json([
             'date' => $date,
             'available_slots' => $availableSlots,
-            'booked_slots' => array_values($bookedTimes),
+            'booked_slots' => $bookedTimes,
         ]);
     }
 
@@ -256,9 +256,9 @@ class BookingController extends BaseController
 
         if ($date === $tehranNow->format('Y-m-d')) {
             $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            $timeNum = str_replace($persian, range(0, 9), $time);
+            $timeNum = str_replace($persian, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], $time);
             $parts = explode(':', $timeNum);
-            $slotMinutes = (int) ($parts[0] ?? 0) * 60 + (int) ($parts[1] ?? 0);
+            $slotMinutes = (int) $parts[0] * 60 + (int) ($parts[1] ?? 0);
             $currentMinutes = (int) $tehranNow->format('G') * 60 + (int) $tehranNow->format('i');
             if ($slotMinutes <= $currentMinutes) {
                 return 'زمان انتخاب‌شده گذشته است.';

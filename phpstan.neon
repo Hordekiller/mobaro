@@ -1,0 +1,13 @@
+parameters:
+    level: 5
+    paths:
+        - app
+    excludePaths:
+        - app/views
+    tmpDir: storage/phpstan
+    scanFiles:
+        - public/index.php
+    reportUnmatchedIgnoredErrors: false
+
+includes:
+    - phpstan-baseline.neon

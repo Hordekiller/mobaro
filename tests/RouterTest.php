@@ -8,14 +8,12 @@ class RouterTest extends TestCase
     private function getRoutesProperty(): ReflectionProperty
     {
         $prop = new ReflectionProperty(Router::class, 'routes');
-        $prop->setAccessible(true);
         return $prop;
     }
 
     private function getAddMethod(): ReflectionMethod
     {
         $method = new ReflectionMethod(Router::class, 'add');
-        $method->setAccessible(true);
         return $method;
     }
 

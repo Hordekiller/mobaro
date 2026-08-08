@@ -10,7 +10,9 @@ use App\Database;
 class Auth
 {
     /**
-     * @SuppressWarnings('php:S2092') — cookie secure flag is conditionally enabled based on HTTPS detection
+     * Starts the session. The cookie `secure` flag is enabled only when the
+     * request is served over HTTPS (sonar S2092 is intentionally mitigated by
+     * the conditional detection below).
      */
     public static function start(): void
     {
@@ -65,30 +67,18 @@ class Auth
                 $params['secure'],
                 $params['httponly']
             );
-            if (PHP_VERSION_ID >= 70300) {
-                setcookie(
-                    session_name(),
-                    '',
-                    [
-                        'expires' => time() - 42000,
-                        'path' => $params['path'],
-                        'domain' => $params['domain'],
-                        'secure' => $params['secure'],
-                        'httponly' => $params['httponly'],
-                        'samesite' => 'Lax',
-                    ]
-                );
-            } else {
-                setcookie(
-                    session_name(),
-                    '',
-                    time() - 42000,
-                    $params['path'] . '; SameSite=Lax',
-                    $params['domain'],
-                    $params['secure'],
-                    $params['httponly']
-                );
-            }
+            setcookie(
+                session_name(),
+                '',
+                [
+                    'expires' => time() - 42000,
+                    'path' => $params['path'],
+                    'domain' => $params['domain'],
+                    'secure' => $params['secure'],
+                    'httponly' => $params['httponly'],
+                    'samesite' => 'Lax',
+                ]
+            );
         }
         session_destroy();
     }

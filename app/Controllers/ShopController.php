@@ -280,7 +280,7 @@ class ShopController extends BaseController
         Database::insert('reviews', [
             'product_id' => $productId,
             'user_id' => $user['id'],
-            'user_name' => trim($userName ?: $user['phone']),
+            'user_name' => trim($userName) ?: $user['phone'],
             'rating' => $rating,
             'text' => sanitize($text),
         ]);
@@ -841,7 +841,7 @@ class ShopController extends BaseController
         if ($status !== 'OK') {
             Database::update('orders', [
                 'payment_status' => 'failed',
-                'authority' => $authority ?: $order['authority'],
+                'authority' => $authority,
                 'idempotency_key' => null,
             ], self::WHERE_ID, ['id' => $orderId]);
 
@@ -850,7 +850,7 @@ class ShopController extends BaseController
                 'order_id' => $orderId,
                 'action' => 'callback',
                 'amount' => (int) ($order['total'] ?? 0),
-                'authority' => $authority ?: $order['authority'],
+                'authority' => $authority,
                 'status' => 'cancelled',
                 'request_data' => $_GET,
             ]);
@@ -917,7 +917,7 @@ class ShopController extends BaseController
         } else {
             Database::update('orders', [
                 'payment_status' => 'failed',
-                'authority' => $authority ?: $order['authority'],
+                'authority' => $authority,
                 'idempotency_key' => null,
             ], self::WHERE_ID, ['id' => $orderId]);
             $this->renderPaymentResult('error', $result['message'], $orderId);

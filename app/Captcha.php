@@ -155,7 +155,7 @@ class Captcha
     private static function normalizeInput(mixed $input): int
     {
         $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-        $input = str_replace($persian, range(0, 9), (string) $input);
+        $input = str_replace($persian, ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], (string) $input);
         $input = trim($input);
         if ($input === '' || !ctype_digit($input)) {
             return -1;

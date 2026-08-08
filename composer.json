@@ -15,12 +15,15 @@
         "vlucas/phpdotenv": "^5.6"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.10",
-        "phpunit/phpunit": "^11.0"
+        "squizlabs/php_codesniffer": "^3.13",
+        "phpunit/phpunit": "^11.0",
+        "phpstan/phpstan": "^2.2"
     },
     "scripts": {
         "lint": "phpcs",
         "lint:fix": "phpcbf",
-        "test": "phpunit"
+        "test": "phpunit",
+        "analyse": "phpstan analyse --no-progress",
+        "analyse:baseline": "phpstan analyse --no-progress --generate-baseline"
     }
 }

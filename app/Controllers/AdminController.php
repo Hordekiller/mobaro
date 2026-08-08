@@ -49,11 +49,6 @@ class AdminController extends BaseController
     private const PATH_SEO = '/admin/seo';
     private const PATH_PAYMENT = '/admin/payment';
 
-    private function requireAdmin(): void
-    {
-        Auth::requireAdmin();
-    }
-
     protected function view(string $view, array $data = []): void
     {
         $data['hideFooter'] = true;
@@ -925,7 +920,7 @@ class AdminController extends BaseController
                 } elseif (in_array($field, $floatFields)) {
                     $value = (float) $value;
                 } elseif (in_array($field, $dateFields)) {
-                    $value = $value !== '' && $value !== null ? $value : null;
+                    $value = $value !== '' ? $value : null;
                 }
                 $data[$field] = $value;
             }
@@ -1544,7 +1539,6 @@ class AdminController extends BaseController
         $this->verifyCsrf();
 
                 $htmlKeys = ['about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'hero_customers_text', 'blog_sidebar_about', 'academy_instructor_bio'];
-        $toggleKeys = [];
 
         $upserts = [];
         $upsertParams = [];
@@ -1584,14 +1578,6 @@ class AdminController extends BaseController
                     $upsertParams[] = $imageKey;
                     $upsertParams[] = $uploaded;
                 }
-            }
-        }
-
-        foreach ($toggleKeys as $toggleKey) {
-            if (!isset($_POST['setting_' . $toggleKey])) {
-                $upserts[] = self::PLACEHOLDER_PAIR;
-                $upsertParams[] = $toggleKey;
-                $upsertParams[] = '0';
             }
         }
 
@@ -2622,16 +2608,14 @@ class AdminController extends BaseController
             $upsertParams[] = $indexnowKey;
         }
 
-        if (!empty($upserts)) {
-            $values = implode(', ', $upserts);
-            Database::query(
-                "INSERT INTO settings (setting_key, setting_value) VALUES {$values} ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
-                $upsertParams
-            );
-            Cache::forget('robots.txt');
-            Cache::forget('llms.txt');
-            Settings::invalidate();
-        }
+        $values = implode(', ', $upserts);
+        Database::query(
+            "INSERT INTO settings (setting_key, setting_value) VALUES {$values} ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+            $upsertParams
+        );
+        Cache::forget('robots.txt');
+        Cache::forget('llms.txt');
+        Settings::invalidate();
 
         // ——— Save page-specific SEO to seo_meta table ———
         $pageFields = ['meta_title', 'meta_description', 'canonical_url',

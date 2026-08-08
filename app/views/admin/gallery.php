@@ -64,7 +64,7 @@ $limitOptions = [12, 16, 20, 24];
                 'direct' => ['label' => 'آپلود مستقیم', 'color' => 'bg-purple-100 text-purple-600'],
                 default => ['label' => $item['source_type'], 'color' => 'bg-zinc-100 text-zinc-500'],
             };
-            ?>
+    ?>
         <div class="group relative bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100 hover:shadow-lg hover:border-rose-200 transition-all">
             <div class="aspect-square bg-zinc-100 flex items-center justify-center overflow-hidden">
                 <?php if ($isImage && $fileExists) : ?>
@@ -114,41 +114,41 @@ $limitOptions = [12, 16, 20, 24];
 
         <?php if ($totalPages > 1) : ?>
     <div class="flex justify-center gap-2 mt-8" dir="ltr">
-        <?php
-        $qs = 'filter=' . urlencode($filter) . '&s=' . urlencode($search) . '&limit=' . $limit;
-        $visiblePages = 7;
-        $half = floor(($visiblePages - 1) / 2);
-        $start = max(1, $page - $half);
-        $end = min($totalPages, $page + $half);
-        if ($end - $start + 1 < $visiblePages) {
-            if ($start === 1) {
-                $end = min($totalPages, $start + $visiblePages - 1);
-            } else {
-                $start = max(1, $end - $visiblePages + 1);
+            <?php
+            $qs = 'filter=' . urlencode($filter) . '&s=' . urlencode($search) . '&limit=' . $limit;
+            $visiblePages = 7;
+            $half = floor(($visiblePages - 1) / 2);
+            $start = max(1, $page - $half);
+            $end = min($totalPages, $page + $half);
+            if ($end - $start + 1 < $visiblePages) {
+                if ($start === 1) {
+                    $end = min($totalPages, $start + $visiblePages - 1);
+                } else {
+                    $start = max(1, $end - $visiblePages + 1);
+                }
             }
-        }
-        ?>
-        <?php if ($page > 1) : ?>
+            ?>
+            <?php if ($page > 1) : ?>
         <a href="/admin/gallery?page=<?= $page - 1 ?>&<?= $qs ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">قبلی</a>
-        <?php endif; ?>
-        <?php if ($start > 1) : ?>
+            <?php endif; ?>
+            <?php if ($start > 1) : ?>
         <a href="/admin/gallery?page=1&<?= $qs ?>" class="px-3 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all"><?= faNum(1) ?></a>
-            <?php if ($start > 2) : ?>
+                <?php if ($start > 2) : ?>
         <span class="px-2 py-2 text-zinc-400 text-sm">…</span>
+                <?php endif; ?>
             <?php endif; ?>
-        <?php endif; ?>
-        <?php for ($i = $start; $i <= $end; $i++) : ?>
+            <?php for ($i = $start; $i <= $end; $i++) : ?>
         <a href="/admin/gallery?page=<?= $i ?>&<?= $qs ?>" class="px-3 py-2 rounded-xl text-sm transition-all <?= $i === $page ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30' : 'bg-zinc-100 hover:bg-rose-100 hover:text-rose-600' ?>"><?= faNum($i) ?></a>
-        <?php endfor; ?>
-        <?php if ($end < $totalPages) : ?>
-            <?php if ($end < $totalPages - 1) : ?>
+            <?php endfor; ?>
+            <?php if ($end < $totalPages) : ?>
+                <?php if ($end < $totalPages - 1) : ?>
         <span class="px-2 py-2 text-zinc-400 text-sm">…</span>
-            <?php endif; ?>
+                <?php endif; ?>
         <a href="/admin/gallery?page=<?= $totalPages ?>&<?= $qs ?>" class="px-3 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all"><?= faNum($totalPages) ?></a>
-        <?php endif; ?>
-        <?php if ($page < $totalPages) : ?>
+            <?php endif; ?>
+            <?php if ($page < $totalPages) : ?>
         <a href="/admin/gallery?page=<?= $page + 1 ?>&<?= $qs ?>" class="px-4 py-2 bg-zinc-100 rounded-xl text-sm hover:bg-rose-100 hover:text-rose-600 transition-all">بعدی</a>
-        <?php endif; ?>
+            <?php endif; ?>
     </div>
         <?php endif; ?>
     <?php endif; ?>

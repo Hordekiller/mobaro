@@ -318,7 +318,7 @@ class StructuredData
     }
 
     /**
-     * @return string[]
+     * @return array<int, array<string, mixed>>
      */
     public static function render(array ...$blocks): array
     {

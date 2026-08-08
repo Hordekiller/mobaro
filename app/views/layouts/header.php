@@ -24,7 +24,17 @@ use App\Database;
         $fullTitle .= $titleSuffix;
     }
     $metaDescDefault = 'سالن زیبایی ' . $brandName . ' با بهترین آرایشگران و محصولات حرفه‌ای';
+    $gtagId = isset($settings['analytics_gtag_id']) ? trim((string) $settings['analytics_gtag_id']) : '';
     ?>
+    <?php if ($gtagId !== '' && $gtagId !== '#' && preg_match('/^(?:G|GTM|AW)-[A-Z0-9_-]{4,}$/i', $gtagId)) : ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($gtagId) ?>"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '<?= e($gtagId) ?>');
+    </script>
+    <?php endif; ?>
     <title><?= e($fullTitle) ?></title>
     <meta name="description" content="<?= e(($seo['description'] ?? '') ?: (($settings['meta_description'] ?? '') ?: $metaDescDefault)) ?>">
     <?php if (!empty($seo['canonical'])) : ?>
@@ -62,8 +72,8 @@ use App\Database;
         body { font-family: 'Vazirmatn', system-ui, sans-serif; }
         .logo-font { font-family: 'Playfair Display', serif; }
     </style>
-    <?php if (!empty($jsonLd)): ?>
-        <?php foreach ((array) $jsonLd as $block): ?>
+    <?php if (!empty($jsonLd)) : ?>
+        <?php foreach ((array) $jsonLd as $block) : ?>
             <script type="application/ld+json"><?= json_encode($block, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
         <?php endforeach; ?>
     <?php endif; ?>

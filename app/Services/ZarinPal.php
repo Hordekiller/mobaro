@@ -111,7 +111,7 @@ class ZarinPal
         ];
         $this->lastResponse = null;
 
-        $data = array_filter($this->lastRequest, fn($v) => $v !== null && $v !== '');
+        $data = array_filter($this->lastRequest, fn($v) => $v !== '');
 
         $response = $this->postJson('Verification.json', $data);
         $this->lastResponse = $response;

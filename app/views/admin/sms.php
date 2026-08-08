@@ -191,16 +191,16 @@ $search = $search ?? '';
         </thead>
         <tbody>
             <?php foreach ($templates as $tpl) : ?>
-            <?php
-            $tplTypeClass = match ($tpl['sms_type']) {
-                'bulk' => 'bg-amber-50 text-amber-700',
-                default => 'bg-green-50 text-green-700',
-            };
+                <?php
+                $tplTypeClass = match ($tpl['sms_type']) {
+                    'bulk' => 'bg-amber-50 text-amber-700',
+                    default => 'bg-green-50 text-green-700',
+                };
             $tplTypeLabel = match ($tpl['sms_type']) {
                 'bulk' => 'انبوه',
                 default => 'اعلان',
             };
-            ?>
+    ?>
             <tr class="border-b border-rose-100 hover:bg-rose-50/50 transition-all">
                 <td class="py-3 px-4 font-semibold text-sm"><?= e($tpl['name']) ?></td>
                 <td class="py-3 px-4">
@@ -260,12 +260,12 @@ $search = $search ?? '';
         </thead>
         <tbody>
             <?php foreach ($items as $item) : ?>
-            <?php
-            $logTypeClass = match ($item['type']) {
-                'verify' => 'bg-blue-50 text-blue-700',
-                'bulk' => 'bg-amber-50 text-amber-700',
-                default => 'bg-green-50 text-green-700',
-            };
+                <?php
+                $logTypeClass = match ($item['type']) {
+                    'verify' => 'bg-blue-50 text-blue-700',
+                    'bulk' => 'bg-amber-50 text-amber-700',
+                    default => 'bg-green-50 text-green-700',
+                };
             $logTypeLabel = match ($item['type']) {
                 'verify' => 'تأییدیه',
                 'bulk' => 'انبوه',
@@ -281,7 +281,7 @@ $search = $search ?? '';
                 'delivered' => 'تحویل شده',
                 default => 'ناموفق',
             };
-            ?>
+    ?>
             <tr class="border-b border-rose-100 hover:bg-rose-50/50 transition-all">
                 <td class="py-3 px-4 font-mono text-sm" dir="ltr"><?= e($item['phone']) ?></td>
                 <td class="py-3 px-4 text-sm text-zinc-400 max-w-xs truncate"><?= e($item['message']) ?></td>

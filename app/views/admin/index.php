@@ -231,6 +231,9 @@ declare(strict_types=1);
                 'فوتر' => [
                     'footer_description' => 'توضیحات فوتر',
                 ],
+                'آنالیتیکس' => [
+                    'analytics_gtag_id' => 'شناسه Google Analytics 4 (مثال: G-XXXXXXXXXX)',
+                ],
             ];
             $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
             ?>
@@ -848,24 +851,24 @@ declare(strict_types=1);
                             <?php endif; ?>
                             
                             
-<?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
+            <?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
                             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="hpService" class="block text-sm font-semibold mb-1.5">خدمت</label>
                                     <select id="hpService" name="service_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
                                         <option value="">انتخاب خدمت</option>
-                                        <?php foreach ($allServices as $svc) : ?>
+                                                    <?php foreach ($allServices as $svc) : ?>
                                         <option value="<?= $svc['id'] ?>"><?= e($svc['title']) ?></option>
-                                        <?php endforeach; ?>
+                                                    <?php endforeach; ?>
                                     </select>
                                 </div>
                                 <div>
                                     <label for="hpHairLength" class="block text-sm font-semibold mb-1.5">قد مو</label>
                                     <select id="hpHairLength" name="hair_length_id" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
                                         <option value="">انتخاب قد مو</option>
-                                        <?php foreach ($allHairLengths as $hl) : ?>
+                                                    <?php foreach ($allHairLengths as $hl) : ?>
                                         <option value="<?= $hl['id'] ?>"><?= e($hl['title']) ?></option>
-                                        <?php endforeach; ?>
+                                                    <?php endforeach; ?>
                                     </select>
                                 </div>
                                 <div>
@@ -883,7 +886,7 @@ declare(strict_types=1);
                                     </label>
                                 </div>
                             </div>
-                            <?php endif; ?>
+            <?php endif; ?>
                         <button type="submit" id="save-btn" class="w-full py-3.5 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" onclick="this.disabled=true;this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin ml-2\'></i>در حال ذخیره...';if(typeof tinymce!=='undefined')tinymce.triggerSave();this.closest('form').submit();">ذخیره</button>
                     </form>
                 </div>
@@ -1105,12 +1108,12 @@ function closeItemModal(e) {
 <?php endif; ?>
 
 <?php if (in_array($section, ['blog', 'products', 'courses'])) : ?>
-<?php $tinymceKey = \App\Config::get('tinymce.api_key', ''); ?>
-<?php if ($tinymceKey) : ?>
+    <?php $tinymceKey = \App\Config::get('tinymce.api_key', ''); ?>
+    <?php if ($tinymceKey) : ?>
 <script src="https://cdn.tiny.cloud/1/<?= e($tinymceKey) ?>/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-<?php else : ?>
+    <?php else : ?>
 <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" integrity="sha384-Ovv1ZPEkpW4ElBKDKaEIPkNfTTadFpifFwNJOBnuStg0PQ0RBln5Lsf9AI8BsCmx" crossorigin="anonymous"></script>
-<?php endif; ?>
+    <?php endif; ?>
 <script>
 function initRichEditor(selector, content) {
     if (tinymce.activeEditor) tinymce.remove();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Auth;
 use App\Settings;
 use App\StructuredData;
 
@@ -11,6 +12,11 @@ class BaseController
 {
     protected const CONTENT_TYPE_JSON = 'Content-Type: application/json';
     private static array $protectedVars = ['view', 'data', 'hideFooter', 'this'];
+
+    protected function requireAdmin(): void
+    {
+        Auth::requireAdmin();
+    }
 
     protected function view(string $view, array $data = []): void
     {

@@ -48,7 +48,7 @@ class GoogleAuth
             'access_type' => 'offline',
             'prompt' => 'select_account',
         ]);
-        return self::authUrl . '?' . $params;
+        return self::$authUrl . '?' . $params;
     }
 
     public static function exchangeCode(string $code): ?array

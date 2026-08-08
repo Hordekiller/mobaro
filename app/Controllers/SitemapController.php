@@ -81,9 +81,7 @@ class SitemapController extends BaseController
         $xml = $this->buildIndexXml($entries);
         @file_put_contents($this->sitemapFilePath('sitemap.xml'), $xml);
 
-        if ($entries !== []) {
-            SitemapNotifier::notify($this->collectLocs($sections));
-        }
+        SitemapNotifier::notify($this->collectLocs($sections));
 
         echo $xml;
         exit;
@@ -328,7 +326,6 @@ class SitemapController extends BaseController
                 'blog'    => url('/blog'),
                 'about'   => url('/about'),
                 'contact' => url('/contact'),
-                'academy' => url('/academy'),
                 default   => url('/' . $slug),
             };
 
@@ -534,12 +531,10 @@ class SitemapController extends BaseController
         ];
 
         $params = [];
-        if (self::BLACKLIST !== []) {
-            $placeholders = implode(',', array_fill(0, count(self::BLACKLIST), '?'));
-            $conditions[] = "{$column} NOT IN ({$placeholders})";
-            foreach (self::BLACKLIST as $slug) {
-                $params[] = $slug;
-            }
+        $placeholders = implode(',', array_fill(0, count(self::BLACKLIST), '?'));
+        $conditions[] = "{$column} NOT IN ({$placeholders})";
+        foreach (self::BLACKLIST as $slug) {
+            $params[] = $slug;
         }
 
         return [

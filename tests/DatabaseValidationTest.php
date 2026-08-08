@@ -9,7 +9,6 @@ class DatabaseValidationTest extends TestCase
     {
         $reflection = new ReflectionClass(Database::class);
         $property = $reflection->getProperty('allowedTables');
-        $property->setAccessible(true);
         return $property;
     }
 
@@ -17,7 +16,6 @@ class DatabaseValidationTest extends TestCase
     {
         $reflection = new ReflectionClass(Database::class);
         $method = $reflection->getMethod('validateColumns');
-        $method->setAccessible(true);
         return $method;
     }
 
