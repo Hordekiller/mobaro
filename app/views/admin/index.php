@@ -467,6 +467,37 @@ declare(strict_types=1);
                     </div>
                 </div>
 
+                <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
+                    <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">
+                        <i class="fa-solid fa-sitemap ml-1 text-rose-500"></i>تنظیمات نقشه سایت (Sitemap)
+                    </h3>
+                    <div class="space-y-4">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="seo_global[sitemap_news_enabled]" value="1" class="mt-1 rounded border-zinc-300 text-rose-600 focus:ring-rose-500" <?= (($globalSeo['sitemap_news_enabled'] ?? '0') === '1') ? 'checked' : '' ?>>
+                            <span class="text-sm">
+                                <span class="font-semibold text-zinc-700">نقشه سایت خبری (Google News)</span>
+                                <span class="block text-xs text-zinc-400 mt-0.5">فایل sitemap-news.xml فقط برای مقالات منتشرشده در ۴۸ ساعت گذشته. برای سایت‌هایی که در Google News تأیید شده‌اند مناسب است.</span>
+                            </span>
+                        </label>
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="seo_global[sitemap_ping_enabled]" value="1" class="mt-1 rounded border-zinc-300 text-rose-600 focus:ring-rose-500" <?= (($globalSeo['sitemap_ping_enabled'] ?? '0') === '1') ? 'checked' : '' ?>>
+                            <span class="text-sm">
+                                <span class="font-semibold text-zinc-700">اعلام فوری تغییرات به Bing/Yandex (IndexNow)</span>
+                                <span class="block text-xs text-zinc-400 mt-0.5">هنگام بازسازی نقشه سایت، آدرس‌های جدید به‌صورت خودکار (حداکثر هر ۶ ساعت یک‌بار) به IndexNow ارسال می‌شود. برای کارکرد کامل، کلید زیر را تنظیم کنید.</span>
+                            </span>
+                        </label>
+                        <div>
+                            <label for="seo_global_indexnow_key" class="block text-sm font-semibold mb-1.5">کلید IndexNow</label>
+                            <input id="seo_global_indexnow_key" type="text" name="seo_global[indexnow_key]" value="<?= e($globalSeo['indexnow_key'] ?? '') ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" maxlength="64" placeholder="مثال: 32f1c1c1c1c1c1c1c1c1c1c1c1c1c1c1">
+                            <p class="text-xs text-zinc-400 mt-2">یک کلید دلخواه (حداقل ۸ کاراکتر، حروف/اعداد/خط تیره) بسازید؛ فایل تایید به‌صورت خودکار در public/{key}.txt ساخته می‌شود.</p>
+                        </div>
+                        <div class="rounded-xl bg-rose-50 p-4 text-xs text-zinc-500 leading-6">
+                            <span class="font-semibold text-rose-600">نقشه سایت</span><br>
+                            /sitemap.xml &rarr; فهرست (sitemapindex) شامل sitemap-pages.xml ، sitemap-blog.xml ، sitemap-products.xml ، sitemap-courses.xml و (در صورت فعال‌بودن) sitemap-news.xml. فایل‌ها هنگام هر تغییر محتوا در پنل به‌صورت خودکار بازسازی می‌شوند.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Page-specific SEO -->
                 <?php foreach ($seoPages as $seoPage) :
                     $slug = $seoPage['page_slug'];

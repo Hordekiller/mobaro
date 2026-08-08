@@ -14,6 +14,7 @@ use App\Config;
 use App\FileUploader;
 use App\Services\SmsService;
 use App\Services\ZarinPal;
+use App\Services\OrderEffects;
 use Throwable;
 use finfo;
 
@@ -744,13 +745,29 @@ class AdminController extends BaseController
             Cache::forget($key);
         }
 
-        $sitemapFile = __DIR__ . '/../../public/sitemap.xml';
-        if (is_file($sitemapFile)) {
-            @unlink($sitemapFile);
-        }
+        $this->invalidateSitemapFiles();
 
         if (in_array($section, ['products', 'services', 'blog', 'courses', 'settings', 'captcha', 'gallery', 'sms'])) {
             Cache::bumpVersion();
+        }
+    }
+
+    /**
+     * Deletes the cached sitemap files (index + all per-type children) so the
+     * next /sitemap.xml request regenerates them in the new format.
+     */
+    private function invalidateSitemapFiles(): void
+    {
+        $files = glob(__DIR__ . '/../../public/sitemap-*.xml');
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                @unlink($file);
+            }
+        }
+
+        $indexFile = __DIR__ . '/../../public/sitemap.xml';
+        if (is_file($indexFile)) {
+            @unlink($indexFile);
         }
     }
 
@@ -1125,11 +1142,47 @@ class AdminController extends BaseController
             redirect('/admin/orders');
             return true;
         }
+
+        $current = Database::fetch(
+            "SELECT payment_status, total, tracking_code, user_id, coupon_code, coupon_discount FROM orders WHERE id = ?",
+            [$id]
+        );
+
+        $markingPaid = isset($data['payment_status'])
+            && $data['payment_status'] === 'paid'
+            && ($current['payment_status'] ?? '') !== 'paid';
+
         $updateData = ['status' => $data['status']];
         if (isset($data['payment_status'])) {
             $updateData['payment_status'] = $data['payment_status'];
         }
-        Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+        if ($markingPaid) {
+            $updateData['idempotency_key'] = null;
+        }
+
+        if ($markingPaid && $current) {
+            Database::beginTransaction();
+            try {
+                Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+                OrderEffects::apply(
+                    $id,
+                    (string) ($current['tracking_code'] ?? $id),
+                    (int) $current['user_id'],
+                    (int) $current['total'],
+                    isset($current['coupon_code']) && $current['coupon_code'] !== '' ? (string) $current['coupon_code'] : null,
+                    (int) ($current['coupon_discount'] ?? 0)
+                );
+                Database::commit();
+            } catch (Throwable $e) {
+                Database::rollback();
+                error_log("OrderEffects apply (admin manual paid) failed: " . $e->getMessage());
+                flash('error', 'خطا در اعمال اثرات سفارش؛ وضعیت ذخیره نشد.');
+                redirect('/admin/orders');
+                return false;
+            }
+        } else {
+            Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+        }
 
         $this->notifyOrderStatusChange($id, $data['status']);
 
@@ -2462,6 +2515,10 @@ class AdminController extends BaseController
             'title_suffix'     => Settings::get('title_suffix', ''),
             'default_robots'   => Settings::get('default_robots', 'index,follow'),
             'robots_txt'       => Settings::get('robots_txt', ''),
+            'llms_txt'         => Settings::get('llms_txt', ''),
+            'sitemap_news_enabled' => Settings::get('sitemap_news_enabled', '0'),
+            'sitemap_ping_enabled' => Settings::get('sitemap_ping_enabled', '0'),
+            'indexnow_key'         => Settings::get('indexnow_key', ''),
         ];
         $this->view(self::VIEW_ADMIN, $data);
     }
@@ -2549,6 +2606,22 @@ class AdminController extends BaseController
             $upsertParams[] = $llmsTxt;
         }
 
+        // ——— Save sitemap module settings (checkboxes default to "off") ———
+        foreach (['sitemap_news_enabled', 'sitemap_ping_enabled'] as $key) {
+            $upserts[] = self::PLACEHOLDER_PAIR;
+            $upsertParams[] = $key;
+            $upsertParams[] = (isset($globalSeo[$key]) && $globalSeo[$key] === '1') ? '1' : '0';
+        }
+
+        if (isset($globalSeo['indexnow_key'])) {
+            $indexnowKey = strtolower(trim(sanitize($globalSeo['indexnow_key'])));
+            $indexnowKey = preg_replace('/[^a-z0-9_\-]/', '', (string) $indexnowKey);
+            $indexnowKey = mb_substr($indexnowKey, 0, 64);
+            $upserts[] = self::PLACEHOLDER_PAIR;
+            $upsertParams[] = 'indexnow_key';
+            $upsertParams[] = $indexnowKey;
+        }
+
         if (!empty($upserts)) {
             $values = implode(', ', $upserts);
             Database::query(
@@ -2598,6 +2671,7 @@ class AdminController extends BaseController
         Cache::flushByTag('homepage');
         Cache::flushByTag('blog');
         Settings::invalidate();
+        $this->invalidateSitemapFiles();
         flash('success', 'تنظیمات سئو با موفقیت ذخیره شد.');
         redirect(self::PATH_SEO);
     }

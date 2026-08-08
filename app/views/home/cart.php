@@ -332,6 +332,7 @@ function checkout() {
             } else {
                 showToast(d.message || d.error, d.success ? 'success' : 'error');
                 if (d.success) setTimeout(() => location.reload(), 1500);
+                else { btn.disabled = false; btn.innerHTML = 'ثبت سفارش و پرداخت'; }
             }
         })
         .catch(() => { showToast('خطا در ثبت سفارش', 'error'); btn.disabled = false; btn.innerHTML = 'ثبت سفارش و پرداخت'; });

@@ -87,6 +87,7 @@ public/assets/images/cache/
 
 # Generated sitemap (Cache-on-Demand artifact)
 public/sitemap.xml
+public/sitemap-*.xml
 
 # PHPUnit cache
 .phpunit.cache/

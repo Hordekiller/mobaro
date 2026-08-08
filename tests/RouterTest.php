@@ -78,4 +78,52 @@ class RouterTest extends TestCase
         $all = $this->getRoutesProperty()->getValue();
         $this->assertCount(3, $all);
     }
+
+    public function testNumericParamAlwaysCastToInt(): void
+    {
+        $captured = null;
+        Router::get('/product/{id}', function (int $id) use (&$captured) {
+            $captured = $id;
+        });
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/product/abc';
+        Router::dispatch();
+
+        $this->assertSame(0, $captured);
+    }
+
+    public function testNamedParamMismatchDispatchesPositionally(): void
+    {
+        RouterTestControllerDouble::$lastProductId = -1;
+        Router::post('/product/{id}/review', [RouterTestControllerDouble::class, 'postReview']);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/product/42/review';
+        Router::dispatch();
+
+        $this->assertSame(42, RouterTestControllerDouble::$lastProductId);
+    }
+
+    public function testNonNumericIdOnTypedMethodDispatchedAsZero(): void
+    {
+        RouterTestControllerDouble::$lastProductId = -1;
+        Router::post('/product/{id}/review', [RouterTestControllerDouble::class, 'postReview']);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/product/abc/review';
+        Router::dispatch();
+
+        $this->assertSame(0, RouterTestControllerDouble::$lastProductId);
+    }
+}
+
+class RouterTestControllerDouble
+{
+    public static int $lastProductId = -1;
+
+    public function postReview(int $productId): void
+    {
+        self::$lastProductId = $productId;
+    }
 }

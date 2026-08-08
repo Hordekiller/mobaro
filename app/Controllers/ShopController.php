@@ -14,6 +14,7 @@ use App\StructuredData;
 use App\Services\SmsService;
 use App\Services\ZarinPal;
 use App\Services\PaymentLogger;
+use App\Services\OrderEffects;
 use Throwable;
 
 class ShopController extends BaseController
@@ -21,8 +22,25 @@ class ShopController extends BaseController
     private const WISHLIST_QUERY = 'SELECT product_id as id FROM wishlist WHERE user_id = ?';
     private const LAYOUT_HEADER = '/../views/layouts/header.php';
     private const LAYOUT_FOOTER = '/../views/layouts/footer.php';
-    private const WHERE_ID = 'id = ?';
+    private const WHERE_ID = 'id = :id';
     private const CURRENCY_SUFFIX = ' تومان';
+
+    private static array $columnCache = [];
+
+    private function hasColumn(string $table, string $column): bool
+    {
+        if (!isset(self::$columnCache[$table][$column])) {
+            $result = Database::fetch(
+                "SELECT COUNT(*) AS cnt
+                 FROM information_schema.columns
+                 WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?",
+                [$table, $column]
+            );
+            self::$columnCache[$table][$column] = (int) ($result['cnt'] ?? 0) > 0;
+        }
+
+        return self::$columnCache[$table][$column];
+    }
 
     private function getFacets(): array
     {
@@ -70,7 +88,7 @@ class ShopController extends BaseController
             'price_asc' => 'p.price ASC',
             'price_desc' => 'p.price DESC',
             'rating' => 'p.rating DESC',
-            'popular' => 'p.reviews DESC',
+            'popular' => $this->hasColumn('products', 'reviews') ? 'p.reviews DESC' : 'p.rating DESC',
             default => 'p.id DESC',
         };
 
@@ -275,7 +293,11 @@ class ShopController extends BaseController
             "SELECT COUNT(*) as cnt FROM reviews WHERE product_id = ?",
             [$productId]
         )['cnt'];
-        Database::update('products', ['rating' => round((float) $avg, 1), 'reviews' => $cnt], self::WHERE_ID, ['id' => $productId]);
+        $productUpdate = ['rating' => round((float) $avg, 1)];
+        if ($this->hasColumn('products', 'reviews')) {
+            $productUpdate['reviews'] = $cnt;
+        }
+        Database::update('products', $productUpdate, self::WHERE_ID, ['id' => $productId]);
 
         Cache::forget('product_' . $productId);
         Cache::flushByTag('products');
@@ -511,84 +533,121 @@ class ShopController extends BaseController
             return;
         }
 
-        $total = array_sum(array_map(fn($item) => $item['price'] * $item['qty'], $cart));
-        $couponResult = $this->validateCoupon($total);
-        if ($couponResult['error']) {
-            $this->json(['error' => $couponResult['error']], 400);
-            return;
-        }
-
-        $couponDiscount = $couponResult['discount'];
-        $couponCode = $couponResult['code'];
-        $finalTotal = $total - $couponDiscount;
-        $trackingCode = 'MB-' . date('Ymd') . '-' . str_pad((string) random_int(1000, 99999), 5, '0', STR_PAD_LEFT);
         $user = Auth::user();
-
+        $couponCode = sanitize($_POST['coupon_code'] ?? '');
+        $useWallet = !empty($_POST['use_wallet']);
         $addressResult = $this->resolveAddress($cart, $user['id']);
 
-        $useWallet = !empty($_POST['use_wallet']);
-        $walletBalance = (int) ($user['wallet'] ?? 0);
+        $idemKey = sha1((string) $user['id'] . '|' . $this->cartFingerprint($cart) . '|' . $couponCode . '|' . ($useWallet ? 'wallet' : 'gateway'));
 
-        if ($useWallet && $walletBalance < $finalTotal) {
-            $this->json(['error' => 'موجودی کیف پول کافی نیست. لطفاً کیف پول خود را شارژ کنید.'], 400);
-            return;
-        }
-
-        $paymentStatus = $useWallet ? 'paid' : 'pending';
-        $paymentMethod = $useWallet ? 'wallet' : null;
+        $orderId = 0;
+        $finalTotal = 0;
+        $trackingCode = '';
+        $paymentStatus = 'pending';
+        $paymentMethod = null;
 
         Database::beginTransaction();
         try {
-            $orderId = Database::insert('orders', [
-                'user_id' => $user['id'],
-                'total' => $finalTotal,
-                'discount' => $couponDiscount,
-                'coupon_code' => $couponCode ?: null,
-                'coupon_discount' => $couponDiscount,
-                'status' => $paymentStatus === 'paid' ? 'processing' : 'pending',
-                'payment_status' => $paymentStatus,
-                'payment_method' => $paymentMethod,
-                'tracking_code' => $trackingCode,
-                'address' => $addressResult['text'] ?: null,
-                'postal_code' => $addressResult['postal'] ?: null,
-            ]);
+            $existing = Database::fetch(
+                "SELECT * FROM orders WHERE user_id = ? AND idempotency_key = ? AND status = 'pending' AND payment_status = 'pending' LIMIT 1",
+                [$user['id'], $idemKey]
+            );
 
-            $courseItems = [];
-            foreach ($cart as $item) {
-                Database::insert('order_items', [
-                    'order_id' => $orderId,
-                    'product_id' => $item['id'],
-                    'product_name' => $item['name'],
-                    'price' => $item['price'],
-                    'quantity' => $item['qty'],
-                ]);
-                if (($item['type'] ?? 'product') === 'course') {
-                    $courseItems[] = $item;
+            if ($existing) {
+                $orderId = (int) $existing['id'];
+                $finalTotal = (int) $existing['total'];
+                $trackingCode = (string) $existing['tracking_code'];
+                Database::commit();
+            } else {
+                [$items, $total] = $this->validateCartItems($cart);
+
+                $couponResult = $this->validateCoupon($couponCode, $total);
+                if ($couponResult['error']) {
+                    Database::rollback();
+                    $this->json(['error' => $couponResult['error']], 400);
+                    return;
                 }
-            }
+                $couponDiscount = $couponResult['discount'];
+                $finalTotal = max(0, $total - $couponDiscount);
+                $trackingCode = 'MB-' . date('Ymd') . '-' . str_pad((string) random_int(1000, 99999), 5, '0', STR_PAD_LEFT);
 
-            if ($couponCode && $couponDiscount > 0) {
-                Database::query("UPDATE coupons SET used_count = used_count + 1 WHERE code = ?", [$couponCode]);
-            }
+                $walletRow = Database::fetch("SELECT wallet FROM users WHERE id = ? FOR UPDATE", [$user['id']]);
+                $walletBalance = (int) ($walletRow['wallet'] ?? 0);
+                if ($useWallet && $finalTotal > 0 && $walletBalance < $finalTotal) {
+                    Database::rollback();
+                    $this->json(['error' => 'موجودی کیف پول کافی نیست. لطفاً کیف پول خود را شارژ کنید.'], 400);
+                    return;
+                }
 
-            if ($paymentMethod === 'wallet') {
-                $this->processWalletPayment($user, $finalTotal, $trackingCode, $courseItems);
-            }
+                if ($finalTotal <= 0) {
+                    $paymentStatus = 'paid';
+                    $paymentMethod = 'free';
+                } elseif ($useWallet) {
+                    $paymentStatus = 'paid';
+                    $paymentMethod = 'wallet';
+                } else {
+                    $paymentStatus = 'pending';
+                    $paymentMethod = null;
+                }
 
-            Database::commit();
+                $orderId = Database::insert('orders', [
+                    'user_id' => $user['id'],
+                    'total' => $finalTotal,
+                    'discount' => $couponDiscount,
+                    'coupon_code' => $couponCode ?: null,
+                    'coupon_discount' => $couponDiscount,
+                    'status' => $paymentStatus === 'paid' ? 'processing' : 'pending',
+                    'payment_status' => $paymentStatus,
+                    'payment_method' => $paymentMethod,
+                    'tracking_code' => $trackingCode,
+                    'address' => $addressResult['text'] ?: null,
+                    'postal_code' => $addressResult['postal'] ?: null,
+                    'idempotency_key' => $idemKey,
+                ]);
+
+                foreach ($items as $item) {
+                    Database::insert('order_items', [
+                        'order_id' => $orderId,
+                        'product_id' => $item['id'],
+                        'product_name' => $item['name'],
+                        'price' => $item['price'],
+                        'quantity' => $item['qty'],
+                        'item_type' => $item['type'] ?? 'product',
+                    ]);
+                }
+
+                if ($paymentStatus === 'paid') {
+                    if ($paymentMethod === 'wallet') {
+                        Database::update('users', ['wallet' => $walletBalance - $finalTotal], self::WHERE_ID, ['id' => $user['id']]);
+                        Database::insert('transactions', [
+                            'user_id' => $user['id'],
+                            'type' => 'wallet_withdraw',
+                            'amount' => $finalTotal,
+                            'description' => "پرداخت سفارش {$trackingCode}",
+                            'payment_status' => 'paid',
+                        ]);
+                    }
+                    OrderEffects::apply($orderId, $trackingCode, $user['id'], $finalTotal, $couponCode, $couponDiscount);
+                }
+
+                Database::commit();
+            }
+        } catch (\RuntimeException $e) {
+            Database::rollback();
+            $this->json(['error' => $e->getMessage()], 400);
+            return;
         } catch (\Throwable $e) {
             Database::rollback();
             throw $e;
         }
 
-        if ($paymentMethod === 'wallet') {
+        if ($paymentStatus === 'paid') {
             $_SESSION['cart'] = [];
             $_SESSION['user'] = Database::fetch("SELECT * FROM users WHERE id = ?", [$user['id']]);
-
             $this->json([
                 'success' => true,
                 'payment_required' => false,
-                'message' => 'سفارش با موفقیت ثبت شد و از کیف پول کسر گردید.',
+                'message' => 'سفارش با موفقیت ثبت شد' . ($paymentMethod === 'wallet' ? ' و از کیف پول کسر گردید.' : '.'),
             ]);
             return;
         }
@@ -596,13 +655,12 @@ class ShopController extends BaseController
         $this->processZarinPalPayment($orderId, $finalTotal, $trackingCode, $user);
     }
 
-    private function validateCoupon(int $total): array
+    private function validateCoupon(string $couponCode, int $total): array
     {
-        if (empty($_POST['coupon_code'])) {
+        if ($couponCode === '') {
             return ['error' => null, 'discount' => 0, 'code' => ''];
         }
 
-        $couponCode = sanitize($_POST['coupon_code']);
         $coupon = Database::fetch("SELECT * FROM coupons WHERE code = ? AND is_active = 1", [$couponCode]);
 
         if (!$coupon) {
@@ -653,57 +711,54 @@ class ShopController extends BaseController
         return ['text' => $addressText, 'postal' => $postalCode];
     }
 
-    private function processWalletPayment(array $user, int $finalTotal, string $trackingCode, array $courseItems): void
+    private function cartFingerprint(array $cart): string
     {
-        Database::update('users', ['wallet' => (int) $user['wallet'] - $finalTotal], self::WHERE_ID, ['id' => $user['id']]);
-        Database::insert('transactions', [
-            'user_id' => $user['id'],
-            'type' => 'wallet_withdraw',
-            'amount' => $finalTotal,
-            'description' => "پرداخت سفارش {$trackingCode}",
-            'payment_status' => 'paid',
-        ]);
-
-        $pointsEarned = floor($finalTotal / 10000);
-        if ($pointsEarned > 0) {
-            Database::insert('transactions', [
-                'user_id' => $user['id'],
-                'type' => 'points_earn',
-                'amount' => $pointsEarned,
-                'description' => "امتیاز خرید سفارش {$trackingCode}",
-            ]);
-            Database::query("UPDATE users SET points = points + ? WHERE id = ?", [$pointsEarned, $user['id']]);
-        }
-
-        $this->enrollCourseItems($user['id'], $courseItems);
+        $parts = array_map(fn($item) => ($item['type'] ?? 'product') . ':' . $item['id'] . ':' . $item['qty'] . ':' . $item['price'], $cart);
+        sort($parts);
+        return md5(implode('|', $parts));
     }
 
-    private function enrollCourseItems(int $userId, array $courseItems): void
+    private function validateCartItems(array $cart): array
     {
-        $courseIds = array_map(fn($c) => $c['id'], $courseItems);
-        if (empty($courseIds)) {
-            return;
-        }
+        $items = [];
+        $total = 0;
+        foreach ($cart as $item) {
+            $type = $item['type'] ?? 'product';
+            $qty = max(1, (int) ($item['qty'] ?? 1));
 
-        $uniqueIds = array_values(array_unique($courseIds));
-        $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
-        $existingEnrollments = Database::fetchAll(
-            "SELECT course_id FROM course_enrollments WHERE user_id = ? AND course_id IN ({$placeholders})",
-            array_merge([$userId], $uniqueIds)
-        );
-        $existingIds = array_column($existingEnrollments, 'course_id');
-
-        foreach ($courseItems as $course) {
-            if (in_array($course['id'], $existingIds)) {
-                continue;
+            if ($type === 'course') {
+                $course = Database::fetch(
+                    "SELECT id, title, price, is_free, is_active FROM courses WHERE id = ? FOR UPDATE",
+                    [(int) $item['id']]
+                );
+                if (!$course || (int) $course['is_active'] !== 1) {
+                    throw new \RuntimeException('دوره «' . ($item['name'] ?? '') . '» دیگر در دسترس نیست.');
+                }
+                if ((int) $course['is_free'] === 1) {
+                    throw new \RuntimeException('دوره «' . $course['title'] . '» هم‌اکنون رایگان است.');
+                }
+                $price = (int) $course['price'];
+                $items[] = ['id' => (int) $course['id'], 'name' => $course['title'], 'price' => $price, 'qty' => $qty, 'type' => 'course'];
+            } else {
+                $product = Database::fetch(
+                    "SELECT id, name, price, stock, is_active FROM products WHERE id = ? FOR UPDATE",
+                    [(int) $item['id']]
+                );
+                if (!$product || (int) $product['is_active'] !== 1) {
+                    throw new \RuntimeException('محصول «' . ($item['name'] ?? '') . '» دیگر در دسترس نیست.');
+                }
+                $stock = (int) ($product['stock'] ?? 0);
+                if ($stock < $qty) {
+                    throw new \RuntimeException('موجودی محصول «' . $product['name'] . '» کافی نیست (' . $qty . ' عدد درخواستی، ' . $stock . ' عدد موجود).');
+                }
+                $price = (int) $product['price'];
+                $items[] = ['id' => (int) $product['id'], 'name' => $product['name'], 'price' => $price, 'qty' => $qty, 'type' => 'product'];
             }
-            Database::insert('course_enrollments', [
-                'user_id' => $userId,
-                'course_id' => $course['id'],
-                'progress' => 0,
-            ]);
-            Database::query("UPDATE courses SET students = students + 1 WHERE id = ?", [$course['id']]);
+
+            $total += $price * $qty;
         }
+
+        return [$items, $total];
     }
 
     private function processZarinPalPayment(int $orderId, int $finalTotal, string $trackingCode, array $user): void
@@ -787,6 +842,7 @@ class ShopController extends BaseController
             Database::update('orders', [
                 'payment_status' => 'failed',
                 'authority' => $authority ?: $order['authority'],
+                'idempotency_key' => null,
             ], self::WHERE_ID, ['id' => $orderId]);
 
             PaymentLogger::log([
@@ -819,42 +875,90 @@ class ShopController extends BaseController
         ]);
 
         if ($result['status']) {
-            Database::update('orders', [
-                'payment_status' => 'paid',
-                'payment_method' => 'zarinpal',
-                'status' => 'processing',
-                'authority' => $authority,
-                'payment_id' => $result['ref_id'],
-                'ref_id' => $result['ref_id'],
-            ], self::WHERE_ID, ['id' => $orderId]);
+            Database::beginTransaction();
+            try {
+                $order = Database::fetch("SELECT * FROM orders WHERE id = ? FOR UPDATE", [$orderId]);
+                if (!$order || $order['payment_status'] === 'paid') {
+                    Database::rollback();
+                    redirect('/dashboard/orders');
+                    return;
+                }
 
-            $cartItems = Database::fetchAll("SELECT * FROM order_items WHERE order_id = ?", [$orderId]);
-            $courseIds = $this->extractCourseIds($cartItems);
-            $courseItems = array_filter($cartItems, fn($i) => in_array($i['product_id'], $courseIds));
+                $refId = (string) ($result['ref_id'] ?: ($order['ref_id'] ?: $authority));
+                Database::update('orders', [
+                    'payment_status' => 'paid',
+                    'payment_method' => 'zarinpal',
+                    'status' => 'processing',
+                    'authority' => $authority,
+                    'payment_id' => $refId,
+                    'ref_id' => $refId,
+                    'idempotency_key' => null,
+                ], self::WHERE_ID, ['id' => $orderId]);
 
-            $this->enrollCourseItems(Auth::id(), array_map(fn($i) => ['id' => $i['product_id']], $courseItems));
+                OrderEffects::apply(
+                    $orderId,
+                    (string) $order['tracking_code'],
+                    Auth::id(),
+                    (int) $order['total'],
+                    isset($order['coupon_code']) && $order['coupon_code'] !== '' ? (string) $order['coupon_code'] : null,
+                    (int) ($order['coupon_discount'] ?? 0)
+                );
 
-            $pointsEarned = floor($order['total'] / 10000);
-            Database::insert('transactions', [
-                'user_id' => Auth::id(),
-                'type' => 'points_earn',
-                'amount' => $pointsEarned,
-                'description' => "امتیاز خرید سفارش {$order['tracking_code']}",
-            ]);
-            Database::query("UPDATE users SET points = points + ? WHERE id = ?", [$pointsEarned, Auth::id()]);
-
-            $_SESSION['cart'] = [];
+                $_SESSION['cart'] = [];
+                Database::commit();
+            } catch (\Throwable $e) {
+                Database::rollback();
+                throw $e;
+            }
 
             $this->notifyPaidOrder($order);
 
-            $this->renderPaymentResult('success', null, null, (int) ($result['ref_id'] ?? 0), $order['tracking_code']);
+            $this->renderPaymentResult('success', null, null, $refId, $order['tracking_code']);
         } else {
             Database::update('orders', [
                 'payment_status' => 'failed',
                 'authority' => $authority ?: $order['authority'],
+                'idempotency_key' => null,
             ], self::WHERE_ID, ['id' => $orderId]);
-            $this->renderPaymentResult('error', $result['message'], null);
+            $this->renderPaymentResult('error', $result['message'], $orderId);
         }
+    }
+
+    public function retryPayment(): void
+    {
+        if (!Auth::check()) {
+            $this->json(['require_login' => true, 'error' => 'لطفاً ابتدا وارد شوید.'], 401);
+            return;
+        }
+        $this->verifyCsrf();
+
+        $orderId = (int) ($_POST['order_id'] ?? 0);
+        if (!$orderId) {
+            $this->json(['error' => 'سفارش نامعتبر است.'], 400);
+            return;
+        }
+
+        $order = Database::fetch("SELECT * FROM orders WHERE id = ? AND user_id = ?", [$orderId, Auth::id()]);
+        if (!$order) {
+            $this->json(['error' => 'سفارش یافت نشد.'], 404);
+            return;
+        }
+        if (in_array($order['status'], ['cancelled', 'processing', 'shipped', 'delivered'], true)) {
+            $this->json(['error' => 'این سفارش قابل پرداخت نیست.'], 400);
+            return;
+        }
+        if ($order['payment_status'] === 'paid') {
+            $this->json(['error' => 'این سفارش قبلاً پرداخت شده است.'], 400);
+            return;
+        }
+
+        $finalTotal = (int) $order['total'];
+        if ($finalTotal <= 0) {
+            $this->json(['error' => 'مبلغ این سفارش صفر است.'], 400);
+            return;
+        }
+
+        $this->processZarinPalPayment($orderId, $finalTotal, (string) $order['tracking_code'], Auth::user());
     }
 
     private function notifyPaidOrder(array $order): void
@@ -886,21 +990,13 @@ class ShopController extends BaseController
         }
     }
 
-    private function extractCourseIds(array $cartItems): array
-    {
-        $productIds = array_filter(array_map(fn($i) => $i['product_id'] ?? 0, $cartItems));
-        if (empty($productIds)) {
-            return [];
-        }
-        $uniqueIds = array_values(array_unique($productIds));
-        $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
-        $courseRows = Database::fetchAll("SELECT id FROM courses WHERE id IN ({$placeholders})", $uniqueIds);
-        return array_column($courseRows, 'id');
-    }
-
-    private function renderPaymentResult(string $type, ?string $message, ?int $orderId, ?int $refId = null, ?string $trackingCode = null): void
+    private function renderPaymentResult(string $type, ?string $message, ?int $orderId, ?string $refId = null, ?string $trackingCode = null): void
     {
         require_once __DIR__ . self::LAYOUT_HEADER;
+
+        $retry = $orderId
+            ? '<a href="/dashboard/order/detail?id=' . $orderId . '" class="inline-flex items-center gap-2 px-6 py-3 bg-rose-600 text-white rounded-xl font-semibold">پرداخت مجدد</a>'
+            : '';
 
         $content = match ($type) {
             'success' => '<h2 class="text-2xl font-bold text-green-600 mb-4">پرداخت موفق</h2>'
@@ -910,9 +1006,10 @@ class ShopController extends BaseController
                 . '<a href="/dashboard/orders" class="px-6 py-3 bg-rose-600 text-white rounded-xl font-semibold">مشاهده سفارشات</a>',
             'cancelled' => '<h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت لغو شد</h2>'
                 . '<p class="text-zinc-600 mb-6">پرداخت شما لغو شد. می‌توانید مجدداً اقدام کنید.</p>'
-                . '<a href="/orders/' . $orderId . '" class="px-6 py-3 bg-rose-600 text-white rounded-xl">تلاش مجدد</a>',
-            default => '<h2 class="text-2xl font-bold text-red-600 mb-4">' . ($message ? 'پرداخت ناموفق' : 'پرداخت ناموفق') . '</h2>'
-                . '<p class="text-zinc-600">' . e($message) . '</p>',
+                . $retry,
+            default => '<h2 class="text-2xl font-bold text-red-600 mb-4">پرداخت ناموفق</h2>'
+                . '<p class="text-zinc-600 mb-6">' . e($message) . '</p>'
+                . $retry,
         };
 
         echo '<div class="max-w-lg mx-auto px-4 py-20 text-center">' . $content . '</div>';
@@ -944,7 +1041,17 @@ class ShopController extends BaseController
         }
 
         $cart = $_SESSION['cart'] ?? [];
-        $total = array_sum(array_map(fn($item) => $item['price'] * $item['qty'], $cart));
+        if (empty($cart)) {
+            $this->json(['error' => 'سبد خرید خالی است.'], 400);
+            return;
+        }
+
+        try {
+            [, $total] = $this->validateCartItems($cart);
+        } catch (\RuntimeException $e) {
+            $this->json(['error' => $e->getMessage()], 400);
+            return;
+        }
 
         if ($coupon['min_order'] > 0 && $total < $coupon['min_order']) {
             $this->json(['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format((int) $coupon['min_order']) . ' تومان است.'], 400);

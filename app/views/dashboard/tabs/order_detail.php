@@ -121,10 +121,17 @@ if (!empty($order)) : ?>
         </div>
     </div>
     <?php if ($order['status'] === 'pending') : ?>
-    <div class="mt-5 text-center">
-        <button onclick="cancelOrderDetail(<?= $order['id'] ?>)" class="px-6 py-3 bg-red-50 text-red-500 rounded-xl font-semibold hover:bg-red-500 hover:text-white transition-all">
-            <i class="fa-solid fa-xmark ml-2"></i>لغو سفارش
+    <div class="mt-5 text-center space-y-3">
+        <?php if (in_array($order['payment_status'], ['pending', 'failed'], true)) : ?>
+        <button onclick="payOrderDetail(<?= $order['id'] ?>)" class="px-6 py-3 bg-[#B76E79] text-white rounded-xl font-semibold hover:bg-[#a45f6a] transition-all">
+            <i class="fa-solid fa-credit-card ml-2"></i>پرداخت مجدد
         </button>
+        <?php endif; ?>
+        <div>
+            <button onclick="cancelOrderDetail(<?= $order['id'] ?>)" class="px-6 py-3 bg-red-50 text-red-500 rounded-xl font-semibold hover:bg-red-500 hover:text-white transition-all">
+                <i class="fa-solid fa-xmark ml-2"></i>لغو سفارش
+            </button>
+        </div>
     </div>
     <?php endif; ?>
 </div>
@@ -134,6 +141,17 @@ if (!empty($order)) : ?>
 </div>
 <?php endif; ?>
 <script>
+function payOrderDetail(id) {
+    fetch('/shop/order/pay', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'order_id=' + id + '&' + csrfParam()
+    }).then(r => r.json()).then(d => {
+        if (d.error && d.require_login) { window.location = '/login'; return; }
+        if (d.redirect) { window.location = d.redirect; return; }
+        showToast(d.error || d.message || 'خطا در اتصال به درگاه پرداخت', d.error ? 'error' : 'success');
+    }).catch(() => showToast('خطا در ارتباط با سرور', 'error'));
+}
 function cancelOrderDetail(id) {
     if (!confirm('آیا از لغو سفارش مطمئن هستید؟')) return;
     fetch('/dashboard/order/cancel', {

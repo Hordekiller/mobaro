@@ -1,6 +1,8 @@
 <?php
 
 use App\Controllers\SitemapController;
+use App\Database;
+use App\Settings;
 use PHPUnit\Framework\TestCase;
 
 final class SitemapTest extends TestCase
@@ -224,6 +226,139 @@ final class SitemapTest extends TestCase
     public function testImageLocIsAbsolute(): void
     {
         $this->assertMatchesRegularExpression('/<image:loc>https?:\/\//', $this->xml());
+    }
+
+    public function testXmlHasXslStylesheet(): void
+    {
+        $this->assertStringContainsString('<?xml-stylesheet type="text/xsl" href="', $this->xml());
+    }
+
+    public function testBlogSectionIsWellFormedWithImageCapability(): void
+    {
+        $built = $this->buildSection('blog');
+        $this->assertStringStartsWith('<?xml version="1.0" encoding="UTF-8"?>', $built['xml']);
+        $this->assertStringContainsString('<urlset', $built['xml']);
+        $this->assertStringContainsString('xmlns:image=', $built['xml']);
+        $this->assertSame(false, simplexml_load_string($built['xml']) === false);
+    }
+
+    public function testCoursesSectionIsWellFormedWithImageCapability(): void
+    {
+        $built = $this->buildSection('courses');
+        $this->assertStringStartsWith('<?xml version="1.0" encoding="UTF-8"?>', $built['xml']);
+        $this->assertStringContainsString('<urlset', $built['xml']);
+        $this->assertStringContainsString('xmlns:image=', $built['xml']);
+        $this->assertSame(false, simplexml_load_string($built['xml']) === false);
+    }
+
+    public function testPagesSectionIsWellFormedUrlset(): void
+    {
+        $built = $this->buildSection('pages');
+        $this->assertStringStartsWith('<?xml version="1.0" encoding="UTF-8"?>', $built['xml']);
+        $this->assertSame(false, simplexml_load_string($built['xml']) === false);
+    }
+
+    public function testUnknownSectionReturnsWellFormedEmptyUrlset(): void
+    {
+        $built = $this->buildSection('does-not-exist');
+        $this->assertStringContainsString('<urlset', $built['xml']);
+        $this->assertStringNotContainsString('<url>', $built['xml']);
+        $this->assertSame(false, simplexml_load_string($built['xml']) === false);
+    }
+
+    public function testIndexIsSitemapIndexWithChildren(): void
+    {
+        $xml = $this->buildIndexXml([
+            ['loc' => url('/sitemap-pages.xml'), 'lastmod' => '2026-08-07T10:00:00+03:30'],
+            ['loc' => url('/sitemap-blog.xml'), 'lastmod' => '2026-08-07T10:00:00+03:30'],
+        ]);
+
+        $this->assertStringContainsString('<sitemapindex', $xml);
+        $this->assertStringContainsString('<sitemap>', $xml);
+        $this->assertStringContainsString('/sitemap-pages.xml', $xml);
+        $this->assertStringContainsString('/sitemap-blog.xml', $xml);
+        $this->assertStringContainsString('<?xml-stylesheet type="text/xsl" href="', $xml);
+        $this->assertSame(false, simplexml_load_string($xml) === false);
+    }
+
+    public function testNewsSectionIncludesRecentPostsAndIsWellFormed(): void
+    {
+        $slug = 'news-test-' . bin2hex(random_bytes(4));
+        $previous = Database::fetch("SELECT setting_value FROM settings WHERE setting_key = 'sitemap_news_enabled'");
+
+        try {
+            Database::query(
+                "INSERT INTO blog_posts (slug, title, excerpt, content, author, is_published, published_at, created_at, updated_at)
+                 VALUES (?, 'خبر تستی', 'خلاصه', 'محتوا', 'تست', 1, NOW(), NOW(), NOW())",
+                [$slug]
+            );
+            Database::query(
+                "INSERT INTO settings (setting_key, setting_value) VALUES ('sitemap_news_enabled', '1')
+                 ON DUPLICATE KEY UPDATE setting_value = '1'"
+            );
+            Settings::invalidate();
+
+            $built = $this->buildSection('news');
+            $this->assertStringStartsWith('<?xml version="1.0" encoding="UTF-8"?>', $built['xml']);
+            $this->assertStringContainsString('xmlns:news=', $built['xml']);
+            $this->assertStringContainsString(url('/blog/' . $slug), $built['xml']);
+            $this->assertStringContainsString('<news:publication>', $built['xml']);
+            $this->assertStringContainsString('<news:language>fa</news:language>', $built['xml']);
+            $this->assertSame(false, simplexml_load_string($built['xml']) === false);
+        } finally {
+            Database::query('DELETE FROM blog_posts WHERE slug = ?', [$slug]);
+            if ($previous) {
+                Database::query("UPDATE settings SET setting_value = ? WHERE setting_key = 'sitemap_news_enabled'", [$previous['setting_value']]);
+            } else {
+                Database::query("DELETE FROM settings WHERE setting_key = 'sitemap_news_enabled'");
+            }
+            Settings::invalidate();
+        }
+    }
+
+    public function testNewsSectionIsEmptyUrlsetWhenDisabled(): void
+    {
+        $previous = Database::fetch("SELECT setting_value FROM settings WHERE setting_key = 'sitemap_news_enabled'");
+
+        try {
+            Database::query(
+                "INSERT INTO settings (setting_key, setting_value) VALUES ('sitemap_news_enabled', '0')
+                 ON DUPLICATE KEY UPDATE setting_value = '0'"
+            );
+            Settings::invalidate();
+
+            $built = $this->buildSection('news');
+            $this->assertStringContainsString('<urlset', $built['xml']);
+            $this->assertStringNotContainsString('<url>', $built['xml']);
+            $this->assertSame(false, simplexml_load_string($built['xml']) === false);
+        } finally {
+            if ($previous) {
+                Database::query("UPDATE settings SET setting_value = ? WHERE setting_key = 'sitemap_news_enabled'", [$previous['setting_value']]);
+            } else {
+                Database::query("DELETE FROM settings WHERE setting_key = 'sitemap_news_enabled'");
+            }
+            Settings::invalidate();
+        }
+    }
+
+    /**
+     * @return array{xml: string, lastmod: string}
+     */
+    private function buildSection(string $name): array
+    {
+        $controller = new SitemapController();
+        $method = new ReflectionMethod(SitemapController::class, 'buildSection');
+        return $method->invoke($controller, $name);
+    }
+
+    /**
+     * @param array<int, array{loc: string, lastmod: string}> $entries
+     */
+    private function buildIndexXml(array $entries): string
+    {
+        $controller = new SitemapController();
+        $method = new ReflectionMethod(SitemapController::class, 'buildIndexXml');
+        return $method->invoke($controller, $entries);
     }
 
     /**

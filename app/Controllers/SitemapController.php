@@ -5,21 +5,32 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Database;
+use App\Services\SitemapNotifier;
+use App\Settings;
 
 /**
- * Cache-on-Demand sitemap generator.
+ * Cache-on-Demand sitemap generator (Rank Math / Yoast style).
  *
- * The first request renders the full XML from the database and writes it to
- * public/sitemap.xml. As long as that file exists the web server serves it
- * directly (see public/.htaccess `RewriteCond %{REQUEST_FILENAME} !-f`), so no
- * PHP runs on cache hits. Every content save in the admin panel deletes the
- * file (see AdminController::clearCache()) and the next request rebuilds it.
+ * /sitemap.xml is a <sitemapindex> pointing at per-type child sitemaps:
+ *
+ *   - /sitemap-pages.xml    static pages (home, shop, blog, about, ...)
+ *   - /sitemap-blog.xml     published blog posts (+ image:image)
+ *   - /sitemap-products.xml products (+ image:image for cover & gallery)
+ *   - /sitemap-courses.xml  courses (+ image:image and video blocks)
+ *   - /sitemap-news.xml     Google News sitemap (recent posts, opt-in)
+ *
+ * Every file is written to public/ and, as long as it exists, the web server
+ * serves it directly (see public/.htaccess `RewriteCond %{REQUEST_FILENAME}
+ * !-f`), so no PHP runs on cache hits. Every content save in the admin panel
+ * deletes the files (see AdminController::clearCache()) and the next request
+ * rebuilds them all in one pass. When IndexNow is enabled, rebuilding also
+ * fires a best-effort, throttled IndexNow ping (see SitemapNotifier).
  *
  * Google/Bing ignore <priority> and <changefreq>, so they are intentionally
  * not emitted. Only <loc>, <lastmod> (W3C datetime with timezone), Google
- * image-sitemap blocks (xmlns:image, only <image:loc> is allowed) and Google
- * video-sitemap blocks (xmlns:video) for courses that carry a video are
- * generated.
+ * image-sitemap blocks (xmlns:image) and video-sitemap blocks (xmlns:video)
+ * are generated. An XSL stylesheet (public/sitemap.xsl) renders the files
+ * nicely in a browser, like Yoast/Rank Math do.
  */
 class SitemapController extends BaseController
 {
@@ -39,20 +50,60 @@ class SitemapController extends BaseController
         'final-test-1785127443',
     ];
 
+    /** Child sitemap name => generator method. */
+    private const SECTION_METHODS = [
+        'pages'    => 'staticPages',
+        'blog'     => 'blogPosts',
+        'products' => 'products',
+        'courses'  => 'courses',
+    ];
+
+    private const MAX_URLS_PER_SITEMAP = 50000;
+
     private static array $lastmodColumns = [];
 
     public function index(): void
     {
         header('Content-Type: application/xml; charset=utf-8');
 
-        $xml = $this->generate();
+        $sections = array_keys(self::SECTION_METHODS);
+        if ($this->newsEnabled()) {
+            $sections[] = 'news';
+        }
 
-        @file_put_contents($this->sitemapFilePath(), $xml);
+        $entries = [];
+        foreach ($sections as $name) {
+            $built = $this->buildSection($name);
+            @file_put_contents($this->sitemapFilePath('sitemap-' . $name . '.xml'), $built['xml']);
+            $entries[] = ['loc' => url('/sitemap-' . $name . '.xml'), 'lastmod' => $built['lastmod']];
+        }
+
+        $xml = $this->buildIndexXml($entries);
+        @file_put_contents($this->sitemapFilePath('sitemap.xml'), $xml);
+
+        if ($entries !== []) {
+            SitemapNotifier::notify($this->collectLocs($sections));
+        }
 
         echo $xml;
         exit;
     }
 
+    public function section(string $name): void
+    {
+        header('Content-Type: application/xml; charset=utf-8');
+
+        $built = $this->buildSection($name);
+        @file_put_contents($this->sitemapFilePath('sitemap-' . $name . '.xml'), $built['xml']);
+
+        echo $built['xml'];
+        exit;
+    }
+
+    /**
+     * Flat merged urlset. Not served anymore (the index + children are) but
+     * kept for the test suite and as a quick all-in-one dump.
+     */
     public function generate(): string
     {
         $urls = array_merge(
@@ -65,20 +116,99 @@ class SitemapController extends BaseController
         return $this->buildXml($urls);
     }
 
-    private function sitemapFilePath(): string
+    private function sitemapFilePath(string $file): string
     {
-        return __DIR__ . '/../../public/sitemap.xml';
+        return __DIR__ . '/../../public/' . $file;
+    }
+
+    /**
+     * Builds one child sitemap and returns its XML plus the most recent
+     * lastmod found inside (used as the <sitemap><lastmod> in the index).
+     *
+     * @return array{xml: string, lastmod: string}
+     */
+    private function buildSection(string $name): array
+    {
+        if ($name === 'news') {
+            return ['xml' => $this->newsXml(), 'lastmod' => $this->lastmod(date('Y-m-d H:i:s'))];
+        }
+
+        if (!isset(self::SECTION_METHODS[$name])) {
+            return ['xml' => $this->buildXml([]), 'lastmod' => $this->lastmod(date('Y-m-d H:i:s'))];
+        }
+
+        $urls = $this->{self::SECTION_METHODS[$name]}();
+
+        $max = 0;
+        foreach ($urls as $url) {
+            if (!empty($url['lastmod'])) {
+                $ts = strtotime($url['lastmod']);
+                if ($ts !== false && $ts > $max) {
+                    $max = $ts;
+                }
+            }
+        }
+        $lastmod = $this->lastmod($max > 0 ? date('Y-m-d H:i:s', $max) : date('Y-m-d H:i:s'));
+
+        return ['xml' => $this->buildXml($urls), 'lastmod' => $lastmod];
+    }
+
+    /**
+     * All <loc> values across the given child sections, deduplicated. Used as
+     * the IndexNow payload so changed URLs are announced to Bing/Yandex.
+     *
+     * @param list<string> $sections
+     * @return list<string>
+     */
+    private function collectLocs(array $sections): array
+    {
+        $locs = [];
+        foreach ($sections as $name) {
+            $built = $this->buildSection($name);
+            if (preg_match_all('/<loc>([^<]+)<\/loc>/', $built['xml'], $matches)) {
+                foreach ($matches[1] as $loc) {
+                    $locs[] = $loc;
+                }
+            }
+        }
+
+        return array_values(array_unique($locs));
+    }
+
+    private function buildIndexXml(array $entries): string
+    {
+        $lines = [];
+        $lines[] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $lines[] = '<?xml-stylesheet type="text/xsl" href="' . e(url('/sitemap.xsl')) . '"?>';
+        $lines[] = '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+        foreach ($entries as $entry) {
+            $lines[] = '  <sitemap>';
+            $lines[] = '    <loc>' . e($entry['loc']) . '</loc>';
+            $lines[] = '    <lastmod>' . $entry['lastmod'] . '</lastmod>';
+            $lines[] = '  </sitemap>';
+        }
+
+        $lines[] = '</sitemapindex>';
+        return implode("\n", $lines) . "\n";
     }
 
     private function buildXml(array $urls): string
     {
         $lines = [];
         $lines[] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $lines[] = '<?xml-stylesheet type="text/xsl" href="' . e(url('/sitemap.xsl')) . '"?>';
         $lines[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
         $lines[] = '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"';
         $lines[] = '        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">';
 
+        $count = 0;
         foreach ($urls as $url) {
+            if ($count >= self::MAX_URLS_PER_SITEMAP) {
+                break;
+            }
+            $count++;
+
             $lines[] = '  <url>';
             $lines[] = '    <loc>' . e($url['loc']) . '</loc>';
             if (!empty($url['lastmod'])) {
@@ -108,6 +238,61 @@ class SitemapController extends BaseController
 
         $lines[] = '</urlset>';
         return implode("\n", $lines) . "\n";
+    }
+
+    private function newsXml(): string
+    {
+        if (!$this->newsEnabled()) {
+            return $this->buildXml([]);
+        }
+
+        $exclude = $this->excludeClause('slug');
+        $rows = Database::fetchAll(
+            "SELECT slug, title, robots, published_at
+             FROM blog_posts
+             WHERE is_published = 1
+               AND published_at IS NOT NULL
+               AND published_at >= DATE_SUB(NOW(), INTERVAL 48 HOUR)" . $exclude['sql'] . "
+             ORDER BY published_at DESC, id DESC
+             LIMIT 1000",
+            $exclude['params']
+        );
+
+        $brand = Settings::get('brand_name', '') ?: 'Mobaro';
+
+        $lines = [];
+        $lines[] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $lines[] = '<?xml-stylesheet type="text/xsl" href="' . e(url('/sitemap.xsl')) . '"?>';
+        $lines[] = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
+        $lines[] = '        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">';
+
+        foreach ($rows as $row) {
+            if ($this->isNoindex($row['robots'])) {
+                continue;
+            }
+
+            $date = substr((string) $row['published_at'], 0, 10);
+
+            $lines[] = '  <url>';
+            $lines[] = '    <loc>' . e(url('/blog/' . $row['slug'])) . '</loc>';
+            $lines[] = '    <news:news>';
+            $lines[] = '      <news:publication>';
+            $lines[] = '        <news:name>' . e(mb_substr($brand, 0, 50)) . '</news:name>';
+            $lines[] = '        <news:language>fa</news:language>';
+            $lines[] = '      </news:publication>';
+            $lines[] = '      <news:publication_date>' . e($date) . '</news:publication_date>';
+            $lines[] = '      <news:title>' . e(mb_substr($row['title'], 0, 100)) . '</news:title>';
+            $lines[] = '    </news:news>';
+            $lines[] = '  </url>';
+        }
+
+        $lines[] = '</urlset>';
+        return implode("\n", $lines) . "\n";
+    }
+
+    private function newsEnabled(): bool
+    {
+        return (bool) Settings::get('sitemap_news_enabled', false);
     }
 
     private function staticPages(): array
@@ -163,7 +348,7 @@ class SitemapController extends BaseController
         $exclude = $this->excludeClause('slug');
 
         $rows = Database::fetchAll(
-            "SELECT slug, robots, updated_at, published_at
+            "SELECT slug, image, robots, updated_at, published_at
              FROM blog_posts
              WHERE is_published = 1" . $exclude['sql'],
             $exclude['params']
@@ -180,6 +365,11 @@ class SitemapController extends BaseController
             $lastmod = $row['updated_at'] ?? $row['published_at'] ?? '';
             if ($lastmod !== '') {
                 $entry['lastmod'] = $this->lastmod($lastmod);
+            }
+
+            $image = $this->absoluteImage((string) ($row['image'] ?? ''));
+            if ($image !== '') {
+                $entry['images'] = [$image];
             }
 
             $result[] = $entry;
@@ -242,6 +432,11 @@ class SitemapController extends BaseController
 
             if (!empty($row['lastmod_col'])) {
                 $entry['lastmod'] = $this->lastmod($row['lastmod_col']);
+            }
+
+            $image = $this->absoluteImage((string) ($row['image'] ?? ''));
+            if ($image !== '') {
+                $entry['images'] = [$image];
             }
 
             $video = $this->videoBlock($row);

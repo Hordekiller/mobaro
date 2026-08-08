@@ -47,12 +47,23 @@ class Router
             if (preg_match($route['pattern'], $uri, $matches)) {
                 $params = array_filter($matches, fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
 
+                // Numeric path segments (id, size, width, height, seed) are
+                // always cast to int. A non-numeric value such as /product/abc
+                // becomes 0 so the controller's own "not found" branch decides
+                // (404/400) instead of a TypeError rendering a 500 page.
                 $numericNames = ['id', 'size', 'width', 'height', 'seed'];
                 foreach ($params as $k => $v) {
-                    if (in_array($k, $numericNames, true) && is_numeric($v)) {
+                    if (in_array($k, $numericNames, true)) {
                         $params[$k] = (int) $v;
                     }
                 }
+
+                // Dispatch controller actions positionally: named arguments
+                // (id: 5) would throw "Unknown named parameter" whenever a
+                // route param name differs from the method signature (e.g.
+                // ShopController::postReview(int $productId)). Parameter order
+                // always matches the route pattern, so positional is safe.
+                $params = array_values($params);
 
                 $handler = $route['handler'];
 
@@ -84,7 +95,9 @@ class Router
 
     private static function renderError(int $code): void
     {
-        http_response_code($code);
+        if (!headers_sent()) {
+            http_response_code($code);
+        }
         $settings = Settings::all();
         $seo = [];
         $title = 'موبارو';

@@ -102,13 +102,6 @@ $inWishlist = Auth::check()
                         <span class="text-4xl font-bold text-rose-500"><?= number_format((int) $product['price']) ?> تومان</span>
                     </div>
 
-                    <?php $desc = $product['description'] ?? ''; ?>
-                    <?php if (!empty($desc)) : ?>
-                    <div class="rich-description mb-8">
-                        <?= str_contains($desc, '<') ? $desc : nl2br(e($desc)) ?>
-                    </div>
-                    <?php endif; ?>
-
                     <!-- Qty + Add to Cart -->
                     <div class="flex items-center gap-4 mb-8">
                         <div class="flex items-center border-2 border-zinc-200 rounded-xl">
@@ -162,6 +155,17 @@ $inWishlist = Auth::check()
                 </div>
             </div>
         </div>
+
+        <!-- Description -->
+        <?php $desc = $product['description'] ?? ''; ?>
+        <?php if (!empty($desc)) : ?>
+        <div class="mt-12 bg-white rounded-3xl shadow-lg p-6 md:p-10">
+            <h2 class="text-2xl font-bold text-zinc-800 mb-6">توضیحات محصول</h2>
+            <div class="rich-description">
+                <?= str_contains($desc, '<') ? $desc : nl2br(e($desc)) ?>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Reviews -->
         <div class="mt-12 bg-white rounded-3xl shadow-lg p-6 md:p-10">

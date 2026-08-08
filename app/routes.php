@@ -46,6 +46,7 @@ Router::post('/shop/cart/add', [SHOP, 'addToCart']);
 Router::post('/shop/cart/update', [SHOP, 'updateCart']);
 Router::post('/shop/cart/remove', [SHOP, 'removeFromCart']);
 Router::post('/shop/cart/checkout', [SHOP, 'checkout']);
+Router::post('/shop/order/pay', [SHOP, 'retryPayment']);
 Router::post('/shop/cart/list', function () {
     header(JSON_HEADER);
     echo json_encode(['cart' => $_SESSION['cart'] ?? []]);
@@ -72,6 +73,7 @@ Router::post('/contact/send', ['App\Controllers\ContactController', 'send']);
 Router::get('/about', ['App\Controllers\AboutController', 'index']);
 
 Router::get('/sitemap.xml', ['App\Controllers\SitemapController', 'index']);
+Router::get('/sitemap-{name}.xml', ['App\Controllers\SitemapController', 'section']);
 Router::get('/robots.txt', ['App\Controllers\RobotsController', 'index']);
 Router::get('/llms.txt', ['App\Controllers\LlmsController', 'index']);
 

@@ -48,9 +48,11 @@ $title = e($settings['about_title'] ?? 'درباره ما') . ' | ' . $brandName
                     <?php if (!empty($aboutContent)) : ?>
                         <?= $aboutContent ?>
                     <?php else : ?>
+                        <?php $addr = (string) ($settings['brand_address'] ?? '');
+                        $cityLabel = $addr !== '' ? 'در ' . (mb_strpos($addr, '،') !== false ? mb_substr($addr, 0, mb_strpos($addr, '،')) : $addr) : ($settings['brand_city'] ?? 'تهران'); ?>
                     <h2 class="text-2xl font-bold text-zinc-800">سالن زیبایی <?= e($brandName) ?></h2>
                     <p class="text-zinc-600 leading-relaxed">
-                        سالن زیبایی <?= e($brandName) ?> با بیش از <?= e($settings['about_stat_years'] ?? '۱۲') ?> سال تجربه در زمینه ارائه خدمات آرایشی و زیبایی، یکی از معتبرترین سالن‌های زیبایی <?= e($settings['brand_address'] ? 'در ' . mb_substr($settings['brand_address'], 0, mb_strpos($settings['brand_address'], '،')) : ($settings['brand_city'] ?? 'تهران')) ?> می‌باشد. ما با بهره‌گیری از جدیدترین متدهای روز دنیا و بهترین مواد آرایشی، خدمات با کیفیتی را به شما عزیزان ارائه می‌دهیم.
+                        سالن زیبایی <?= e($brandName) ?> با بیش از <?= e($settings['about_stat_years'] ?? '۱۲') ?> سال تجربه در زمینه ارائه خدمات آرایشی و زیبایی، یکی از معتبرترین سالن‌های زیبایی <?= e($cityLabel) ?> می‌باشد. ما با بهره‌گیری از جدیدترین متدهای روز دنیا و بهترین مواد آرایشی، خدمات با کیفیتی را به شما عزیزان ارائه می‌دهیم.
                     </p>
                     <p class="text-zinc-600 leading-relaxed">
                         تیم حرفه‌ای ما متشکل از آرایشگران مجرب و متخصص در زمینه‌های مختلف از جمله کوتاهی و رنگ مو، کراتین تراپی، میکاپ، ناخن و مراقبت‌های پوستی، آماده خدمت‌رسانی به شما عزیزان می‌باشند.

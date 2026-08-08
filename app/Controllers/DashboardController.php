@@ -15,7 +15,7 @@ use Throwable;
 class DashboardController extends BaseController
 {
     private const VIEW_DASHBOARD = 'dashboard/index';
-    private const WHERE_ID = 'id = ?';
+    private const WHERE_ID = 'id = :id';
     private const PATH_PASSWORD = '/dashboard/password';
     private const PATH_WALLET = '/dashboard/wallet';
     private const MSG_ADDRESS_REQUIRED = 'آدرس تحویل الزامی است.';
@@ -466,7 +466,7 @@ class DashboardController extends BaseController
             return;
         }
 
-        Database::update('orders', ['status' => 'cancelled'], self::WHERE_ID, ['id' => $id]);
+        Database::update('orders', ['status' => 'cancelled', 'idempotency_key' => null], self::WHERE_ID, ['id' => $id]);
 
         $user = Auth::user();
         $this->notifyUser('order_status', $user['phone'] ?? '', [
@@ -658,13 +658,26 @@ class DashboardController extends BaseController
             'response_data' => $zpl->getLastResponse(),
         ]);
 
-        if ($result['status']) {
+        if ($result['status'] || !empty($result['already_verified'])) {
+            $refId = (string) ($result['ref_id'] ?: $authority);
+
+            $already = Database::fetch(
+                "SELECT id FROM transactions WHERE user_id = ? AND payment_id = ? AND type = 'wallet_deposit'",
+                [Auth::id(), $refId]
+            );
+            if ($already) {
+                unset($_SESSION['wallet_topup_amount'], $_SESSION['wallet_topup_authority']);
+                flash('success', 'کیف پول شما قبلاً به مبلغ ' . number_format($amount) . ' تومان افزایش یافته بود.');
+                redirect(self::PATH_WALLET);
+                return;
+            }
+
             Database::insert('transactions', [
                 'user_id' => Auth::id(),
                 'type' => 'wallet_deposit',
                 'amount' => $amount,
                 'description' => 'افزایش موجودی کیف پول',
-                'payment_id' => $result['ref_id'],
+                'payment_id' => $refId,
                 'payment_status' => 'paid',
             ]);
 

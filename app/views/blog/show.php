@@ -5,6 +5,15 @@ declare(strict_types=1);
 $brandName = $settings['brand_name'] ?? 'موبارو';
 $authorName = $post['author'] ?: 'تیم موبارو';
 $dateFormat = 'Y/m/d';
+
+$instagramUrl = trim((string) ($settings['brand_instagram'] ?? ''));
+$instagramHref = '#';
+if ($instagramUrl !== '' && $instagramUrl !== '#') {
+    $instagramHref = preg_replace('/[?&#].*$/', '', $instagramUrl);
+    if (!preg_match('#^https?://#i', $instagramHref) && !preg_match('#^(www\.)?instagram\.com/#i', $instagramHref)) {
+        $instagramHref = '#';
+    }
+}
 ?>
 <style>
     .blog-content p {
@@ -398,20 +407,17 @@ $dateFormat = 'Y/m/d';
                 </a>
             </div>
 
-            <div class="pt-3">
-                <div class="flex justify-between text-xs font-medium text-gray-400 mb-6 px-1">
-                    <div><?= e($settings['brand_instagram'] ?? '@mobarosalon') ?></div>
-                    <div class="flex items-center gap-x-3">
-                        <i class="fa-brands fa-instagram"></i>
-                        <span>اینستاگرام</span>
-                    </div>
+            <a href="<?= e($instagramHref) ?>" target="_blank" rel="noopener" aria-label="پیج اینستاگرام" class="pt-3 block">
+                <div class="flex items-center justify-center gap-x-3 text-xs font-medium text-gray-400 mb-6">
+                    <i class="fa-brands fa-instagram"></i>
+                    <span>پیج اینستاگرام</span>
                 </div>
                 <div class="grid grid-cols-3 gap-3">
                     <div class="aspect-square bg-cover rounded-2xl" style="background-image:url('/assets/images/cache/400x400_201.svg')"></div>
                     <div class="aspect-square bg-cover rounded-2xl" style="background-image:url('/assets/images/cache/400x400_211.svg')"></div>
                     <div class="aspect-square bg-cover rounded-2xl" style="background-image:url('/assets/images/cache/400x400_29.svg')"></div>
                 </div>
-            </div>
+            </a>
 
             <a href="/booking"
                class="mt-6 bg-gradient-to-br from-rose-600 to-rose-800 text-white rounded-3xl px-7 py-7 cursor-pointer active:scale-[0.97] transition-transform block">
@@ -462,14 +468,30 @@ $dateFormat = 'Y/m/d';
 
 <script>
 function shareArticle(network) {
-    let message = '';
+    var url = window.location.href;
+    var text = '<?= e($post['title']) ?> از وبلاگ <?= e($brandName) ?>';
     switch(network) {
-        case 'twitter': message = 'مقاله "<?= e($post['title']) ?>" از وبلاگ <?= e($brandName) ?> را بخوانید!'; break;
-        case 'facebook': message = 'اشتراک گذاری در فیسبوک'; break;
-        case 'instagram': message = 'این پست را در اینستاگرام ذخیره کنید'; break;
-        case 'whatsapp': message = 'مقاله را از طریق واتس‌اپ بفرستید'; break;
+        case 'twitter':
+            window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text), '_blank', 'width=620,height=520');
+            break;
+        case 'facebook':
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank', 'width=620,height=520');
+            break;
+        case 'whatsapp':
+            window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text + ' ' + url), '_blank', 'width=620,height=520');
+            break;
+        case 'instagram':
+            if (navigator.share) {
+                navigator.share({ title: text, text: text, url: url }).catch(function() {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(function() {
+                    if (typeof showToast === 'function') showToast('لینک مقاله کپی شد', 2000);
+                });
+            } else if (typeof showToast === 'function') {
+                showToast('این پست را در اینستاگرام ذخیره کنید', 2000);
+            }
+            break;
     }
-    if (typeof showToast === 'function') showToast(message, 2000);
 }
 function likeComment(commentId, el) {
     var body = 'comment_id=' + commentId + '&' + csrfParam();
