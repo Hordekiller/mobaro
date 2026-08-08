@@ -301,12 +301,24 @@ class AdminController extends BaseController
                 $searchWhere = ' WHERE ' . implode(' OR ', $conditions);
             }
         }
+        $selectClause = "SELECT * FROM {$table}";
+        if ($section === 'services') {
+            $selectClause = "SELECT s.*, (SELECT COUNT(*) FROM artist_services a_s WHERE a_s.service_id = s.id) AS artist_count FROM services s";
+        }
         $paged = $this->paginate(
-            "SELECT * FROM {$table}{$searchWhere} ORDER BY id DESC",
+            "{$selectClause}{$searchWhere} ORDER BY id DESC",
             "SELECT COUNT(*) as cnt FROM {$table}{$searchWhere}",
             $searchParams
         );
         $data['items'] = $paged['items'];
+        if ($section === 'services') {
+            foreach ($data['items'] as &$svcItem) {
+                $svcItem['artist_count'] = ((int) ($svcItem['artist_count'] ?? 0)) > 0
+                    ? (string) $svcItem['artist_count']
+                    : 'بدون آرایشگر';
+            }
+            unset($svcItem);
+        }
         $data['page'] = $paged['page'];
         $data['totalPages'] = $paged['totalPages'];
         $data['total'] = $paged['total'];
@@ -384,6 +396,7 @@ class AdminController extends BaseController
                 ['key' => 'duration', 'label' => 'مدت', 'type' => 'text'],
                 ['key' => 'description', 'label' => self::LABEL_DESCRIPTION, 'type' => 'textarea'],
                 ['key' => 'rating', 'label' => self::LABEL_RATING, 'type' => 'text'],
+                ['key' => 'artist_count', 'label' => 'آرایشگرها', 'type' => 'text', 'readonly' => true],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
             'artists' => [
@@ -891,7 +904,12 @@ class AdminController extends BaseController
 
     private function collectPostData(string $section): array
     {
-        $allowedFields = array_column($this->getColumns($section), 'key');
+        $allowedFields = [];
+        foreach ($this->getColumns($section) as $col) {
+            if (empty($col['readonly'])) {
+                $allowedFields[] = $col['key'];
+            }
+        }
         $allowedFields[] = 'description';
         $allowedFields[] = 'bio';
         $allowedFields[] = 'text';

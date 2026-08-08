@@ -708,6 +708,9 @@ declare(strict_types=1);
                                 if ($col['key'] === 'id' || in_array($col['key'], ['created_at', 'updated_at'])) {
                                     continue;
                                 }
+                                if (!empty($col['readonly'])) {
+                                    continue;
+                                }
                                 if ($section === 'hair-prices' && in_array($col['key'], ['price', 'duration_modifier', 'is_active'])) {
                                     continue;
                                 }

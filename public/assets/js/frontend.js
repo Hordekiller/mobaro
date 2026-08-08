@@ -667,6 +667,7 @@ var hairLengths = window._mobaroHairLengths || [];
                     el.onclick = function () {
                         selectedArtistId = a.id;
                         selectedServiceIndex = null;
+                        window._mobaroServicesExpanded = false;
                         renderBookingStep();
                     };
                     list.appendChild(el);
@@ -677,7 +678,8 @@ var hairLengths = window._mobaroHairLengths || [];
         if (currentBookingStep === 1) {
             var filtered = [];
             for (const svc of services) {
-                if (!svc.artist_id || svc.artist_id == selectedArtistId) {
+                var svcArtistIds = Array.isArray(svc.artist_ids) ? svc.artist_ids : (svc.artist_id ? [svc.artist_id] : []);
+                if (svcArtistIds.length === 0 || svcArtistIds.indexOf(selectedArtistId) !== -1) {
                     filtered.push(svc);
                 }
             }
@@ -714,16 +716,20 @@ var hairLengths = window._mobaroHairLengths || [];
             if (filtered.length === 0) {
                 grid.innerHTML = '<div class="col-span-2 text-center py-10 ' + textMuted + ' text-sm">این آرایشگر خدمتی ثبت نکرده است</div>';
             } else {
-                for (let i = 0; i < filtered.length; i++) {
+                var showAllServices = window._mobaroServicesExpanded === true;
+                var visibleServices = showAllServices ? filtered : filtered.slice(0, 8);
+                for (let i = 0; i < visibleServices.length; i++) {
                     (function (idx) {
-                        var svc = filtered[idx];
+                        var svc = visibleServices[idx];
                         var actualIdx = services.indexOf(svc);
                         const svcBorderCls = selectedServiceIndex === actualIdx ? selectedBorder + ' ' + selectedBg : baseBorder;
                         var el = document.createElement('div');
                         el.className = 'px-5 py-6 border ' + svcBorderCls + ' rounded-3xl cursor-pointer transition-all ' + hoverBorder + ' ' + hoverBg;
+                        var who = (Array.isArray(svc.artist_ids) && svc.artist_ids.length === 0) ? 'همه آرایشگران' : (svc.artist_name || '');
+                        var subtitle = [svc.duration, who].filter(Boolean).join(' · ');
                         el.innerHTML =
                         '<div class="font-medium ' + textPrimary + '">' + svc.title + '</div>' +
-                        '<div class="text-xs ' + textMuted + ' mt-1">' + (svc.duration || '') + (svc.artist_name ? ' · ' + svc.artist_name : '') + '</div>' +
+                        '<div class="text-xs ' + textMuted + ' mt-1">' + subtitle + '</div>' +
                         '<div class="price-display-' + svc.id + ' ' + priceClass + ' font-semibold text-xl mt-5">' + (svc.price ? svc.price.toLocaleString('fa-IR') : '') + ' تومان</div>';
                         el.onclick = function () {
                             selectedServiceIndex = actualIdx;
@@ -731,6 +737,17 @@ var hairLengths = window._mobaroHairLengths || [];
                         };
                         grid.appendChild(el);
                     })(i);
+                }
+                if (filtered.length > 8) {
+                    var serviceToggle = document.createElement('button');
+                    serviceToggle.type = 'button';
+                    serviceToggle.textContent = showAllServices ? 'نمایش کمتر' : 'مشاهده بیشتر (' + (filtered.length - 8) + ' خدمت دیگر)';
+                    serviceToggle.className = 'mt-4 w-full py-3 border ' + btnBorder + ' ' + btnText + ' rounded-2xl text-sm transition-colors';
+                    serviceToggle.onclick = function () {
+                        window._mobaroServicesExpanded = !window._mobaroServicesExpanded;
+                        renderBookingStep();
+                    };
+                    grid.insertAdjacentElement('afterend', serviceToggle);
                 }
             }
             return;
@@ -974,16 +991,31 @@ function updateServicePrice()
         }
     }
 
-    function selectService(i)
+    function selectService(id)
     {
         var services = window._mobaroServices || [];
-        if (!services[i]) {
+        var idx = -1;
+        for (var i = 0; i < services.length; i++) {
+            if (services[i].id == id) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx === -1) {
             return;
         }
-        selectedArtistId = services[i].artist_id || 0;
-        selectedServiceIndex = i;
+        var svc = services[idx];
+        selectedServiceIndex = idx;
         dynamicPrice = 0;
-        currentBookingStep = 1;
+        var svcArtistIds = Array.isArray(svc.artist_ids) ? svc.artist_ids : [];
+        if (svcArtistIds.length > 0) {
+            selectedArtistId = svcArtistIds[0];
+            currentBookingStep = 1;
+        } else {
+            selectedArtistId = 0;
+            currentBookingStep = 0;
+        }
+        window._mobaroServicesExpanded = false;
         var bookingSection = document.getElementById('booking');
         if (bookingSection) {
             bookingSection.scrollIntoView({ behavior: 'smooth' });
@@ -991,7 +1023,7 @@ function updateServicePrice()
         setTimeout(function () {
             renderBookingStep();
         }, 900);
-        showToast('خدمت "' + services[i].title + '" انتخاب شد');
+        showToast('خدمت "' + svc.title + '" انتخاب شد');
     }
 
     function finishBooking()
@@ -1100,6 +1132,7 @@ function updateServicePrice()
         selectedServiceIndex = null;
         selectedDate = '';
         selectedTime = '';
+        window._mobaroServicesExpanded = false;
     }
 
     function resetBookingForm()
@@ -1111,6 +1144,7 @@ function updateServicePrice()
         selectedTime = '';
         selectedHairLengthId = 0;
         dynamicPrice = 0;
+        window._mobaroServicesExpanded = false;
         renderBookingStep();
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Auth;
+use App\Database;
 use App\Settings;
 use App\StructuredData;
 
@@ -16,6 +17,54 @@ class BaseController
     protected function requireAdmin(): void
     {
         Auth::requireAdmin();
+    }
+
+    /**
+     * Active services for the booking flow. Each service appears exactly once
+     * (GROUP BY s.id) with its full artist mapping so the frontend can:
+     *   - show every active service (LEFT JOIN — services with no artist are
+     *     available for all artists),
+     *   - avoid duplicate cards for services shared by several artists.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function bookingServicesData(): array
+    {
+        $rows = Database::fetchAll(
+            "SELECT s.*,
+                    GROUP_CONCAT(DISTINCT a.id ORDER BY a.id) AS artist_ids,
+                    GROUP_CONCAT(DISTINCT a.name ORDER BY a.id SEPARATOR '||') AS artist_names,
+                    SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT a.avatar ORDER BY a.id), '|', 1) AS artist_avatar,
+                    EXISTS(SELECT 1 FROM service_hair_prices shp WHERE shp.service_id = s.id AND shp.is_active = 1) AS requires_hair_length
+             FROM services s
+             LEFT JOIN artist_services a_s ON s.id = a_s.service_id
+             LEFT JOIN artists a ON a_s.artist_id = a.id
+             WHERE s.is_active = 1
+             GROUP BY s.id
+             ORDER BY s.id"
+        );
+
+        return array_map(static function (array $row): array {
+            $artistIds = array_values(array_filter(array_map('intval', explode(',', (string) ($row['artist_ids'] ?? '')))));
+            $artistNames = array_values(array_filter(array_map('trim', explode('||', (string) ($row['artist_names'] ?? '')))));
+            return [
+                'id' => (int) $row['id'],
+                'title' => (string) $row['title'],
+                'description' => (string) ($row['description'] ?? ''),
+                'price' => (int) $row['price'],
+                'image' => (string) ($row['image'] ?? ''),
+                'category' => (string) ($row['category'] ?? ''),
+                'duration' => (string) ($row['duration'] ?? ''),
+                'rating' => (float) ($row['rating'] ?? 0),
+                'is_active' => (int) ($row['is_active'] ?? 1),
+                'artist_ids' => $artistIds,
+                'artist_names' => $artistNames,
+                'artist_id' => $artistIds[0] ?? null,
+                'artist_name' => $artistNames[0] ?? '',
+                'artist_avatar' => (string) ($row['artist_avatar'] ?? ''),
+                'requires_hair_length' => (int) ($row['requires_hair_length'] ?? 0) === 1,
+            ];
+        }, $rows);
     }
 
     protected function view(string $view, array $data = []): void
