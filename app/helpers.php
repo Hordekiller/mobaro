@@ -386,3 +386,12 @@ function smsOwnerPhone(): string
 {
     return normalizePhone(Settings::get('sms_admin_phone', ''));
 }
+
+function smsTemplateVariablesLabel(string $variables): string
+{
+    $decoded = json_decode($variables, true);
+    if (is_array($decoded)) {
+        return implode(', ', array_map('strval', $decoded));
+    }
+    return $variables;
+}

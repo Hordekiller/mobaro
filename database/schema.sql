@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
     google_id VARCHAR(255) DEFAULT NULL,
     google_avatar VARCHAR(255) DEFAULT NULL,
     is_active TINYINT(1) DEFAULT 1,
+    phone_verified TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_phone (phone),
@@ -166,10 +167,12 @@ CREATE TABLE IF NOT EXISTS orders (
     ref_id VARCHAR(255) DEFAULT NULL,
     coupon_code VARCHAR(100) DEFAULT NULL,
     coupon_discount DECIMAL(15,0) DEFAULT 0,
+    idempotency_key VARCHAR(64) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_user (user_id),
-    INDEX idx_status (status)
+    INDEX idx_status (status),
+    INDEX idx_orders_idempotency (idempotency_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Order Items
@@ -511,6 +514,79 @@ CREATE TABLE IF NOT EXISTS coupons (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uk_code (code),
     INDEX idx_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Blog Categories
+CREATE TABLE IF NOT EXISTS blog_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(120) NOT NULL,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    post_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_name (name),
+    UNIQUE KEY unique_slug (slug),
+    INDEX idx_sort (sort_order),
+    INDEX idx_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- SMS Logs
+CREATE TABLE IF NOT EXISTS sms_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    phone VARCHAR(20) NOT NULL,
+    message TEXT NOT NULL,
+    template_id INT DEFAULT NULL,
+    type ENUM('verify', 'bulk', 'notification') NOT NULL DEFAULT 'bulk',
+    status ENUM('sent', 'delivered', 'failed') NOT NULL DEFAULT 'sent',
+    credits DECIMAL(10,2) DEFAULT 0,
+    api_message_id VARCHAR(100) DEFAULT NULL,
+    api_response TEXT DEFAULT NULL,
+    sent_by INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_phone (phone),
+    INDEX idx_status (status),
+    INDEX idx_type (type),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- SMS Templates
+CREATE TABLE IF NOT EXISTS sms_templates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(120) DEFAULT NULL,
+    body TEXT NOT NULL,
+    variables JSON DEFAULT NULL,
+    sms_type ENUM('bulk', 'notification') NOT NULL DEFAULT 'bulk',
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_sms_templates_slug (slug)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- SMS Credits
+CREATE TABLE IF NOT EXISTS sms_credits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    amount INT NOT NULL,
+    cost DECIMAL(15,0) DEFAULT 0,
+    description VARCHAR(255) DEFAULT '',
+    payment_id VARCHAR(255) DEFAULT NULL,
+    status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Verification Codes (OTP)
+CREATE TABLE IF NOT EXISTS verification_codes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    phone VARCHAR(20) NOT NULL,
+    code VARCHAR(10) NOT NULL,
+    purpose ENUM('register', 'login', 'reset_password') NOT NULL DEFAULT 'register',
+    expires_at DATETIME NOT NULL,
+    used TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_phone_purpose (phone, purpose),
+    INDEX idx_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Default hair lengths

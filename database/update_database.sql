@@ -1,10 +1,36 @@
 -- ============================================================
--- Rozhin (mobaro.ir) — Database update (additive only)
--- Safe to run in phpMyAdmin. Adds missing columns/tables only.
--- NEVER deletes or overwrites existing data.
--- Compatible with MySQL 5.7+ / MariaDB 10.2+.
+-- Mobaro (mobaro.ir) — Upgrade v35 (update 35, v1.1.0)
+-- Additive-only, idempotent database update.
+--
+-- Covers every DB requirement of update 35 in one file, so it is
+-- safe to run on a host that has NOT applied any of the previous
+-- updates (v14 / v18 / SMS / SEO) as well as on a fully-updated one:
+--   1) blog_posts   — SEO / OG / image_alt columns
+--   2) users        — phone_verified column
+--   3) sms_* tables — sms_logs, sms_templates, sms_credits,
+--                     verification_codes + default notification templates
+--   4) sms_templates— slug column + unique index + backfill
+--   5) seo_meta     — table + default rows
+--   6) seo_meta     — robots column
+--   6a) blog_categories — table + backfill from blog_posts
+--   6b) orders      — idempotency_key column + index
+--   6c) order_items — item_type column (from update v18)
+--   7) appointments — slot_artist column, idx_slot index,
+--                     uk_slot unique key + dedupe (anti double-booking)
+--
+-- Safe to run in phpMyAdmin (MySQL 5.7+ / MariaDB 10.2+).
+-- NEVER deletes or overwrites existing data. Idempotent: safe to run
+-- multiple times.
 -- ============================================================
 
+-- Force a utf8mb4 connection for the whole file. Without this, the
+-- connection's default collation (e.g. latin1_swedish_ci on many shared
+-- hosts) mixes with the utf8mb4 literals inside slugify_fa() and the
+-- INSERT ... SELECT below, failing with: "Illegal mix of collations".
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+SET @dbname = DATABASE();
+SET @current_db = DATABASE();
 SET @dbname = DATABASE();
 SET @current_db = DATABASE();
 
@@ -175,6 +201,125 @@ INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('c
 CALL add_column_if_missing('seo_meta', 'robots', 'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');
 
 -- ------------------------------------------------------------
+-- 6a) blog_categories table (created only if absent) + backfill
+--     from existing blog posts.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS blog_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(120) NOT NULL,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    post_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_name (name),
+    UNIQUE KEY unique_slug (slug),
+    INDEX idx_sort (sort_order),
+    INDEX idx_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP FUNCTION IF EXISTS slugify_fa;
+DELIMITER $$
+CREATE FUNCTION slugify_fa(p_name VARCHAR(255) CHARACTER SET utf8mb4)
+RETURNS VARCHAR(255) CHARACTER SET utf8mb4 DETERMINISTIC
+BEGIN
+    DECLARE res VARCHAR(255) CHARACTER SET utf8mb4;
+    SET res = LOWER(CONVERT(p_name USING utf8mb4));
+    SET res = REPLACE(res, _utf8mb4'آ', _utf8mb4'a');
+    SET res = REPLACE(res, _utf8mb4'ا', _utf8mb4'a');
+    SET res = REPLACE(res, _utf8mb4'ب', _utf8mb4'b');
+    SET res = REPLACE(res, _utf8mb4'پ', _utf8mb4'p');
+    SET res = REPLACE(res, _utf8mb4'ت', _utf8mb4't');
+    SET res = REPLACE(res, _utf8mb4'ث', _utf8mb4's');
+    SET res = REPLACE(res, _utf8mb4'ج', _utf8mb4'j');
+    SET res = REPLACE(res, _utf8mb4'چ', _utf8mb4'ch');
+    SET res = REPLACE(res, _utf8mb4'ح', _utf8mb4'h');
+    SET res = REPLACE(res, _utf8mb4'خ', _utf8mb4'kh');
+    SET res = REPLACE(res, _utf8mb4'د', _utf8mb4'd');
+    SET res = REPLACE(res, _utf8mb4'ذ', _utf8mb4'z');
+    SET res = REPLACE(res, _utf8mb4'ر', _utf8mb4'r');
+    SET res = REPLACE(res, _utf8mb4'ز', _utf8mb4'z');
+    SET res = REPLACE(res, _utf8mb4'ژ', _utf8mb4'zh');
+    SET res = REPLACE(res, _utf8mb4'س', _utf8mb4's');
+    SET res = REPLACE(res, _utf8mb4'ش', _utf8mb4'sh');
+    SET res = REPLACE(res, _utf8mb4'ص', _utf8mb4's');
+    SET res = REPLACE(res, _utf8mb4'ض', _utf8mb4'z');
+    SET res = REPLACE(res, _utf8mb4'ط', _utf8mb4't');
+    SET res = REPLACE(res, _utf8mb4'ظ', _utf8mb4'z');
+    SET res = REPLACE(res, _utf8mb4'ع', _utf8mb4'');
+    SET res = REPLACE(res, _utf8mb4'غ', _utf8mb4'gh');
+    SET res = REPLACE(res, _utf8mb4'ف', _utf8mb4'f');
+    SET res = REPLACE(res, _utf8mb4'ق', _utf8mb4'gh');
+    SET res = REPLACE(res, _utf8mb4'ک', _utf8mb4'k');
+    SET res = REPLACE(res, _utf8mb4'گ', _utf8mb4'g');
+    SET res = REPLACE(res, _utf8mb4'ل', _utf8mb4'l');
+    SET res = REPLACE(res, _utf8mb4'م', _utf8mb4'm');
+    SET res = REPLACE(res, _utf8mb4'ن', _utf8mb4'n');
+    SET res = REPLACE(res, _utf8mb4'و', _utf8mb4'v');
+    SET res = REPLACE(res, _utf8mb4'ه', _utf8mb4'h');
+    SET res = REPLACE(res, _utf8mb4'ی', _utf8mb4'y');
+    SET res = REPLACE(res, _utf8mb4'ئ', _utf8mb4'e');
+    SET res = REPLACE(res, _utf8mb4'ء', _utf8mb4'');
+    SET res = REPLACE(res, _utf8mb4'ـ', _utf8mb4'');
+    SET res = REPLACE(res, _utf8mb4' ', _utf8mb4'-');
+    SET res = REPLACE(res, _utf8mb4'٫', _utf8mb4'-');
+    SET res = REPLACE(res, _utf8mb4'،', _utf8mb4'-');
+    SET res = REPLACE(res, _utf8mb4',', _utf8mb4'-');
+    SET res = REPLACE(res, _utf8mb4'.', _utf8mb4'-');
+    SET res = REPLACE(res, _utf8mb4'/', _utf8mb4'-');
+    SET res = REPLACE(res, _utf8mb4'-', _utf8mb4'-');
+    SET res = REPLACE(res, _utf8mb4'؟', _utf8mb4'');
+    SET res = REPLACE(res, _utf8mb4'?', _utf8mb4'');
+    SET res = REPLACE(res, _utf8mb4'!', _utf8mb4'');
+    SET res = REPLACE(res, _utf8mb4'،', _utf8mb4'-');
+    RETURN res;
+END$$
+DELIMITER ;
+
+-- Fix slugs that were previously written with a broken collation
+-- (e.g. 'tرند-ها2026'): rebuild them from the category name. Existing
+-- ASCII slugs are left untouched.
+UPDATE blog_categories SET slug = slugify_fa(name) WHERE slug REGEXP '[^a-z0-9-]';
+
+INSERT IGNORE INTO blog_categories (name, slug, sort_order, is_active, post_count)
+SELECT
+    p.category,
+    slugify_fa(p.category),
+    ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) - 1,
+    1,
+    COUNT(*)
+FROM blog_posts p
+WHERE p.category IS NOT NULL AND TRIM(p.category) != ''
+  AND NOT EXISTS (SELECT 1 FROM blog_categories c WHERE c.name = p.category)
+GROUP BY p.category
+ORDER BY COUNT(*) DESC;
+
+UPDATE blog_categories bc
+SET post_count = (SELECT COUNT(*) FROM blog_posts bp WHERE bp.category = bc.name);
+
+-- ------------------------------------------------------------
+-- 6b) orders — idempotency_key column + index (prevents duplicate
+--     order submissions; only added if missing).
+-- ------------------------------------------------------------
+CALL add_column_if_missing('orders', 'idempotency_key', 'ADD COLUMN `idempotency_key` VARCHAR(64) DEFAULT NULL AFTER `coupon_discount`');
+
+SET @db = @current_db;
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.STATISTICS
+                   WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'orders' AND INDEX_NAME = 'idx_orders_idempotency');
+SET @sql = IF(@idx_exists = 0,
+              'ALTER TABLE `orders` ADD INDEX `idx_orders_idempotency` (`idempotency_key`)',
+              'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ------------------------------------------------------------
+-- 6c) order_items — item_type column (from update v18; added with
+--     DEFAULT NULL so legacy rows keep using the code fallback).
+-- ------------------------------------------------------------
+CALL add_column_if_missing('order_items', 'item_type', 'ADD COLUMN `item_type` VARCHAR(20) DEFAULT NULL AFTER `quantity`');
+
+-- ------------------------------------------------------------
 -- 7) appointments — anti double-booking: slot_artist column,
 --    idx_slot index and uk_slot unique key (idempotent).
 --    Duplicate active bookings for the same slot are removed
@@ -238,9 +383,10 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- ------------------------------------------------------------
--- Cleanup helper procedure
+-- Cleanup helper procedure / function
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS add_column_if_missing;
+DROP FUNCTION IF EXISTS slugify_fa;
 
 -- ============================================================
 -- Done.

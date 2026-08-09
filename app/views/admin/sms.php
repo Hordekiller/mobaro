@@ -209,7 +209,7 @@ $search = $search ?? '';
                     </span>
                 </td>
                 <td class="py-3 px-4 text-sm text-zinc-400 max-w-xs truncate"><?= e($tpl['body']) ?></td>
-                <td class="py-3 px-4 text-sm font-mono"><?= e($tpl['variables'] ?? '') ?></td>
+                <td class="py-3 px-4 text-sm font-mono"><?= e(smsTemplateVariablesLabel($tpl['variables'] ?? '')) ?></td>
                 <td class="py-3 px-4">
                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $tpl['is_active'] ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500' ?>">
                         <?= $tpl['is_active'] ? 'فعال' : 'غیرفعال' ?>
@@ -390,7 +390,7 @@ function editTemplate(tpl) {
     document.getElementById('template-name').value = tpl.name;
     document.getElementById('template-body').value = tpl.body;
     document.getElementById('template-type').value = tpl.sms_type;
-    document.getElementById('template-variables').value = tpl.variables || '';
+    document.getElementById('template-variables').value = tpl.variables ? (Array.isArray(tpl.variables) ? tpl.variables.join(', ') : tpl.variables) : '';
     document.getElementById('template-active').checked = Number.parseInt(tpl.is_active, 10) === 1;
     document.getElementById('templateForm').scrollIntoView({ behavior: 'smooth' });
 }

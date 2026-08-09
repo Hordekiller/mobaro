@@ -42,7 +42,7 @@ class BookingController extends BaseController
 
         $this->view('booking/index', compact('services', 'artists', 'settings', 'captchaQuestion', 'captchaEnabled') + [
             'artistsJson' => json_encode(array_map(fn($a) => [
-                'id' => $a['id'],
+                'id' => (int) $a['id'],
                 'name' => $a['name'],
                 'specialty' => $a['specialty'],
                 'avatar' => $a['avatar'] ?? '',
@@ -50,7 +50,7 @@ class BookingController extends BaseController
                 'bio' => $a['bio'] ?? '',
             ], $artists), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG),
             'hairLengthsJson' => json_encode(array_map(fn($hl) => [
-                'id' => $hl['id'],
+                'id' => (int) $hl['id'],
                 'title' => $hl['title'],
                 'min_cm' => $hl['min_cm'],
                 'max_cm' => $hl['max_cm'],

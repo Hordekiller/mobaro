@@ -875,6 +875,8 @@ class AdminController extends BaseController
             'users' => $this->saveUsers($id, $data, $table),
             'artists' => $this->saveArtists($id, $data, $table),
             'hair-prices' => $this->saveHairPrices($id),
+            'transactions' => $this->saveTransactions($id, $data, $table),
+            'reviews' => $this->saveReviews($id, $data, $table),
             default => false,
         };
         if ($handled) {
@@ -889,6 +891,13 @@ class AdminController extends BaseController
             'blog' => $this->handleBlogContent($id, $data),
             default => null,
         };
+
+        if ($data === []) {
+            $this->clearCache($section);
+            flash('error', 'فیلدی برای ذخیره ارسال نشده است.');
+            redirect('/admin/' . $section);
+            return;
+        }
 
         if ($id) {
             Database::update($table, $data, self::WHERE_ID, ['id' => $id]);
@@ -1387,6 +1396,57 @@ class AdminController extends BaseController
         return true;
     }
 
+    private function saveTransactions(int $id, array $data, string $table): bool
+    {
+        if (!$id) {
+            flash('error', 'ثبت تراکنش از پنل مدیریت پشتیبانی نمی‌شود.');
+            redirect('/admin/transactions');
+            return true;
+        }
+
+        $updateData = [];
+        if (isset($data['payment_status'])) {
+            $updateData['payment_status'] = (string) $data['payment_status'];
+        }
+        if (isset($data['description'])) {
+            $updateData['description'] = (string) $data['description'];
+        }
+        if (!empty($updateData)) {
+            Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+        }
+        $this->clearCache('transactions');
+        flash('success', 'تراکنش با موفقیت به‌روزرسانی شد.');
+        redirect('/admin/transactions');
+        return true;
+    }
+
+    private function saveReviews(int $id, array $data, string $table): bool
+    {
+        if (!$id) {
+            flash('error', 'ثبت نظر از پنل مدیریت پشتیبانی نمی‌شود.');
+            redirect('/admin/reviews');
+            return true;
+        }
+
+        $updateData = [];
+        if (isset($data['text'])) {
+            $updateData['text'] = (string) $data['text'];
+        }
+        if (isset($data['user_name'])) {
+            $updateData['user_name'] = (string) $data['user_name'];
+        }
+        if (isset($data['rating'])) {
+            $updateData['rating'] = max(0, min(5, (float) $data['rating']));
+        }
+        if (!empty($updateData)) {
+            Database::update($table, $updateData, self::WHERE_ID, ['id' => $id]);
+        }
+        $this->clearCache('reviews');
+        flash('success', 'نظر با موفقیت به‌روزرسانی شد.');
+        redirect('/admin/reviews');
+        return true;
+    }
+
     private function saveArtists(int $id, array $data, string $table): bool
     {
         Database::beginTransaction();
@@ -1569,6 +1629,10 @@ class AdminController extends BaseController
 
                 $htmlKeys = ['about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'hero_customers_text', 'blog_sidebar_about', 'academy_instructor_bio'];
 
+        $enumKeys = [
+            'tinymce_source' => ['local', 'cdn'],
+        ];
+
         $upserts = [];
         $upsertParams = [];
         $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'og_image', 'about_image'];
@@ -1579,7 +1643,14 @@ class AdminController extends BaseController
                 if (in_array($settingKey, $imageUploadKeys)) {
                     continue;
                 }
-                $value = in_array($settingKey, $htmlKeys) ? $value : sanitize($value);
+                if (isset($enumKeys[$settingKey])) {
+                    if (!in_array($value, $enumKeys[$settingKey], true)) {
+                        continue;
+                    }
+                    $value = sanitize($value);
+                } else {
+                    $value = in_array($settingKey, $htmlKeys) ? $value : sanitize($value);
+                }
                 $upserts[] = self::PLACEHOLDER_PAIR;
                 $upsertParams[] = $settingKey;
                 $upsertParams[] = $value;
@@ -2344,7 +2415,7 @@ class AdminController extends BaseController
         $name = trim($_POST['name'] ?? '');
         $body = trim($_POST['body'] ?? '');
         $smsType = $_POST['sms_type'] ?? 'bulk';
-        $variables = trim($_POST['variables'] ?? '');
+        $variablesRaw = trim($_POST['variables'] ?? '');
 
         if (empty($name) || empty($body)) {
             flash('error', 'نام و متن قالب الزامی است.');
@@ -2354,6 +2425,12 @@ class AdminController extends BaseController
 
         $slug = $this->uniqueTemplateSlug(slugify($name), $id);
         $smsType = in_array($smsType, ['bulk', 'notification']) ? $smsType : 'bulk';
+
+        $variables = null;
+        if ($variablesRaw !== '') {
+            $parsed = array_values(array_filter(array_map('trim', explode(',', $variablesRaw)), fn($v) => $v !== ''));
+            $variables = json_encode($parsed, JSON_UNESCAPED_UNICODE);
+        }
 
         $data = [
             'name' => sanitize($name),

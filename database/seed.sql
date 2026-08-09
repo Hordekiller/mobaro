@@ -124,3 +124,11 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('color_gold', '#D4AF37'),
 ('hero_title', 'زیبایی را با ما تجربه کنید'),
 ('hero_description', 'سالن زیبایی موبارو با بهترین آرایشگران و محصولات حرفه‌ای در خدمت شماست. رزرو آنلاین، آموزش‌های رایگان و فروشگاه آنلاین.');
+
+-- SMS notification templates
+INSERT INTO sms_templates (name, slug, body, variables, sms_type, is_active) VALUES
+('نوبت جدید', 'booking_new', 'نوبت جدید ثبت شد: {Service} | تاریخ: {Date} | ساعت: {Time} | مشتری: {Name} ({Phone})', '["Service","Date","Time","Name","Phone"]', 'notification', 1),
+('رسید سفارش', 'order_receipt', 'سفارش {Code} شما با موفقیت ثبت و پرداخت شد. مبلغ: {Total}', '["Code","Total"]', 'notification', 1),
+('سفارش جدید', 'order_new', 'سفارش جدید {Code} به مبلغ {Total} توسط {Name} ثبت شد.', '["Code","Total","Name"]', 'notification', 1),
+('وضعیت سفارش', 'order_status', 'وضعیت سفارش {Code} شما: {Status}', '["Code","Status"]', 'notification', 1),
+('وضعیت نوبت', 'booking_status', 'وضعیت نوبت شما در تاریخ {Date} ساعت {Time}: {Status}', '["Date","Time","Status"]', 'notification', 1);

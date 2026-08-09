@@ -43,7 +43,7 @@ use App\Database;
 
 <?php
 $artistsJson = json_encode(array_map(fn($a) => [
-    'id' => $a['id'],
+    'id' => (int) $a['id'],
     'name' => $a['name'],
     'specialty' => $a['specialty'],
     'avatar' => $a['avatar'] ?? '',
@@ -56,7 +56,7 @@ $capQ = $captchaQuestion ?? Captcha::store();
 <script>
 window._mobaroArtists = <?= $artistsJson ?>;
 window._mobaroHairLengths = <?= json_encode(array_map(fn($hl) => [
-    'id' => $hl['id'],
+    'id' => (int) $hl['id'],
     'title' => $hl['title'],
     'min_cm' => $hl['min_cm'],
     'max_cm' => $hl['max_cm'],

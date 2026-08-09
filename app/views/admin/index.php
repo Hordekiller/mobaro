@@ -234,8 +234,17 @@ declare(strict_types=1);
                 'آنالیتیکس' => [
                     'analytics_gtag_id' => 'شناسه Google Analytics 4 (مثال: G-XXXXXXXXXX)',
                 ],
+                'ویرایشگر متن' => [
+                    'tinymce_source' => 'روش بارگذاری ویرایشگر متن (برای وبلاگ، محصولات و آکادمی)',
+                ],
             ];
             $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
+            $selectKeys = [
+                'tinymce_source' => [
+                    'local' => 'بارگذاری از داخل سایت (لوکال)',
+                    'cdn' => 'بارگذاری از CDN (ابری)',
+                ],
+            ];
             ?>
             <?php
             $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'about_image'];
@@ -274,6 +283,12 @@ declare(strict_types=1);
                                     </label>
                                     <?php endif; ?>
                                 </div>
+                            <?php elseif (isset($selectKeys[$key])) : ?>
+                                <select id="setting_<?= e($key) ?>" name="setting_<?= e($key) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                    <?php foreach ($selectKeys[$key] as $optVal => $optLabel) : ?>
+                                    <option value="<?= e($optVal) ?>" <?= ($value === $optVal || ($value === '' && $optVal === 'cdn')) ? 'selected' : '' ?>><?= e($optLabel) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             <?php else : ?>
                                 <input id="setting_<?= e($key) ?>" type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <?php endif; ?>
@@ -1111,8 +1126,15 @@ function closeItemModal(e) {
 <?php endif; ?>
 
 <?php if (in_array($section, ['blog', 'products', 'courses'])) : ?>
-    <?php $tinymceKey = \App\Config::get('tinymce.api_key', ''); ?>
-    <?php if ($tinymceKey) : ?>
+    <?php
+    $tinymceKey = \App\Config::get('tinymce.api_key', '');
+    $tinymceSource = $settings['tinymce_source'] ?? 'cdn';
+    $tinymceLocalExists = is_file(__DIR__ . '/../../../public/assets/libs/tinymce/tinymce.min.js');
+    $useLocalTinyMce = ($tinymceSource === 'local' && $tinymceLocalExists);
+    ?>
+    <?php if ($useLocalTinyMce) : ?>
+<script src="/assets/libs/tinymce/tinymce.min.js"></script>
+    <?php elseif ($tinymceKey) : ?>
 <script src="https://cdn.tiny.cloud/1/<?= e($tinymceKey) ?>/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <?php else : ?>
 <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" integrity="sha384-Ovv1ZPEkpW4ElBKDKaEIPkNfTTadFpifFwNJOBnuStg0PQ0RBln5Lsf9AI8BsCmx" crossorigin="anonymous"></script>
