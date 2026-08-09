@@ -1301,6 +1301,17 @@ class AdminController extends BaseController
             $updateData = [];
             if (isset($data['status'])) {
                 $updateData['status'] = $data['status'];
+                // Keep slot_artist in sync with status so cancelled rows do not
+                // block re-booking the same slot (uk_slot skips NULL).
+                if ($data['status'] === 'cancelled') {
+                    $updateData['slot_artist'] = null;
+                } else {
+                    $apt = Database::fetch(
+                        "SELECT artist_id FROM appointments WHERE id = ?",
+                        [$id]
+                    );
+                    $updateData['slot_artist'] = $apt['artist_id'] ?? null;
+                }
             }
             if (isset($data['notes'])) {
                 $updateData['notes'] = $data['notes'];

@@ -208,10 +208,112 @@ class AuthController extends BaseController
             return;
         }
 
-        RateLimiter::recordAttempt('forgot_' . $phoneKey, false);
+        $user = Database::fetch(
+            "SELECT id FROM users WHERE phone = ? AND (is_active IS NULL OR is_active = 1)",
+            [$phoneKey]
+        );
 
-        flash('success', 'اگر این شماره در سیستم ثبت شده باشد، لطفاً با شماره تماس سالن هماهنگ کنید.');
-        $_SESSION['captcha_question'] = Captcha::store();
+        if (!$user) {
+            RateLimiter::recordAttempt('forgot_' . $phoneKey, false);
+            flash('success', 'اگر این شماره در سیستم ثبت شده باشد، لطفاً با شماره تماس سالن هماهنگ کنید.');
+            $_SESSION['captcha_question'] = Captcha::store();
+            redirect(self::PATH_LOGIN);
+            return;
+        }
+
+        $smsService = new SmsService();
+        if (!$smsService->isConfigured()) {
+            RateLimiter::recordAttempt('forgot_' . $phoneKey, false);
+            flash('success', 'اگر این شماره در سیستم ثبت شده باشد، لطفاً با شماره تماس سالن هماهنگ کنید.');
+            $_SESSION['captcha_question'] = Captcha::store();
+            redirect(self::PATH_LOGIN);
+            return;
+        }
+
+        $code = $smsService->createVerificationCode($phoneKey, 'reset_password');
+        if (!$code) {
+            RateLimiter::recordAttempt('forgot_' . $phoneKey, false);
+            flash('error', 'خطا در ارسال کد تأیید. لطفاً دوباره تلاش کنید.');
+            $_SESSION['captcha_question'] = Captcha::store();
+            redirect(self::PATH_LOGIN);
+            return;
+        }
+
+        RateLimiter::recordAttempt('forgot_' . $phoneKey, true);
+        $_SESSION['reset_phone'] = $phoneKey;
+
+        flash('success', 'کد تأیید به شماره ' . $phoneKey . ' ارسال شد.');
+        redirect('/reset-password?phone=' . urlencode($phoneKey));
+    }
+
+    public function showResetPassword(): void
+    {
+        if (Auth::check()) {
+            redirect(self::PATH_DASHBOARD);
+        }
+
+        $phone = $_GET['phone'] ?? $_SESSION['reset_phone'] ?? '';
+        $phone = normalizePhone($phone);
+
+        if ($phone === '') {
+            flash('error', 'درخواست نامعتبر است. لطفاً دوباره تلاش کنید.');
+            redirect(self::PATH_LOGIN);
+            return;
+        }
+
+        $_SESSION['reset_phone'] = $phone;
+        $this->view('auth/reset-password', ['phone' => $phone]);
+    }
+
+    public function resetPassword(): void
+    {
+        if (Auth::check()) {
+            redirect(self::PATH_DASHBOARD);
+            return;
+        }
+
+        $this->verifyCsrf();
+
+        $phone = $_POST['phone'] ?? $_SESSION['reset_phone'] ?? '';
+        $phone = normalizePhone($phone);
+        $code = trim($_POST['code'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+        if ($phone === '' || $code === '' || $password === '') {
+            $this->redirectWithErrors('/reset-password?phone=' . urlencode($phone), ['code' => 'همه موارد را کامل کنید.']);
+            return;
+        }
+
+        if (mb_strlen($password) < 6) {
+            $this->redirectWithErrors('/reset-password?phone=' . urlencode($phone), ['password' => 'رمز عبور باید حداقل ۶ کاراکتر باشد.']);
+            return;
+        }
+
+        if ($password !== $passwordConfirm) {
+            $this->redirectWithErrors('/reset-password?phone=' . urlencode($phone), ['password_confirm' => 'تکرار رمز عبور مطابقت ندارد.']);
+            return;
+        }
+
+        $smsService = new SmsService();
+        if ($smsService->isOtpLocked($phone, 'reset_password')) {
+            flash('error', 'تعداد تلاش‌های ناموفق بیش از حد مجاز است. لطفاً ۱۰ دقیقه دیگر دوباره تلاش کنید.');
+            redirect('/reset-password?phone=' . urlencode($phone));
+            return;
+        }
+
+        if (!$smsService->verifyCode($phone, $code, 'reset_password')) {
+            $this->redirectWithErrors('/reset-password?phone=' . urlencode($phone), ['code' => 'کد تأیید نادرست یا منقضی شده است.']);
+            return;
+        }
+
+        Database::query(
+            "UPDATE users SET password = ? WHERE phone = ?",
+            [Auth::hash($password), $phone]
+        );
+
+        unset($_SESSION['reset_phone']);
+        flash('success', 'رمز عبور شما با موفقیت تغییر کرد. اکنون وارد شوید.');
         redirect(self::PATH_LOGIN);
     }
 
@@ -239,6 +341,12 @@ class AuthController extends BaseController
 
         if (empty($code)) {
             flash('error', 'کد تأیید گوگل دریافت نشد.');
+            redirect(self::PATH_LOGIN);
+            return;
+        }
+
+        if (!GoogleAuth::validateState($_GET['state'] ?? null)) {
+            flash('error', 'درخواست ورود با گوگل نامعتبر است. لطفاً دوباره تلاش کنید.');
             redirect(self::PATH_LOGIN);
             return;
         }
@@ -323,6 +431,12 @@ class AuthController extends BaseController
         }
 
         $smsService = new SmsService();
+        if ($smsService->isOtpLocked($phone, 'register')) {
+            flash('error', 'تعداد تلاش‌های ناموفق بیش از حد مجاز است. لطفاً ۱۰ دقیقه دیگر دوباره تلاش کنید.');
+            redirect('/verify-otp?phone=' . urlencode($phone));
+            return;
+        }
+
         $valid = $smsService->verifyCode($phone, $code, 'register');
 
         if (!$valid) {

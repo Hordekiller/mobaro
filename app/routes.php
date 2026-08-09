@@ -14,6 +14,8 @@ Router::get('/verify-otp', [AUTH, 'showVerifyOtp']);
 Router::post('/verify-otp', [AUTH, 'verifyOtp']);
 Router::get('/logout', [AUTH, 'logout']);
 Router::post('/auth/forgot', [AUTH, 'forgot']);
+Router::get('/reset-password', [AUTH, 'showResetPassword']);
+Router::post('/reset-password', [AUTH, 'resetPassword']);
 Router::get('/auth/google', [AUTH, 'googleRedirect']);
 Router::get('/auth/google/callback', [AUTH, 'googleCallback']);
 

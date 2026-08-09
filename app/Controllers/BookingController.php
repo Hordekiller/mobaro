@@ -13,6 +13,7 @@ use App\Auth;
 use App\Services\SmsService;
 use DateTime;
 use DateTimeZone;
+use PDOException;
 use Throwable;
 
 class BookingController extends BaseController
@@ -174,7 +175,7 @@ class BookingController extends BaseController
         }
 
         $existing = Database::fetch(
-            "SELECT id FROM appointments WHERE appointment_date = ? AND appointment_time = ? AND artist_id = ? AND status != 'cancelled'",
+            "SELECT id FROM appointments WHERE appointment_date = ? AND appointment_time = ? AND artist_id <=> ? AND status != 'cancelled'",
             [$date, $time, $artistId ?: null]
         );
         if ($existing) {
@@ -192,17 +193,41 @@ class BookingController extends BaseController
             $notes = $notes ? $notes . ' | ' . $durationNote : $durationNote;
         }
 
-        $appointmentId = Database::insert('appointments', [
+        $appointmentData = [
             'user_id' => Auth::id(),
             'service_id' => $serviceId,
             'artist_id' => $artistId ?: null,
+            'slot_artist' => $artistId ?: null,
             'hair_length_id' => $hairLengthId ?: null,
             'appointment_date' => $date,
             'appointment_time' => $time,
             'price' => $finalPrice,
             'status' => 'pending',
             'notes' => $notes ?: null,
-        ]);
+        ];
+
+        Database::beginTransaction();
+        try {
+            $conflict = Database::fetch(
+                "SELECT id FROM appointments WHERE appointment_date = ? AND appointment_time = ? AND artist_id <=> ? AND status != 'cancelled' FOR UPDATE",
+                [$date, $time, $artistId ?: null]
+            );
+            if ($conflict) {
+                Database::rollback();
+                $this->json(['error' => 'متأسفانه این زمان توسط شخص دیگری رزرو شده است.'], 409);
+                return;
+            }
+
+            $appointmentId = Database::insert('appointments', $appointmentData);
+            Database::commit();
+        } catch (PDOException $e) {
+            Database::rollback();
+            if ($e->errorInfo[1] === 1062) {
+                $this->json(['error' => 'متأسفانه این زمان توسط شخص دیگری رزرو شده است.'], 409);
+                return;
+            }
+            throw $e;
+        }
 
         $this->notifyNewBooking($appointmentId, $service['title'], $date, $time);
 

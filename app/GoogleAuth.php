@@ -40,6 +40,9 @@ class GoogleAuth
 
     public static function getAuthUrl(): string
     {
+        $state = bin2hex(random_bytes(16));
+        $_SESSION['google_oauth_state'] = $state;
+
         $params = http_build_query([
             'client_id' => self::getClientId(),
             'redirect_uri' => self::getRedirectUri(),
@@ -47,8 +50,21 @@ class GoogleAuth
             'scope' => 'openid email profile',
             'access_type' => 'offline',
             'prompt' => 'select_account',
+            'state' => $state,
         ]);
         return self::$authUrl . '?' . $params;
+    }
+
+    public static function validateState(?string $state): bool
+    {
+        $expected = $_SESSION['google_oauth_state'] ?? '';
+        unset($_SESSION['google_oauth_state']);
+
+        if ($expected === '' || $state === null || $state === '') {
+            return false;
+        }
+
+        return hash_equals($expected, $state);
     }
 
     public static function exchangeCode(string $code): ?array

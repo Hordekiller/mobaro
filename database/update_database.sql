@@ -48,35 +48,12 @@ CALL add_column_if_missing('blog_posts', 'og_image',         'ADD COLUMN `og_ima
 CALL add_column_if_missing('blog_posts', 'robots',           'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');
 
 -- ------------------------------------------------------------
--- 2) seo_meta — robots column
--- ------------------------------------------------------------
-CALL add_column_if_missing('seo_meta', 'robots', 'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');
-
--- ------------------------------------------------------------
--- 3) users — phone_verified column
+-- 2) users — phone_verified column
 -- ------------------------------------------------------------
 CALL add_column_if_missing('users', 'phone_verified', 'ADD COLUMN `phone_verified` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_active`');
 
 -- ------------------------------------------------------------
--- 4) sms_templates — slug column + unique index
--- ------------------------------------------------------------
-CALL add_column_if_missing('sms_templates', 'slug', 'ADD COLUMN `slug` VARCHAR(120) DEFAULT NULL AFTER `name`');
-
-SET @db = @current_db;
-SET @idx_exists = (SELECT COUNT(*) FROM information_schema.STATISTICS
-                   WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sms_templates' AND INDEX_NAME = 'uq_sms_templates_slug');
-SET @sql = IF(@idx_exists = 0,
-              'ALTER TABLE `sms_templates` ADD UNIQUE KEY `uq_sms_templates_slug` (`slug`)',
-              'SELECT 1');
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
--- Backfill slugs for existing templates (does not overwrite existing slugs)
-UPDATE sms_templates SET slug = CONCAT('tpl-', id) WHERE slug IS NULL OR TRIM(slug) = '';
-
--- ------------------------------------------------------------
--- 5) Missing SMS tables (created only if absent)
+-- 3) Missing SMS tables (created only if absent)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS sms_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -154,7 +131,27 @@ SELECT * FROM (SELECT 'وضعیت نوبت', 'booking_status', 'وضعیت نو�
 WHERE NOT EXISTS (SELECT 1 FROM sms_templates WHERE slug = 'booking_status');
 
 -- ------------------------------------------------------------
--- 6) seo_meta table (created only if absent) + default rows
+-- 4) sms_templates — slug column + unique index
+--    (runs after the tables above are created, so it also works
+--    from scratch on a fresh install)
+-- ------------------------------------------------------------
+CALL add_column_if_missing('sms_templates', 'slug', 'ADD COLUMN `slug` VARCHAR(120) DEFAULT NULL AFTER `name`');
+
+SET @db = @current_db;
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.STATISTICS
+                   WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sms_templates' AND INDEX_NAME = 'uq_sms_templates_slug');
+SET @sql = IF(@idx_exists = 0,
+              'ALTER TABLE `sms_templates` ADD UNIQUE KEY `uq_sms_templates_slug` (`slug`)',
+              'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Backfill slugs for existing templates (does not overwrite existing slugs)
+UPDATE sms_templates SET slug = CONCAT('tpl-', id) WHERE slug IS NULL OR TRIM(slug) = '';
+
+-- ------------------------------------------------------------
+-- 5) seo_meta table (created only if absent) + default rows
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS seo_meta (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -171,6 +168,74 @@ CREATE TABLE IF NOT EXISTS seo_meta (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('contact'), ('about'), ('academy');
+
+-- ------------------------------------------------------------
+-- 6) seo_meta — robots column
+-- ------------------------------------------------------------
+CALL add_column_if_missing('seo_meta', 'robots', 'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');
+
+-- ------------------------------------------------------------
+-- 7) appointments — anti double-booking: slot_artist column,
+--    idx_slot index and uk_slot unique key (idempotent).
+--    Duplicate active bookings for the same slot are removed
+--    keeping the earliest row only (prevents double booking).
+--    slot_artist is a plain column (NOT a generated column):
+--    MySQL/MariaDB reject a STORED generated column that
+--    references a column having a foreign key constraint.
+-- ------------------------------------------------------------
+SET @has_slot_artist = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = @current_db AND TABLE_NAME = 'appointments' AND COLUMN_NAME = 'slot_artist'
+);
+
+SET @sql = IF(@has_slot_artist = 0,
+    'ALTER TABLE `appointments` ADD COLUMN `slot_artist` INT DEFAULT NULL AFTER `status`',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Backfill slot_artist for existing active rows (idempotent: rows whose
+-- slot_artist is already set or that are cancelled are left untouched).
+UPDATE `appointments`
+SET `slot_artist` = `artist_id`
+WHERE `slot_artist` IS NULL AND `status` != 'cancelled';
+
+-- Remove duplicate *active* bookings for the same slot (keep the earliest id)
+SET @slot_key_exists = (
+    SELECT COUNT(*) FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = @current_db AND TABLE_NAME = 'appointments' AND INDEX_NAME = 'uk_slot'
+);
+SET @dedupe = IF(@slot_key_exists = 0,
+    'DELETE a FROM appointments a INNER JOIN appointments b
+       ON a.appointment_date = b.appointment_date
+      AND a.appointment_time = b.appointment_time
+      AND a.slot_artist <=> b.slot_artist
+      AND a.slot_artist IS NOT NULL
+      AND a.status != ''cancelled''
+      AND a.id > b.id',
+    'SELECT 1');
+PREPARE stmt FROM @dedupe;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_slot = (
+    SELECT COUNT(*) FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = @current_db AND TABLE_NAME = 'appointments' AND INDEX_NAME = 'idx_slot'
+);
+SET @sql = IF(@idx_slot = 0,
+    'ALTER TABLE `appointments` ADD INDEX `idx_slot` (`appointment_date`, `appointment_time`, `artist_id`)',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(@slot_key_exists = 0,
+    'ALTER TABLE `appointments` ADD UNIQUE KEY `uk_slot` (`appointment_date`, `appointment_time`, `slot_artist`)',
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ------------------------------------------------------------
 -- Cleanup helper procedure

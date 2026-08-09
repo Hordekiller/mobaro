@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-$title = 'تغییر رمز عبور | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
+$title = 'بازیابی رمز عبور | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
 <div class="min-h-screen bg-gradient-to-br from-rose-50 to-white flex items-center justify-center px-4">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
             <div class="w-16 h-16 bg-rose-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
                 <i class="fa-solid fa-key text-rose-600 text-2xl"></i>
             </div>
-            <h1 class="text-2xl font-bold text-zinc-800">تغییر رمز عبور</h1>
-            <p class="text-zinc-500 mt-2">رمز عبور جدید خود را وارد کنید</p>
+            <h1 class="text-2xl font-bold text-zinc-800">بازیابی رمز عبور</h1>
+            <p class="text-zinc-500 mt-2">کد تأیید ارسال شده به <strong class="text-zinc-700"><?= e($phone ?? '') ?></strong> را وارد کنید</p>
         </div>
 
         <?php if ($errors = $_SESSION['flash_errors'] ?? []) : ?>
@@ -23,13 +23,21 @@ $title = 'تغییر رمز عبور | ' . ($settings['brand_name'] ?? 'موبا
         endif; ?>
 
         <form method="POST" action="/reset-password" class="bg-white rounded-3xl shadow-xl p-8">
-            <input type="hidden" name="_csrf" value="<?= e($_SESSION['_csrf'] ?? '') ?>">
+            <?= csrf() ?>
+            <input type="hidden" name="phone" value="<?= e($phone ?? '') ?>">
+
+            <div class="mb-4">
+                <label for="reset-code" class="block text-sm font-semibold text-zinc-700 mb-2">کد تأیید</label>
+                <input id="reset-code" type="text" name="code" maxlength="5" inputmode="numeric" autocomplete="one-time-code"
+                    class="w-full text-center text-2xl tracking-[0.5em] font-mono px-4 py-4 border-2 border-zinc-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
+                    placeholder="-----" required autofocus>
+            </div>
 
             <div class="mb-4">
                 <label for="reset-password" class="block text-sm font-semibold text-zinc-700 mb-2">رمز عبور جدید</label>
                 <input id="reset-password" type="password" name="password" minlength="6"
                     class="w-full px-4 py-3 border-2 border-zinc-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all"
-                    placeholder حداقل ۶ کاراکتر" required>
+                    placeholder="حداقل ۶ کاراکتر" required>
             </div>
 
             <div class="mb-6">
@@ -40,7 +48,7 @@ $title = 'تغییر رمز عبور | ' . ($settings['brand_name'] ?? 'موبا
             </div>
 
             <button type="submit" class="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold transition-all">
-                <i class="fa-solid fa-check ml-2"></i>تغییر رمز عبور
+                <i class="fa-solid fa-check ml-2"></i>بازیابی رمز عبور
             </button>
 
             <div class="text-center mt-6">

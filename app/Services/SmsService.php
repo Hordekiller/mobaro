@@ -8,6 +8,7 @@ use App\Settings;
 use App\Config;
 use App\Database;
 use App\Auth;
+use App\RateLimiter;
 use Throwable;
 
 class SmsService
@@ -16,6 +17,8 @@ class SmsService
     private const MSG_API_KEY_MISSING = 'کلید API تنظیم نشده است.';
     private const MSG_NOT_CONFIGURED = 'سرویس پیامک فعال نیست.';
     private const BULK_MAX = 100;
+    private const OTP_MAX_ATTEMPTS = 5;
+    private const OTP_LOCK_MINUTES = 10;
 
     private string $apiKey;
     private int $templateId;
@@ -297,6 +300,13 @@ class SmsService
     public function verifyCode(string $phone, string $code, string $purpose = 'register'): bool
     {
         try {
+            RateLimiter::init();
+            RateLimiter::cleanup();
+            $rateKey = 'otp_' . $purpose . '_' . $phone;
+            if (RateLimiter::isLocked($rateKey, self::OTP_MAX_ATTEMPTS, self::OTP_LOCK_MINUTES)) {
+                return false;
+            }
+
             $record = Database::fetch(
                 "SELECT id FROM verification_codes
                  WHERE phone = ? AND code = ? AND purpose = ? AND used = 0 AND expires_at > NOW()
@@ -305,8 +315,11 @@ class SmsService
             );
 
             if (!$record) {
+                RateLimiter::recordAttempt($rateKey, false);
                 return false;
             }
+
+            RateLimiter::recordAttempt($rateKey, true);
 
             Database::query(
                 "UPDATE verification_codes SET used = 1 WHERE id = ?",
@@ -323,6 +336,20 @@ class SmsService
             return true;
         } catch (Throwable $e) {
             error_log("OTP verification failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function isOtpLocked(string $phone, string $purpose = 'register'): bool
+    {
+        try {
+            RateLimiter::init();
+            return RateLimiter::isLocked(
+                'otp_' . $purpose . '_' . $phone,
+                self::OTP_MAX_ATTEMPTS,
+                self::OTP_LOCK_MINUTES
+            );
+        } catch (Throwable $e) {
             return false;
         }
     }

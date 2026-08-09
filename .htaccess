@@ -8,4 +8,8 @@ RewriteEngine On
 
 RewriteRule ^(?:app|database|storage|tests|vendor|analysis-output|skills|_do_not_upload)(?:/|$) - [F,L,NC]
 RewriteRule ^(?:README(?:\.[A-Za-z0-9_-]+)?|REPORT-[^/]+\.md)$ - [F,L,NC]
+
+# Allow the installer before the front-controller rewrite
+RewriteRule ^install\.php$ - [L]
+
 RewriteRule ^(.*)$ public/$1 [L]

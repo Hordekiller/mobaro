@@ -87,13 +87,21 @@ CREATE TABLE IF NOT EXISTS appointments (
     status ENUM('confirmed', 'pending', 'done', 'cancelled') NOT NULL DEFAULT 'pending',
     notes TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Set to artist_id on booking; NULLed by the app when the appointment is
+    -- cancelled so cancelled rows do not block re-booking the same slot
+    -- (uk_slot applies to active rows only). A plain column is used instead of
+    -- a generated column for MySQL/MariaDB compatibility (a STORED generated
+    -- column cannot reference a column that has a foreign key constraint).
+    slot_artist INT DEFAULT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL,
     FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE SET NULL,
     FOREIGN KEY (hair_length_id) REFERENCES hair_lengths(id) ON DELETE SET NULL,
     INDEX idx_user (user_id),
     INDEX idx_date (appointment_date),
-    INDEX idx_status (status)
+    INDEX idx_status (status),
+    INDEX idx_slot (appointment_date, appointment_time, artist_id),
+    UNIQUE KEY uk_slot (appointment_date, appointment_time, slot_artist)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Service Hair Prices
@@ -124,6 +132,7 @@ CREATE TABLE IF NOT EXISTS products (
     is_new TINYINT(1) DEFAULT 0,
     is_sale TINYINT(1) DEFAULT 0,
     rating DECIMAL(2,1) DEFAULT 4.5,
+    reviews INT DEFAULT 0,
     is_active TINYINT(1) DEFAULT 1,
     video_url VARCHAR(500) DEFAULT NULL,
     video_type ENUM('upload', 'youtube', 'aparat') DEFAULT 'upload',
@@ -339,6 +348,39 @@ CREATE TABLE IF NOT EXISTS settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Blog Posts (must be created before blog_comments due to FK)
+CREATE TABLE IF NOT EXISTS blog_posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    content TEXT NOT NULL,
+    excerpt TEXT DEFAULT NULL,
+    image VARCHAR(500) DEFAULT NULL,
+    image_alt VARCHAR(500) DEFAULT NULL,
+    meta_title VARCHAR(255) DEFAULT NULL,
+    meta_description TEXT DEFAULT NULL,
+    canonical_url VARCHAR(500) DEFAULT NULL,
+    og_title VARCHAR(255) DEFAULT NULL,
+    og_description TEXT DEFAULT NULL,
+    og_image VARCHAR(500) DEFAULT NULL,
+    robots VARCHAR(255) DEFAULT NULL,
+    category VARCHAR(100) DEFAULT NULL,
+    author VARCHAR(100) DEFAULT NULL,
+    tags VARCHAR(500) DEFAULT NULL,
+    reading_time INT DEFAULT 5,
+    is_published TINYINT(1) DEFAULT 1,
+    is_featured TINYINT(1) DEFAULT 0,
+    views INT DEFAULT 0,
+    published_at DATE DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_slug (slug),
+    INDEX idx_category (category),
+    INDEX idx_published (is_published),
+    INDEX idx_featured (is_featured),
+    INDEX idx_published_at (published_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Blog Comments
 CREATE TABLE IF NOT EXISTS blog_comments (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -425,15 +467,10 @@ CREATE TABLE IF NOT EXISTS media (
     INDEX idx_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Blog Posts
-CREATE TABLE IF NOT EXISTS blog_posts (
+-- SEO Meta (per-page SEO settings)
+CREATE TABLE IF NOT EXISTS seo_meta (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) NOT NULL UNIQUE,
-    content TEXT NOT NULL,
-    excerpt TEXT DEFAULT NULL,
-    image VARCHAR(500) DEFAULT NULL,
-    image_alt VARCHAR(500) DEFAULT NULL,
+    page_slug VARCHAR(100) NOT NULL UNIQUE,
     meta_title VARCHAR(255) DEFAULT NULL,
     meta_description TEXT DEFAULT NULL,
     canonical_url VARCHAR(500) DEFAULT NULL,
@@ -441,22 +478,11 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     og_description TEXT DEFAULT NULL,
     og_image VARCHAR(500) DEFAULT NULL,
     robots VARCHAR(255) DEFAULT NULL,
-    category VARCHAR(100) DEFAULT NULL,
-    author VARCHAR(100) DEFAULT NULL,
-    tags VARCHAR(500) DEFAULT NULL,
-    reading_time INT DEFAULT 5,
-    is_published TINYINT(1) DEFAULT 1,
-    is_featured TINYINT(1) DEFAULT 0,
-    views INT DEFAULT 0,
-    published_at DATE DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_slug (slug),
-    INDEX idx_category (category),
-    INDEX idx_published (is_published),
-    INDEX idx_featured (is_featured),
-    INDEX idx_published_at (published_at)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('contact'), ('about'), ('academy');
 
 -- Contact Messages
 CREATE TABLE IF NOT EXISTS contact_messages (
