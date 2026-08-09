@@ -430,7 +430,7 @@ class DashboardController extends BaseController
             return;
         }
 
-        Database::update('appointments', ['status' => 'cancelled'], self::WHERE_ID, ['id' => $id]);
+        Database::update('appointments', ['status' => 'cancelled', 'slot_artist' => null], self::WHERE_ID, ['id' => $id]);
 
         $user = Auth::user();
         $this->notifyUser('booking_status', $user['phone'] ?? '', [

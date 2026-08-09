@@ -2,9 +2,9 @@
 USE mobaro;
 
 -- Users
+-- NOTE: the admin account (id=1) is created by install.php; seed only adds a demo user.
 INSERT INTO users (id, name, family, phone, password, role, level, points, wallet, avatar) VALUES
-(1, 'admin', 'سیستم', '09120000000', '$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9', 'admin', 'الماسی', 5000, 2500000, NULL),
-(2, 'سارا', 'احمدی', '09123456789', '$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9', 'user', 'طلایی', 320, 450000, 'profile-avatar.jpg');
+(2, 'سارا', 'احمدی', '09130000000', '$2y$10$REMOVED_CHANGE_BEFORE_PRODUCTION_X9', 'user', 'طلایی', 320, 450000, 'profile-avatar.jpg');
 
 -- Artists
 INSERT INTO artists (id, name, specialty, bio, avatar, instagram) VALUES
