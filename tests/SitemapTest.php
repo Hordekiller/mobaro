@@ -14,6 +14,10 @@ final class SitemapTest extends TestCase
     protected function setUp(): void
     {
         if (!is_file(self::$fixtureFile)) {
+            $fixtureDir = dirname(self::$fixtureFile);
+            if (!is_dir($fixtureDir)) {
+                mkdir($fixtureDir, 0775, true);
+            }
             file_put_contents(self::$fixtureFile, 'dummy');
         }
     }
