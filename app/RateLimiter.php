@@ -10,6 +10,9 @@ class RateLimiter
 {
     private const DEFAULT_IP = '127.0.0.1';
 
+    // The admin login limit is configurable via the "admin_login_max_attempts"
+    // setting (default 5). RateLimiter::MAX_ATTEMPTS was removed in update 44;
+    // callers that need a non-default limit must pass it explicitly.
     private static string $table = 'login_attempts';
 
     public static function init(): void

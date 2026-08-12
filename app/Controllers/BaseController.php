@@ -78,9 +78,13 @@ class BaseController
         }
         $safe = array_diff_key($data, array_flip(self::$protectedVars));
         extract($safe);
-        require_once __DIR__ . '/../views/layouts/header.php';
+        $isAdminLayout = str_starts_with($view, 'admin/');
+        $layout = $isAdminLayout ? 'layouts/admin-header.php' : 'layouts/header.php';
+        require_once __DIR__ . '/../views/' . $layout;
         require_once __DIR__ . '/../views/' . $view . '.php';
-        if (empty($hideFooter)) {
+        if ($isAdminLayout) {
+            require_once __DIR__ . '/../views/layouts/admin-footer.php';
+        } elseif (empty($hideFooter)) {
             require_once __DIR__ . '/../views/layouts/footer.php';
         }
     }

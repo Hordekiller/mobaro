@@ -27,7 +27,7 @@ class SEOService
 
     public static function forPage(string $pageSlug): array
     {
-        $cacheKey = 'seo_page_' . $pageSlug;
+        $cacheKey = 'seo_page_' . $pageSlug . ':' . hostKey();
         return Cache::remember($cacheKey, 86400, function () use ($pageSlug) {
             $row = Database::fetch("SELECT * FROM seo_meta WHERE page_slug = ?", [$pageSlug]) ?? [];
             $settings = Settings::all();

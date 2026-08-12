@@ -1,0 +1,530 @@
+/* ============================================================
+   Rozhin Admin — Vuexy-style vertical layout
+   Internal asset. No external dependencies, no CDN.
+   Mirrors the Vuexy vertical-menu template with our own
+   Tailwind + plain CSS (no Vuexy assets are transferred):
+   - Desktop (>= 1200px): fixed open sidebar, 260px (16.25rem)
+   - Mobile (< 1200px): sidebar becomes a slide-in drawer (RTL:
+     slides in from the right) with overlay + scroll lock
+   - Detached floating navbar on mobile (hamburger + title +
+     profile), plain sticky bar on desktop
+   ============================================================ */
+
+:root {
+    --admin-primary: #e11d48;
+    --admin-primary-dark: #be185d;
+    --admin-primary-soft: #ffe4e6;
+    --admin-menu-width: 260px;
+    --admin-menu-bg: #ffffff;
+    --admin-menu-border: #f1f5f9;
+    --admin-menu-text: #64748b;
+    --admin-menu-text-strong: #334155;
+    --admin-page-bg: #fafafb;
+    --admin-navbar-height: 64px;
+    --admin-shadow: 0 4px 20px rgba(225, 29, 72, 0.06);
+}
+
+html.layout-menu-expanded body {
+    overflow: hidden;
+}
+
+body.admin-body {
+    background: var(--admin-page-bg);
+    color: #27272a;
+    font-family: 'Vazirmatn', system-ui, sans-serif;
+}
+
+/* ---------- Layout shell ---------- */
+
+.layout-wrapper {
+    min-height: 100vh;
+}
+
+.layout-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ---------- Vertical menu ---------- */
+
+.layout-menu {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: var(--admin-menu-width);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    background: var(--admin-menu-bg);
+    border-inline-end: 1px solid var(--admin-menu-border);
+    box-shadow: 0 0 40px rgba(225, 29, 72, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.app-brand {
+    display: flex;
+    align-items: center;
+    height: var(--admin-navbar-height);
+    padding-inline: 1.25rem;
+    border-bottom: 1px solid var(--admin-menu-border);
+    flex-shrink: 0;
+}
+
+.app-brand-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+}
+
+.admin-brand-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.app-brand-text {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #18181b;
+    white-space: nowrap;
+}
+
+.menu-inner-shadow {
+    display: none;
+}
+
+.menu-inner {
+    flex: 1;
+    margin: 0;
+    padding: 0.75rem;
+    list-style: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.menu-item {
+    position: relative;
+    margin: 2px 0;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.5rem;
+    color: var(--admin-menu-text);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-link:hover {
+    background: #fdf2f8;
+    color: var(--admin-primary);
+}
+
+.menu-icon {
+    width: 1.25rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.menu-link:hover .menu-icon {
+    color: var(--admin-primary);
+}
+
+/* Active (top-level + dashboard) item — gradient pill */
+.menu-item.active > .menu-link {
+    background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+}
+
+.menu-item.active > .menu-link .menu-icon {
+    color: #ffffff;
+}
+
+/* Group toggle chevron */
+.menu-toggle-chevron {
+    margin-inline-start: auto;
+    font-size: 0.625rem;
+    color: #a1a1aa;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.menu-item.open > .menu-toggle .menu-toggle-chevron {
+    transform: rotate(180deg);
+}
+
+/* Submenu */
+.menu-sub {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.menu-item.open > .menu-sub {
+    max-height: 600px;
+}
+
+.menu-sub > .menu-item > .menu-link {
+    position: relative;
+    padding-inline-start: 2.25rem;
+    font-weight: 500;
+    font-size: 0.83rem;
+    padding-block: 0.5rem;
+}
+
+.menu-sub > .menu-item > .menu-link::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    inset-inline-start: 1.1rem;
+    width: 8px;
+    height: 8px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: #cbd5e1;
+    transition: background 0.2s ease;
+}
+
+.menu-sub > .menu-item > .menu-link:hover::before {
+    background: var(--admin-primary);
+}
+
+/* Active submenu item — soft pill */
+.menu-sub > .menu-item.active > .menu-link {
+    background: var(--admin-primary-soft);
+    color: var(--admin-primary);
+}
+
+.menu-sub > .menu-item.active > .menu-link::before {
+    background: var(--admin-primary);
+}
+
+/* Footer (back to site / logout) */
+.menu-footer {
+    padding: 0.5rem;
+    border-top: 1px solid var(--admin-menu-border);
+    flex-shrink: 0;
+}
+
+.menu-footer .menu-link {
+    margin: 2px 0;
+}
+
+.menu-link-logout {
+    color: #ef4444;
+}
+
+.menu-link-logout .menu-icon,
+.menu-link-logout:hover {
+    color: #ef4444;
+}
+
+/* ---------- Navbar ---------- */
+
+.layout-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--admin-navbar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-inline: 1.5rem;
+    background: rgba(250, 250, 251, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.navbar-left,
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.navbar-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #18181b;
+}
+
+.layout-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: #64748b;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.layout-menu-toggle:hover {
+    background: #f1f5f9;
+    color: var(--admin-primary);
+}
+
+.layout-menu-toggle:focus-visible {
+    outline: 2px solid var(--admin-primary);
+    outline-offset: 2px;
+}
+
+/* Profile */
+.navbar-user {
+    position: relative;
+}
+
+.navbar-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: transparent;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.navbar-user-btn:hover {
+    background: #f1f5f9;
+}
+
+.navbar-user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.navbar-user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--admin-menu-text-strong);
+    white-space: nowrap;
+}
+
+.navbar-user-chevron {
+    color: #a1a1aa;
+    transition: transform 0.2s ease;
+}
+
+.navbar-user-btn[aria-expanded='true'] .navbar-user-chevron {
+    transform: rotate(180deg);
+}
+
+.navbar-user-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    inset-inline-end: 0;
+    min-width: 200px;
+    background: #ffffff;
+    border: 1px solid var(--admin-menu-border);
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+    padding: 0.4rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+
+.navbar-user-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.navbar-user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--admin-menu-text-strong);
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.navbar-user-menu-item:hover {
+    background: #f8fafc;
+}
+
+.navbar-user-menu-logout {
+    color: #e11d48;
+}
+
+.navbar-user-menu-logout:hover {
+    background: #fef2f2;
+}
+
+/* ---------- Content ---------- */
+
+.layout-page {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrapper {
+    flex: 1;
+}
+
+.container-xxl {
+    width: 100%;
+    max-width: 1400px;
+    margin-inline: auto;
+}
+
+.container-p-y {
+    padding-block: 1.5rem;
+    padding-inline: 1.5rem;
+}
+
+/* ---------- Overlay ---------- */
+
+.layout-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+}
+
+/* ---------- Mobile drawer (< 1200px) ---------- */
+
+@media (max-width: 1199.98px) {
+    .layout-menu {
+        transform: translateX(100%); /* RTL: hidden off-screen to the right */
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
+    }
+
+    html.layout-menu-expanded .layout-menu {
+        transform: translateX(0) !important;
+    }
+
+    html.layout-menu-expanded .layout-overlay {
+        display: block;
+    }
+
+    /* Detached floating navbar */
+    .layout-navbar {
+        position: fixed;
+        top: 0.75rem;
+        inset-inline: 0.75rem;
+        height: 60px;
+        background: #ffffff;
+        border: 1px solid var(--admin-menu-border);
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .content-wrapper {
+        padding-top: 5rem;
+    }
+
+    .container-p-y {
+        padding-block: 1rem;
+        padding-inline: 0.75rem;
+    }
+}
+
+/* ---------- Desktop (>= 1200px) ---------- */
+
+@media (min-width: 1200px) {
+    .layout-menu {
+        transform: none !important;
+    }
+
+    .layout-overlay {
+        display: none !important;
+    }
+
+    .layout-page {
+        margin-inline-start: var(--admin-menu-width);
+    }
+
+    html.layout-menu-expanded body {
+        overflow: auto;
+    }
+
+    .layout-menu-toggle {
+        display: none;
+    }
+
+    .navbar-detached {
+        border-bottom: 1px solid var(--admin-menu-border);
+    }
+}
+
+/* ---------- Missing responsive utilities (kept out of app.css
+   so the public site build stays untouched) ---------- */
+
+@media (min-width: 640px) {
+    .sm\:inline {
+        display: inline;
+    }
+    .sm\:w-44 {
+        width: 11rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .lg\:flex-row {
+        flex-direction: row;
+    }
+    .lg\:flex-col {
+        flex-direction: column;
+    }
+    .lg\:justify-between {
+        justify-content: space-between;
+    }
+    .lg\:items-center {
+        align-items: center;
+    }
+}
+
+.z-\[90\] {
+    z-index: 90;
+}
+
+.min-w-\[140px\] {
+    min-width: 140px;
+}
+
+/* Admin pages render without the public footer; the global mobile
+   bottom-nav padding (body pb-20) must not leave a gap here. */
+body.admin-body {
+    padding-bottom: 0 !important;
+}

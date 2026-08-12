@@ -69,6 +69,16 @@ class AdminController extends BaseController
         $this->viewRaw('admin/login', compact('captchaQuestion', 'captchaEnabled', 'settings'));
     }
 
+    /**
+     * Configurable admin login attempt limit (setting "admin_login_max_attempts",
+     * default 5). Clamped to a sane range to keep the lockout usable.
+     */
+    private static function adminLoginMaxAttempts(): int
+    {
+        $limit = (int) Settings::get('admin_login_max_attempts', 5);
+        return max(1, min(500, $limit));
+    }
+
     public function doLogin(): void
     {
         if (Auth::check() && Auth::isAdmin()) {
@@ -93,7 +103,8 @@ class AdminController extends BaseController
 
         RateLimiter::init();
         RateLimiter::cleanup();
-        if (RateLimiter::isLocked('admin_' . $username)) {
+        $maxAttempts = self::adminLoginMaxAttempts();
+        if (RateLimiter::isLocked('admin_' . $username, $maxAttempts)) {
             $_SESSION['captcha_question'] = Captcha::store();
             $this->redirectWithErrors(self::PATH_ADMIN_LOGIN, ['rate_limit' => 'تعداد تلاش‌ها بیش از حد مجاز است. لطفاً ۱۵ دقیقه صبر کنید.']);
             return;
@@ -104,7 +115,7 @@ class AdminController extends BaseController
         if (!$user || !Auth::verify($password, $user['password'])) {
             RateLimiter::recordAttempt('admin_' . $username, false);
             $_SESSION['captcha_question'] = Captcha::store();
-            $remaining = RateLimiter::remainingAttempts('admin_' . $username);
+            $remaining = RateLimiter::remainingAttempts('admin_' . $username, $maxAttempts);
             $msg = 'نام کاربری یا رمز عبور اشتباه است.';
             if ($remaining <= 2 && $remaining > 0) {
                 $msg .= " ({$remaining} تلاش باقی‌مانده)";
@@ -748,8 +759,8 @@ class AdminController extends BaseController
             'home_data', 'booking_form_data', 'booking_services',
             'admin_stats', 'admin_recent_appointments', 'admin_recent_orders',
             'sitemap.xml',
-            'robots.txt',
-            'llms.txt',
+            'robots.txt:' . hostKey(),
+            'llms.txt:' . hostKey(),
         ];
         foreach ($extraKeys as $key) {
             Cache::forget($key);
@@ -2721,8 +2732,8 @@ class AdminController extends BaseController
             "INSERT INTO settings (setting_key, setting_value) VALUES {$values} ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
             $upsertParams
         );
-        Cache::forget('robots.txt');
-        Cache::forget('llms.txt');
+        Cache::forget('robots.txt:' . hostKey());
+        Cache::forget('llms.txt:' . hostKey());
         Settings::invalidate();
 
         // ——— Save page-specific SEO to seo_meta table ———

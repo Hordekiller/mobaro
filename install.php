@@ -282,7 +282,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $step === 'form') {
                 <label>نام سایت</label>
                 <input type="text" name="app_name" value="موبارو" required>
                 <label>آدرس دامنه</label>
-                <input type="text" name="app_url" value="https://example.com" required dir="ltr" placeholder="https://example.com">
+                <input type="text" name="app_url" value="https://<?= htmlspecialchars($_SERVER['HTTP_HOST'] ?? 'mobaro.ir') ?>" required dir="ltr" placeholder="https://mobaro.ir">
             </div>
 
             <div class="section">

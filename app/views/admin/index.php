@@ -3,103 +3,139 @@
 declare(strict_types=1);
 
 ?>
-<div class="min-h-screen bg-rose-50 flex" dir="rtl">
-    <aside class="w-72 bg-white shadow-[0_0_40px_rgba(225,29,72,0.08)] min-h-screen flex flex-col flex-shrink-0">
-        <div class="p-6 border-b border-rose-100">
-            <h1 class="text-xl font-extrabold text-rose-600"><i class="fa-solid fa-crown ml-2"></i>مدیریت <?= e($brandName) ?></h1>
-        </div>
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <?php
-            $activeSection = $section ?? '';
-            $groups = [
-                ['key' => 'salon', 'label' => 'سالن', 'icon' => 'fa-scissors', 'items' => [
-                    'services' => ['fa-scissors', 'خدمات'],
-                    'artists' => ['fa-user-tie', 'آرایشگران'],
-                    'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
-                    'appointments' => ['fa-calendar-check', 'نوبت‌ها'],
-                ]],
-                ['key' => 'shop', 'label' => 'فروشگاه', 'icon' => 'fa-shopping-bag', 'items' => [
-                    'products' => ['fa-box', 'محصولات'],
-                    'product-categories' => ['fa-layer-group', 'دسته‌بندی محصولات'],
-                    'product-brands' => ['fa-tag', 'برندها'],
-                    'orders' => ['fa-truck', 'سفارش‌ها'],
-                    'coupons' => ['fa-ticket', 'تخفیف‌ها'],
-                    'reviews' => ['fa-star', 'نظرات محصولات'],
-                ]],
-                ['key' => 'academy', 'label' => 'آکادمی', 'icon' => 'fa-graduation-cap', 'items' => [
-                    'courses' => ['fa-graduation-cap', 'دوره‌ها'],
-                    'enrollments' => ['fa-user-graduate', 'ثبت‌نام دوره‌ها'],
-                ]],
-                ['key' => 'content', 'label' => 'محتوا', 'icon' => 'fa-file-lines', 'items' => [
-                    'blog' => ['fa-pen', 'وبلاگ'],
-                    'blog-comments' => ['fa-comments', 'نظرات وبلاگ'],
-                    'blog-categories' => ['fa-folder', 'دسته‌بندی وبلاگ'],
-                    'hair-models' => ['fa-image', 'مدل مو'],
-                    'tutorials' => ['fa-video', 'آموزش‌ها'],
-                    'gallery' => ['fa-photo-film', 'گالری رسانه'],
-                    'testimonials' => ['fa-comment', 'نظرات'],
-                ]],
-                ['key' => 'users', 'label' => 'کاربران', 'icon' => 'fa-users', 'items' => [
-                    'users' => ['fa-users', 'کاربران'],
-                    'transactions' => ['fa-coins', 'تراکنش‌ها'],
-                    'contact-messages' => ['fa-envelope-open', 'پیام‌ها'],
-                    'newsletter' => ['fa-envelope', 'خبرنامه'],
-                ]],
-                ['key' => 'settings', 'label' => 'تنظیمات', 'icon' => 'fa-gear', 'items' => [
-                    'captcha' => ['fa-shield-halved', 'کپچا'],
-                    'settings' => ['fa-gear', 'تنظیمات'],
-                    'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
-                    'seo' => ['fa-globe', 'مدیریت سئو'],
-                    'payment' => ['fa-credit-card', 'پرداخت'],
-                ]],
-            ];
+<div class="layout-wrapper layout-content-navbar" dir="rtl">
+    <div class="layout-container">
 
-            $dashActive = $activeSection === 'dashboard' ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600';
-            ?>
-            <a href="/admin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all <?= $dashActive ?>">
-                <i class="fa-solid fa-gauge-high w-5 text-center"></i>
-                <span>داشبورد</span>
-            </a>
-
-            <?php foreach ($groups as $group) :
-                $groupItems = $group['items'];
-                $hasActive = array_key_exists($activeSection, $groupItems);
-                ?>
-            <div class="admin-group mt-2" data-group="<?= $group['key'] ?>">
-                <button type="button" onclick="toggleGroup(this)" class="admin-group-btn w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all <?= $hasActive ? 'text-rose-600 bg-rose-50' : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50' ?>">
-                    <span class="flex items-center gap-2">
-                        <i class="fa-solid <?= $group['icon'] ?> w-4 text-center text-[11px]"></i>
-                        <?= $group['label'] ?>
-                    </span>
-                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 <?= $hasActive ? '' : '-rotate-90' ?>"></i>
-                </button>
-                <div class="admin-group-items <?= $hasActive ? '' : 'hidden' ?>" data-group-items="<?= $group['key'] ?>">
-                    <?php foreach ($groupItems as $key => $item) :
-                        $active = $activeSection === $key ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600';
-                        ?>
-                    <a href="/admin/<?= $key ?>" class="flex items-center gap-3 px-4 py-2.5 mr-2 rounded-xl text-sm font-semibold transition-all <?= $active ?>">
-                        <i class="fa-solid <?= $item[0] ?> w-5 text-center"></i>
-                        <span><?= $item[1] ?></span>
-                    </a>
-                    <?php endforeach; ?>
-                </div>
+        <aside id="layout-menu" class="layout-menu menu-vertical">
+            <div class="app-brand">
+                <a href="/admin" class="app-brand-link">
+                    <img src="<?= e(brandLogo()) ?>" alt="<?= e($brandName) ?>" class="admin-brand-logo">
+                    <span class="logo-font app-brand-text"><?= e($brandName) ?></span>
+                </a>
             </div>
-            <?php endforeach; ?>
-        </nav>
-        <div class="p-4 border-t border-rose-100">
-            <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-zinc-600 hover:bg-rose-50 hover:text-rose-600 transition-all">
-                <i class="fa-solid fa-arrow-right w-5 text-center"></i>
-                <span>بازگشت به سایت</span>
-            </a>
-            <a href="/logout" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-50 transition-all">
-                <i class="fa-solid fa-sign-out w-5 text-center"></i>
-                <span>خروج</span>
-            </a>
-        </div>
-    </aside>
+            <div class="menu-inner-shadow"></div>
+            <ul class="menu-inner">
+                <?php
+                $activeSection = $section ?? '';
+                $groups = [
+                    ['key' => 'salon', 'label' => 'سالن', 'icon' => 'fa-scissors', 'items' => [
+                        'services' => ['fa-scissors', 'خدمات'],
+                        'artists' => ['fa-user-tie', 'آرایشگران'],
+                        'hair-prices' => ['fa-money-bill-wave', 'قیمت‌های قد مو'],
+                        'appointments' => ['fa-calendar-check', 'نوبت‌ها'],
+                    ]],
+                    ['key' => 'shop', 'label' => 'فروشگاه', 'icon' => 'fa-shopping-bag', 'items' => [
+                        'products' => ['fa-box', 'محصولات'],
+                        'product-categories' => ['fa-layer-group', 'دسته‌بندی محصولات'],
+                        'product-brands' => ['fa-tag', 'برندها'],
+                        'orders' => ['fa-truck', 'سفارش‌ها'],
+                        'coupons' => ['fa-ticket', 'تخفیف‌ها'],
+                        'reviews' => ['fa-star', 'نظرات محصولات'],
+                    ]],
+                    ['key' => 'academy', 'label' => 'آکادمی', 'icon' => 'fa-graduation-cap', 'items' => [
+                        'courses' => ['fa-graduation-cap', 'دوره‌ها'],
+                        'enrollments' => ['fa-user-graduate', 'ثبت‌نام دوره‌ها'],
+                    ]],
+                    ['key' => 'content', 'label' => 'محتوا', 'icon' => 'fa-file-lines', 'items' => [
+                        'blog' => ['fa-pen', 'وبلاگ'],
+                        'blog-comments' => ['fa-comments', 'نظرات وبلاگ'],
+                        'blog-categories' => ['fa-folder', 'دسته‌بندی وبلاگ'],
+                        'hair-models' => ['fa-image', 'مدل مو'],
+                        'tutorials' => ['fa-video', 'آموزش‌ها'],
+                        'gallery' => ['fa-photo-film', 'گالری رسانه'],
+                        'testimonials' => ['fa-comment', 'نظرات'],
+                    ]],
+                    ['key' => 'users', 'label' => 'کاربران', 'icon' => 'fa-users', 'items' => [
+                        'users' => ['fa-users', 'کاربران'],
+                        'transactions' => ['fa-coins', 'تراکنش‌ها'],
+                        'contact-messages' => ['fa-envelope-open', 'پیام‌ها'],
+                        'newsletter' => ['fa-envelope', 'خبرنامه'],
+                    ]],
+                    ['key' => 'settings', 'label' => 'تنظیمات', 'icon' => 'fa-gear', 'items' => [
+                        'captcha' => ['fa-shield-halved', 'کپچا'],
+                        'settings' => ['fa-gear', 'تنظیمات'],
+                        'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
+                        'seo' => ['fa-globe', 'مدیریت سئو'],
+                        'payment' => ['fa-credit-card', 'پرداخت'],
+                    ]],
+                ];
+                ?>
+                <li class="menu-item <?= $activeSection === 'dashboard' ? 'active' : '' ?>">
+                    <a href="/admin" class="menu-link">
+                        <i class="menu-icon fa-solid fa-gauge-high"></i>
+                        <div>داشبورد</div>
+                    </a>
+                </li>
 
-    <main class="flex-1 p-6 overflow-y-auto">
-        <?php if ($section === 'dashboard') : ?>
+                <?php foreach ($groups as $group) :
+                    $groupItems = $group['items'];
+                    $hasActive = array_key_exists($activeSection, $groupItems);
+                    ?>
+                <li class="menu-item <?= $hasActive ? 'open' : '' ?>" data-group="<?= $group['key'] ?>">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle" onclick="toggleGroup(this)">
+                        <i class="menu-icon fa-solid <?= $group['icon'] ?>"></i>
+                        <div><?= $group['label'] ?></div>
+                        <i class="menu-toggle-chevron fa-solid fa-chevron-down"></i>
+                    </a>
+                    <ul class="menu-sub">
+                        <?php foreach ($groupItems as $key => $item) : ?>
+                        <li class="menu-item <?= $activeSection === $key ? 'active' : '' ?>">
+                            <a href="/admin/<?= $key ?>" class="menu-link">
+                                <div><?= $item[1] ?></div>
+                            </a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <div class="menu-footer">
+                <a href="/dashboard" class="menu-link">
+                    <i class="menu-icon fa-solid fa-arrow-right"></i>
+                    <div>بازگشت به سایت</div>
+                </a>
+                <a href="/logout" class="menu-link menu-link-logout">
+                    <i class="menu-icon fa-solid fa-sign-out"></i>
+                    <div>خروج</div>
+                </a>
+            </div>
+        </aside>
+
+        <div class="layout-page">
+            <nav class="layout-navbar navbar-detached" id="layout-navbar">
+                <div class="navbar-left">
+                    <button id="adminMenuToggle" type="button" class="layout-menu-toggle" aria-label="باز و بسته کردن منو" aria-expanded="false">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h4 class="navbar-title">
+                        <?= $section === 'dashboard' ? 'داشبورد مدیریت' : ($sections[$section][1] ?? $section) ?>
+                    </h4>
+                </div>
+                <div class="navbar-right">
+                    <div class="navbar-user" id="navbarUser">
+                        <?php $adminUser = \App\Auth::user(); ?>
+                        <button type="button" class="navbar-user-btn" id="navbarUserBtn" aria-expanded="false" aria-haspopup="true">
+                            <span class="navbar-user-avatar"><?= e(mb_substr(trim(($adminUser['name'] ?? '') . ' ' . ($adminUser['family'] ?? '')), 0, 1) ?: 'م') ?></span>
+                            <span class="navbar-user-name hidden sm:inline"><?= e(trim(($adminUser['name'] ?? '') . ' ' . ($adminUser['family'] ?? ''))) ?></span>
+                            <i class="fa-solid fa-chevron-down text-xs navbar-user-chevron"></i>
+                        </button>
+                        <div class="navbar-user-menu" id="navbarUserMenu">
+                            <a href="/dashboard" class="navbar-user-menu-item">
+                                <i class="fa-solid fa-earth-asia w-5 text-center"></i>
+                                <span>بازگشت به سایت</span>
+                            </a>
+                            <a href="/logout" class="navbar-user-menu-item navbar-user-menu-logout">
+                                <i class="fa-solid fa-sign-out w-5 text-center"></i>
+                                <span>خروج</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="content-wrapper">
+                <div class="container-xxl container-p-y">
+                    <?php if ($section === 'dashboard') : ?>
             <div class="mb-6">
                 <h2 class="text-2xl font-extrabold">داشبورد مدیریت</h2>
                 <p class="text-zinc-400 text-sm">خلاصه وضعیت</p>
@@ -247,6 +283,9 @@ declare(strict_types=1);
                 ],
                 'ویرایشگر متن' => [
                     'tinymce_source' => 'روش بارگذاری ویرایشگر متن (برای وبلاگ، محصولات و آکادمی)',
+                ],
+                'امنیت' => [
+                    'admin_login_max_attempts' => 'حداکثر تلاش ناموفق ورود ادمین (پیش‌فرض ۵)',
                 ],
             ];
             $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
@@ -583,17 +622,17 @@ declare(strict_types=1);
             if (in_array($section, ['hair-models'])) {
                 $table = 'hair_models';
             } ?>
-            <div class="mb-6 flex justify-between items-center flex-wrap gap-3">
+            <div class="mb-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
                 <div>
                     <h2 class="text-2xl font-extrabold">مدیریت <?= $sections[$section][1] ?></h2>
                     <?php if (isset($total)) :
                         ?><p class="text-zinc-400 text-sm"><?= faNum($total) ?> مورد</p><?php
                     endif; ?>
                 </div>
-                <div class="flex items-center gap-3">
-                    <form method="GET" action="/admin/<?= e($section) ?>" class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-3">
+                    <form method="GET" action="/admin/<?= e($section) ?>" class="flex flex-wrap items-center gap-2">
                         <label for="admin-search" class="sr-only">جستجو</label>
-                        <input id="admin-search" type="text" name="s" value="<?= e($_GET['s'] ?? '') ?>" placeholder="جستجو..." class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-44">
+                        <input id="admin-search" type="text" name="s" value="<?= e($_GET['s'] ?? '') ?>" placeholder="جستجو..." class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all w-full sm:w-44">
                         <button type="submit" class="px-3 py-2.5 bg-zinc-100 text-zinc-600 rounded-xl text-sm hover:bg-rose-50 hover:text-rose-600 transition-all"><i class="fa-solid fa-search"></i></button>
                         <?php if (!empty($_GET['s'])) : ?>
                         <a href="/admin/<?= e($section) ?>" class="px-3 py-2.5 bg-red-50 text-red-500 rounded-xl text-sm hover:bg-red-100 transition-all"><i class="fa-solid fa-xmark"></i></a>
@@ -721,7 +760,7 @@ declare(strict_types=1);
             </div>
             <?php endif; ?>
 
-            <div id="itemModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
+            <div id="itemModal" class="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
                 <div class="bg-white rounded-[20px] p-6 w-full max-w-2xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
                     <div class="flex justify-between items-center mb-5">
                         <h3 class="text-xl font-bold" id="modalTitle">افزودن جدید</h3>
@@ -826,9 +865,9 @@ declare(strict_types=1);
                                 </div>
                                 <div class="space-y-2" id="service-hair-prices">
                                     <?php foreach ($allHairLengths as $hl) : ?>
-                                    <div class="flex items-center gap-2 bg-rose-50 rounded-xl px-3 py-2 hair-price-row" data-hl-id="<?= $hl['id'] ?>">
+                                    <div class="flex flex-wrap items-center gap-2 bg-rose-50 rounded-xl px-3 py-2 hair-price-row" data-hl-id="<?= $hl['id'] ?>">
                                         <span class="text-xs font-semibold text-zinc-600 min-w-[120px]"><?= e($hl['title']) ?></span>
-                                        <input id="hpPrice_<?= $hl['id'] ?>" type="number" name="hair_prices[<?= $hl['id'] ?>][price]" placeholder="قیمت (تومان)" step="1000" class="flex-1 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
+                                        <input id="hpPrice_<?= $hl['id'] ?>" type="number" name="hair_prices[<?= $hl['id'] ?>][price]" placeholder="قیمت (تومان)" step="1000" class="flex-1 min-w-[140px] px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
                                         <label for="hpPrice_<?= $hl['id'] ?>" class="sr-only">قیمت <?= e($hl['title']) ?></label>
                                         <input id="hpDuration_<?= $hl['id'] ?>" type="number" name="hair_prices[<?= $hl['id'] ?>][duration_modifier]" placeholder="ضریب" step="0.1" min="0.1" max="5" value="1.0" class="w-20 px-3 py-2 bg-white border border-rose-200 rounded-lg text-sm focus:border-rose-500 focus:ring-0 outline-none transition-all">
                                         <label for="hpDuration_<?= $hl['id'] ?>" class="sr-only">ضریب <?= e($hl['title']) ?></label>
@@ -859,23 +898,57 @@ declare(strict_types=1);
                                 var payEl = document.getElementById('order-payment-info');
                                 if (!items.length) { listEl.innerHTML = '<p class="text-xs text-zinc-400">آیتمی یافت نشد</p>'; }
                                 else {
-                                    var html = '';
+                                    listEl.innerHTML = '';
                                     items.forEach(function(it) {
-                                        var img = it.product_image ? '<img src="/assets/images/' + it.product_image + '" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" data-hide-on-error>' : '<div class="w-10 h-10 rounded-lg bg-zinc-200 flex items-center justify-center text-xs text-zinc-400 flex-shrink-0"><i class="fa-solid fa-box"></i></div>';
-                                        html += '<div class="flex items-center gap-3 bg-white rounded-lg p-2.5 text-xs">' + img + '<div class="flex-1"><div class="font-medium text-zinc-800">' + (it.product_name || 'محصول') + '</div><div class="text-zinc-400">' + it.quantity + ' عدد × ' + Number(it.price).toLocaleString() + ' تومان</div></div></div>';
+                                        var row = document.createElement('div');
+                                        row.className = 'flex items-center gap-3 bg-white rounded-lg p-2.5 text-xs';
+                                        var thumb;
+                                        if (it.product_image) {
+                                            thumb = document.createElement('img');
+                                            thumb.src = '/assets/images/' + it.product_image;
+                                            thumb.className = 'w-10 h-10 rounded-lg object-cover flex-shrink-0';
+                                            thumb.alt = '';
+                                            thumb.onerror = function() { this.remove(); };
+                                        } else {
+                                            thumb = document.createElement('div');
+                                            thumb.className = 'w-10 h-10 rounded-lg bg-zinc-200 flex items-center justify-center text-xs text-zinc-400 flex-shrink-0';
+                                            thumb.innerHTML = '<i class="fa-solid fa-box"></i>';
+                                        }
+                                        var body = document.createElement('div');
+                                        body.className = 'flex-1';
+                                        var nameEl = document.createElement('div');
+                                        nameEl.className = 'font-medium text-zinc-800';
+                                        nameEl.textContent = it.product_name || 'محصول';
+                                        var metaEl = document.createElement('div');
+                                        metaEl.className = 'text-zinc-400';
+                                        metaEl.textContent = (it.quantity || 0) + ' عدد × ' + Number(it.price || 0).toLocaleString() + ' تومان';
+                                        body.appendChild(nameEl);
+                                        body.appendChild(metaEl);
+                                        row.appendChild(thumb);
+                                        row.appendChild(body);
+                                        listEl.appendChild(row);
                                     });
-                                    listEl.innerHTML = html;
+                                }
+                                function appendLine(target, label, value) {
+                                    if (!value) return;
+                                    var span = document.createElement('span');
+                                    span.className = 'font-medium';
+                                    span.textContent = label + ': ';
+                                    target.appendChild(span);
+                                    target.appendChild(document.createTextNode(value));
                                 }
                                 var addrParts = [];
                                 if (detail.address) addrParts.push(detail.address);
                                 if (detail.postal_code) addrParts.push('کدپستی: ' + detail.postal_code);
-                                addrEl.innerHTML = addrParts.length ? '<span class="font-medium">آدرس:</span> ' + addrParts.join(' — ') : '';
+                                addrEl.innerHTML = '';
+                                if (addrParts.length) appendLine(addrEl, 'آدرس', addrParts.join(' — '));
                                 var payParts = [];
                                 if (detail.payment_status) payParts.push('وضعیت: ' + detail.payment_status);
                                 if (detail.payment_method) payParts.push(detail.payment_method);
                                 if (detail.payment_id) payParts.push('کد پیگیری: ' + detail.payment_id);
                                 if (detail.coupon_code) payParts.push('کد تخفیف: ' + detail.coupon_code + (detail.coupon_discount ? ' (' + Number(detail.coupon_discount).toLocaleString() + ' تومان)' : ''));
-                                payEl.innerHTML = payParts.length ? '<span class="font-medium">پرداخت:</span> ' + payParts.join(' — ') : '';
+                                payEl.innerHTML = '';
+                                if (payParts.length) appendLine(payEl, 'پرداخت', payParts.join(' — '));
                             }
                             </script>
                             <?php endif; ?>
@@ -922,47 +995,59 @@ declare(strict_types=1);
                 </div>
             </div>
         <?php endif; ?>
-    </main>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-overlay" id="layoutOverlay" aria-hidden="true"></div>
+    </div>
 </div>
 
 <script>
 function toggleGroup(btn) {
-    const group = btn.closest('.admin-group');
-    const items = group.querySelector('.admin-group-items');
-    const chevron = btn.querySelector('.fa-chevron-down');
-    const isOpen = !items.classList.contains('hidden');
+    const item = btn.closest('.menu-item');
+    const sub = item.querySelector('.menu-sub');
+    const isOpen = item.classList.contains('open');
 
     if (isOpen) {
-        items.classList.add('hidden');
-        chevron.classList.add('-rotate-90');
-        btn.classList.remove('text-rose-600', 'bg-rose-50');
-        btn.classList.add('text-zinc-400');
+        item.classList.remove('open');
+        sub.style.maxHeight = null;
     } else {
-        items.classList.remove('hidden');
-        chevron.classList.remove('-rotate-90');
-        btn.classList.add('text-rose-600', 'bg-rose-50');
-        btn.classList.remove('text-zinc-400');
+        item.classList.add('open');
+        sub.style.maxHeight = sub.scrollHeight + 'px';
     }
 
-    const key = group.dataset.group;
-    const open = JSON.parse(localStorage.getItem('admin_groups') || '{}');
+    const key = item.dataset.group;
+    let open = {};
+    try {
+        open = JSON.parse(localStorage.getItem('admin_groups') || '{}');
+    } catch (e) {
+        open = {};
+    }
     open[key] = !isOpen;
-    localStorage.setItem('admin_groups', JSON.stringify(open));
+    try {
+        localStorage.setItem('admin_groups', JSON.stringify(open));
+    } catch (e) {
+        /* storage unavailable — ignore */
+    }
 }
 document.addEventListener('DOMContentLoaded', function() {
-    const open = JSON.parse(localStorage.getItem('admin_groups') || '{}');
-    document.querySelectorAll('.admin-group').forEach(function(g) {
-        const k = g.dataset.group;
-        const items = g.querySelector('.admin-group-items');
-        const chevron = g.querySelector('.fa-chevron-down');
-        const btn = g.querySelector('.admin-group-btn');
-        if (k in open) {
+    let open = {};
+    try {
+        open = JSON.parse(localStorage.getItem('admin_groups') || '{}');
+    } catch (e) {
+        open = {};
+    }
+    document.querySelectorAll('.menu-item[data-group]').forEach(function(item) {
+        const k = item.dataset.group;
+        const sub = item.querySelector('.menu-sub');
+        if (sub && k in open) {
             if (open[k]) {
-                items.classList.remove('hidden');
-                chevron.classList.remove('-rotate-90');
+                item.classList.add('open');
+                sub.style.maxHeight = sub.scrollHeight + 'px';
             } else {
-                items.classList.add('hidden');
-                chevron.classList.add('-rotate-90');
+                item.classList.remove('open');
+                sub.style.maxHeight = null;
             }
         }
     });
@@ -995,8 +1080,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     ?>
 <script>
-window._orderItems = <?= json_encode($orderItems ?? [], JSON_UNESCAPED_UNICODE) ?>;
-window._orderData = <?= json_encode($_orderDataMap, JSON_UNESCAPED_UNICODE) ?>;
+window._orderItems = <?= jsonScript($orderItems ?? []) ?>;
+window._orderData = <?= jsonScript($_orderDataMap) ?>;
 </script>
 <?php endif; ?>
 <script>
@@ -1234,3 +1319,5 @@ document.addEventListener('submit', function(e) {
 }, true);
 </script>
 <?php endif; ?>
+
+<script src="/assets/js/admin.js?v=2" defer></script>

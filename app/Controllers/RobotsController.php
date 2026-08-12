@@ -13,7 +13,7 @@ class RobotsController extends BaseController
     {
         header('Content-Type: text/plain; charset=utf-8');
 
-        $body = Cache::remember('robots.txt', 86400, function () {
+        $body = Cache::remember('robots.txt:' . hostKey(), 86400, function () {
             $custom = Settings::get('robots_txt', '');
             if ($custom !== '') {
                 return $custom;

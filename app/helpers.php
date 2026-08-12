@@ -20,13 +20,40 @@ function asset(string $path): string
     return url('assets/' . ltrim($path, '/'));
 }
 
+function isHttps(): bool
+{
+    $force = env('FORCE_HTTPS', $_SERVER['FORCE_HTTPS'] ?? getenv('FORCE_HTTPS'));
+    if ($force === 'true' || $force === '1') {
+        return true;
+    }
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+    if (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') {
+        return true;
+    }
+    return ($_SERVER['HTTP_X_FORWARDED_SSL'] ?? '') === 'on';
+}
+
+function hostKey(): string
+{
+    $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+    if ($host !== '') {
+        return $host;
+    }
+    $appUrlHost = parse_url((string) Config::get('app.url', ''), PHP_URL_HOST);
+    return strtolower(trim((string) ($appUrlHost !== null ? $appUrlHost : ''))) ?: 'cli';
+}
+
 function url(string $path = ''): string
 {
     $baseUrl = rtrim((string) Config::get('app.url', ''), '/');
     if ($baseUrl === '') {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $baseUrl = $scheme . '://' . $host;
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $baseUrl = ($host !== '' ? $host : hostKey()) ;
+        $baseUrl = (isHttps() ? 'https' : 'http') . '://' . $baseUrl;
+    } elseif (isHttps() && str_starts_with($baseUrl, 'http://')) {
+        $baseUrl = 'https://' . substr($baseUrl, 7);
     }
     $normalizedPath = '/' . ltrim($path, '/');
 
@@ -152,18 +179,17 @@ function toNumber(mixed $value): int|float
         return 0;
     }
 
-    $s = str_replace([',', '،', '٬', '_', ' '], '', $s);
+    $plain = str_replace([',', '،', '٬', '_', ' '], '', $s);
 
-    if (preg_match('/^-?\d+$/', $s)) {
-        return (int) $s;
+    if (preg_match('/^-?\d+$/', $plain)) {
+        return (int) $plain;
     }
 
-    $s = preg_replace('/[^\d.+eE-]/', '', $s);
-    if ($s === '' || $s === '.' || $s === '-' || $s === '+' || $s === '-.' || $s === '+.') {
-        return 0;
+    if (preg_match('/^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/', $plain)) {
+        return (float) $plain;
     }
 
-    return (float) $s;
+    return 0;
 }
 
 function nformat(mixed $value, int $decimals = 0): string

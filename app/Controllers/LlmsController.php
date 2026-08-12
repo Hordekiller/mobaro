@@ -15,7 +15,7 @@ class LlmsController extends BaseController
     {
         header('Content-Type: text/markdown; charset=utf-8');
 
-        $body = Cache::remember('llms.txt', 86400, function () {
+        $body = Cache::remember('llms.txt:' . hostKey(), 86400, function () {
             $custom = Settings::get('llms_txt', '');
             if ($custom !== '') {
                 return $custom;
@@ -34,9 +34,9 @@ class LlmsController extends BaseController
         $tagline = $settings['hero_description'] ?? '';
         $baseUrl = rtrim((string) (Config::get('app.url') ?? ''), '/');
         if ($baseUrl === '') {
-            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $baseUrl = $scheme . '://' . $host;
+            $baseUrl = (isHttps() ? 'https' : 'http') . '://' . hostKey();
+        } elseif (isHttps() && str_starts_with($baseUrl, 'http://')) {
+            $baseUrl = 'https://' . substr($baseUrl, 7);
         }
 
         $lines = [];
