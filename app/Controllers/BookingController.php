@@ -183,7 +183,7 @@ class BookingController extends BaseController
             return;
         }
 
-        $priceResult = $this->calculateFinalPrice($serviceId, $hairLengthId, $service['price']);
+        $priceResult = $this->calculateFinalPrice($serviceId, $hairLengthId, (int) $service['price']);
         $finalPrice = $priceResult['price'];
         $durationModifier = $priceResult['modifier'];
 
@@ -293,8 +293,9 @@ class BookingController extends BaseController
         return null;
     }
 
-    private function calculateFinalPrice(int $serviceId, int $hairLengthId, int $basePrice): array
+    private function calculateFinalPrice(int $serviceId, int $hairLengthId, int|string $basePrice): array
     {
+        $basePrice = (int) toNumber($basePrice);
         if (!$hairLengthId) {
             return ['price' => $basePrice, 'modifier' => 1.0];
         }
