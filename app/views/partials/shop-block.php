@@ -27,7 +27,7 @@ declare(strict_types=1);
                     <div class="text-xs text-zinc-400"><?= e($product['category']) ?></div>
                     <a href="/product/<?= $product['id'] ?>" class="font-medium text-base mt-1 line-clamp-2 block hover:text-rose-500 transition-colors"><?= e($product['name']) ?></a>
                     <div class="flex justify-between items-baseline mt-6">
-                        <div class="font-bold text-rose-500"><?= number_format((int) $product['price']) ?> تومان</div>
+                        <div class="font-bold text-rose-500"><?= nformat((int) $product['price']) ?> تومان</div>
                         <button onclick="addToCartFromShop(<?= $product['id'] ?>, '<?= jsEscape($product['name']) ?>', <?= $product['price'] ?>, '/assets/images/<?= jsEscape($product['image']) ?>', '<?= jsEscape($product['category']) ?>')"
                                 class="text-xs border border-zinc-300 hover:bg-zinc-50 px-5 py-3 rounded-3xl" aria-label="افزودن <?= e($product['name']) ?> به سبد خرید">اضافه به سبد</button>
                     </div>

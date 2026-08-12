@@ -6,7 +6,7 @@ $title = e($course['title']) . ' | مشاهده دوره';
 $lessonMap = [];
 foreach ($curriculum as $mi => $module) {
     foreach (($module['lessons'] ?? []) as $li => $lesson) {
-        $lessonMap[] = ['module' => $mi, 'lesson' => $li, 'title' => $lesson['title'], 'duration' => $lesson['duration'] ?? ''];
+        $lessonMap[] = ['module' => $mi, 'lesson' => $li, 'title' => $lesson['title'] ?? '', 'duration' => $lesson['duration'] ?? ''];
     }
 }
 $activeIdx = 0;

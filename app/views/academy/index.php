@@ -39,7 +39,7 @@ function academyFilterUrl(array $overrides = []): string
                     <span class="text-amber-300">آرایش و زیبایی</span>
                 </h1>
                 <p class="mt-6 text-lg text-white/80 leading-relaxed max-w-lg">
-                    بیش از <?= number_format((int) $totalStudents) ?> دانشجو در دوره‌های آموزشی ما شرکت کرده‌اند. از مبتدی تا حرفه‌ای، مسیر یادگیری خود را پیدا کنید.
+                    بیش از <?= nformat((int) $totalStudents) ?> دانشجو در دوره‌های آموزشی ما شرکت کرده‌اند. از مبتدی تا حرفه‌ای، مسیر یادگیری خود را پیدا کنید.
                 </p>
                 <div class="mt-8 flex flex-wrap items-center gap-4">
                     <a href="#courses-section" class="bg-white text-indigo-700 px-8 py-3.5 rounded-2xl font-semibold hover:shadow-lg hover:shadow-white/25 transition-all active:scale-95">
@@ -56,7 +56,7 @@ function academyFilterUrl(array $overrides = []): string
                         <div class="w-10 h-10 rounded-full bg-emerald-400 border-2 border-indigo-600 flex items-center justify-center text-xs font-bold text-indigo-800">م</div>
                     </div>
                     <div class="text-sm text-white/70">
-                        <span class="font-bold text-white"><?= number_format((int) $totalStudents) ?>+</span> دانشجو فعال
+                        <span class="font-bold text-white"><?= nformat((int) $totalStudents) ?>+</span> دانشجو فعال
                     </div>
                 </div>
             </div>
@@ -72,14 +72,14 @@ function academyFilterUrl(array $overrides = []): string
                             <div class="text-sm text-white/60">دوره ویژه هفته</div>
                             <div class="font-semibold text-lg mt-1 group-hover:text-amber-300 transition-colors"><?= e($featuredCourse['title']) ?></div>
                         </div>
-                        <div class="text-amber-300 text-2xl font-bold"><?= number_format((float) $featuredCourse['rating'], 1) ?></div>
+                        <div class="text-amber-300 text-2xl font-bold"><?= nformat((float) $featuredCourse['rating'], 1) ?></div>
                     </div>
                     <div class="mt-3 flex items-center gap-2 text-sm text-white/60">
                         <i class="fa-solid fa-clock"></i>
                         <span><?= e($featuredCourse['duration']) ?></span>
                         <span class="mx-2">•</span>
                         <i class="fa-solid fa-user"></i>
-                        <span><?= number_format($featuredCourse['students']) ?> دانشجو</span>
+                        <span><?= nformat($featuredCourse['students']) ?> دانشجو</span>
                     </div>
                 </a>
                 <?php else : ?>
@@ -152,7 +152,9 @@ function academyFilterUrl(array $overrides = []): string
                 <?php endif; ?>
                 <?php if (!$course['is_free'] && ($course['old_price'] ?? 0) > $course['price']) : ?>
                 <div class="absolute top-4 left-4 bg-rose-500 text-white text-[11px] font-semibold px-3 py-1 rounded-full">
-                    <?= round((1 - $course['price'] / ($course['old_price'] ?? 1)) * 100) ?>% تخفیف
+                    <?php $oldP = toNumber($course['old_price'] ?? 0); ?>
+                    <?php $newP = toNumber($course['price'] ?? 0); ?>
+                    <?= $oldP > 0 ? round((1 - $newP / $oldP) * 100) : 0 ?>% تخفیف
                 </div>
                 <?php endif; ?>
             </div>
@@ -164,8 +166,9 @@ function academyFilterUrl(array $overrides = []): string
                 </div>
                 <div class="flex justify-between items-center mt-5">
                     <div class="text-xs flex items-center gap-x-px text-amber-400">
-                        <?= str_repeat('★', (int) round((float) $course['rating'])) ?><?= str_repeat('☆', 5 - (int) round((float) $course['rating'])) ?>
-                        <span class="text-zinc-400 mr-2"><?= number_format((float) $course['rating'], 1) ?></span>
+                        <?php $starCount = max(0, min(5, (int) round((float) toNumber($course['rating'] ?? 0)))); ?>
+                        <?= str_repeat('★', $starCount) ?><?= str_repeat('☆', 5 - $starCount) ?>
+                        <span class="text-zinc-400 mr-2"><?= nformat((float) toNumber($course['rating'] ?? 0), 1) ?></span>
                     </div>
                     <div>
                         <?php if ($course['is_free']) : ?>
@@ -173,9 +176,9 @@ function academyFilterUrl(array $overrides = []): string
                         <?php else : ?>
                         <div class="text-right">
                             <?php if (($course['old_price'] ?? 0) > $course['price']) : ?>
-                            <div class="text-[11px] text-zinc-400 line-through"><?= number_format($course['old_price'] ?? 0) ?></div>
+                            <div class="text-[11px] text-zinc-400 line-through"><?= nformat($course['old_price'] ?? 0) ?></div>
                             <?php endif; ?>
-                            <div class="font-semibold text-sm"><?= number_format($course['price']) ?> <span class="text-xs text-zinc-400">تومان</span></div>
+                            <div class="font-semibold text-sm"><?= nformat($course['price']) ?> <span class="text-xs text-zinc-400">تومان</span></div>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -183,7 +186,7 @@ function academyFilterUrl(array $overrides = []): string
                 <div class="flex items-center gap-3 mt-3 text-[11px] text-zinc-400">
                     <span><i class="fa-solid fa-clock ml-1"></i><?= e($course['duration']) ?></span>
                     <span><i class="fa-solid fa-signal ml-1"></i><?= e($course['level']) ?></span>
-                    <span><i class="fa-solid fa-user-group ml-1"></i><?= number_format($course['students']) ?></span>
+                    <span><i class="fa-solid fa-user-group ml-1"></i><?= nformat($course['students']) ?></span>
                 </div>
             </div>
         </a>
@@ -213,9 +216,9 @@ function academyFilterUrl(array $overrides = []): string
 
 <script>
 function switchTab(tab) {
-    window.location.href = '/academy?tab=' + tab + '&category=<?= e($category) ?>';
+    window.location.href = '/academy?tab=' + tab + '&category=' + encodeURIComponent('<?= jsEscape($category) ?>');
 }
 function filterByCategory(cat) {
-    window.location.href = '/academy?tab=<?= e($tab) ?>&category=' + encodeURIComponent(cat);
+    window.location.href = '/academy?tab=' + encodeURIComponent('<?= jsEscape($tab) ?>') + '&category=' + encodeURIComponent(cat);
 }
 </script>

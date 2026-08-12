@@ -748,6 +748,8 @@ class AdminController extends BaseController
             'home_data', 'booking_form_data', 'booking_services',
             'admin_stats', 'admin_recent_appointments', 'admin_recent_orders',
             'sitemap.xml',
+            'robots.txt',
+            'llms.txt',
         ];
         foreach ($extraKeys as $key) {
             Cache::forget($key);
@@ -943,9 +945,9 @@ class AdminController extends BaseController
             if (isset($_POST[$field])) {
                 $value = in_array($field, $rawFields) ? $_POST[$field] : sanitize($_POST[$field]);
                 if (in_array($field, $intFields)) {
-                    $value = (int) $value;
+                    $value = (int) toNumber($value);
                 } elseif (in_array($field, $floatFields)) {
-                    $value = (float) $value;
+                    $value = (float) toNumber($value);
                 } elseif (in_array($field, $dateFields)) {
                     $value = $value !== '' ? $value : null;
                 }
@@ -1635,7 +1637,7 @@ class AdminController extends BaseController
 
         $upserts = [];
         $upsertParams = [];
-        $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'og_image', 'about_image'];
+        $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'og_image', 'about_image', 'site_logo'];
 
         foreach ($_POST as $key => $value) {
             if (str_starts_with($key, 'setting_')) {

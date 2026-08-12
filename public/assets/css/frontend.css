@@ -82,7 +82,7 @@ button { cursor: pointer; font-family: inherit; border: none; }
 }
 
 /* ========== HOME SPECIFIC ========== */
-.logo-font { font-family: 'Playfair Display', sans-serif; }
+.logo-font { font-family: 'Playfair Display', 'Vazirmatn', sans-serif; }
 .tail-container { font-family: 'Vazirmatn', system-ui, sans-serif; }
 .hero-bg {
     background: linear-gradient(135deg, rgba(225, 29, 72, 0.85), rgba(190, 24, 93, 0.85)), var(--hero-bg) center/cover no-repeat;

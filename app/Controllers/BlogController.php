@@ -46,9 +46,10 @@ class BlogController extends BaseController
             }
             $allTags = array_keys($allTags);
 
-            $latestCourse = Database::fetch(
+            $latestCourseRow = Database::fetch(
                 "SELECT id, title, teacher, image, slug, duration, rating, students, is_free, price, category FROM courses WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"
             );
+            $latestCourse = $latestCourseRow ? normalizeCourse($latestCourseRow) : null;
 
             return compact('featured', 'categories', 'popularPosts', 'allTags', 'latestCourse');
         }, 'blog');

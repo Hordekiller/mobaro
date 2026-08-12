@@ -49,9 +49,7 @@ $title = 'گواهی پایان دوره | ' . e($course['title']); ?>
 
             <!-- Logo -->
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-rose-600 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-spa text-white text-lg"></i>
-                </div>
+                <img src="<?= e(brandLogo()) ?>" alt="<?= e($settings['brand_name'] ?? 'موبارو') ?>" class="h-10 w-auto">
                 <span class="text-2xl font-bold text-rose-600" style="font-family: 'Playfair Display', serif;"><?= e($settings['brand_name'] ?? 'موبارو') ?></span>
             </div>
 
@@ -91,7 +89,7 @@ $title = 'گواهی پایان دوره | ' . e($course['title']); ?>
                     <span class="text-xs text-zinc-400">مهر رسمی آکادمی</span>
                 </div>
                 <div class="text-center">
-                    <span class="text-xs text-zinc-400 block mb-1">شماره گواهی: MB-CERT-<?= $course['id'] ?>-<?= $userId ?? $user['id'] ?></span>
+                    <span class="text-xs text-zinc-400 block mb-1">شماره گواهی: MB-CERT-<?= $course['id'] ?>-<?= $user['id'] ?></span>
                 </div>
                 <div class="text-center">
                     <div class="w-20 h-20 mx-auto mb-2 rounded-full border-2 border-amber-400 flex items-center justify-center">

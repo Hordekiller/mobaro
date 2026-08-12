@@ -86,7 +86,7 @@ function filterUrl(array $overrides = []): string
                         <input type="range" min="0" max="5000000" value="<?= min($priceMax ?: 2500000, 5000000) ?>" class="range-slider mb-4" id="priceRange">
                         <div class="flex justify-between text-sm text-zinc-600">
                             <span>۰ تومان</span>
-                            <span id="priceValue" class="font-medium text-rose-500"><?= $priceMax ? number_format($priceMax) : '۲,۵۰۰,۰۰۰' ?> تومان</span>
+                            <span id="priceValue" class="font-medium text-rose-500"><?= $priceMax ? nformat($priceMax) : '۲,۵۰۰,۰۰۰' ?> تومان</span>
                         </div>
                         <button onclick="applyPriceFilter()" class="mt-3 w-full py-2 bg-rose-100 text-rose-600 rounded-xl text-sm font-semibold hover:bg-rose-200 transition">اعمال فیلتر قیمت</button>
                     </div>
@@ -269,14 +269,14 @@ function filterUrl(array $overrides = []): string
                                         <?php endif; ?>
                                     <?php endfor; ?>
                                 </div>
-                                <span class="text-zinc-400 text-sm">(<?= number_format($item['reviews'] ?? 0) ?>)</span>
+                                <span class="text-zinc-400 text-sm">(<?= nformat($item['reviews'] ?? 0) ?>)</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div>
                                     <?php if (!empty($item['old_price']) && $item['old_price'] > $item['price']) : ?>
-                                    <span class="text-zinc-400 text-sm line-through ml-2"><?= number_format((float) $item['old_price']) ?> تومان</span>
+                                    <span class="text-zinc-400 text-sm line-through ml-2"><?= nformat((float) $item['old_price']) ?> تومان</span>
                                     <?php endif; ?>
-                                    <span class="text-lg font-bold text-rose-500"><?= number_format((int) $item['price']) ?> تومان</span>
+                                    <span class="text-lg font-bold text-rose-500"><?= nformat((int) $item['price']) ?> تومان</span>
                                 </div>
                                 <button onclick="addToCart(<?= $item['id'] ?>, this)" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm transition-all">
                                     <i class="fa-solid fa-plus ml-1"></i>افزودن

@@ -37,7 +37,7 @@ declare(strict_types=1);
                         <div class="p-6">
                             <div class="flex justify-between text-xs">
                                 <span class="text-emerald-500"><?= e($course['category']) ?></span>
-                                <span class="text-zinc-400"><?= number_format($course['students']) ?> دانشجو</span>
+                                <span class="text-zinc-400"><?= nformat($course['students']) ?> دانشجو</span>
                             </div>
                             <h4 class="font-semibold mt-2 group-hover:text-rose-500 transition-colors"><?= e($course['title']) ?></h4>
                         </div>

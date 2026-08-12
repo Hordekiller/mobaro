@@ -65,14 +65,15 @@ class AcademyController extends BaseController
             return compact('courses', 'totalCourses', 'totalPages');
         }, 'academy');
 
-        $courses = $cached['courses'];
+        $courses = array_map('normalizeCourse', $cached['courses']);
         $totalCourses = $cached['totalCourses'];
         $totalPages = $cached['totalPages'];
 
         $featuredCourse = Cache::remember('academy_featured', Config::get('cache.ttl.page', 600), function () {
-            return Database::fetch(
-                "SELECT * FROM courses WHERE is_active = 1 ORDER BY RAND() LIMIT 1"
+            $row = Database::fetch(
+                "SELECT * FROM courses WHERE is_active = 1 ORDER BY id DESC LIMIT 1"
             );
+            return $row ? normalizeCourse($row) : null;
         }, 'academy');
 
         $sidebar = $this->getSidebar();
@@ -108,10 +109,13 @@ class AcademyController extends BaseController
             return;
         }
 
+        $course = normalizeCourse($course);
+
         $related = Database::fetchAll(
             "SELECT * FROM courses WHERE category = ? AND id != ? AND is_active = 1 LIMIT 3",
             [$course['category'], $course['id']]
         );
+        $related = array_map('normalizeCourse', $related);
 
         $settings = Settings::all();
 
@@ -203,6 +207,8 @@ class AcademyController extends BaseController
             return;
         }
 
+        $course = normalizeCourse($course);
+
         $userId = $_SESSION['user']['id'];
         $enrollment = Database::fetch(
             "SELECT * FROM course_enrollments WHERE user_id = ? AND course_id = ?",
@@ -276,6 +282,13 @@ class AcademyController extends BaseController
             return;
         }
 
+        $course = Database::fetch("SELECT curriculum FROM courses WHERE id = ?", [$courseId]);
+        $curriculum = json_decode($course['curriculum'] ?? '[]', true) ?: [];
+        if (!isset($curriculum[$moduleIndex]['lessons'][$lessonIndex])) {
+            $this->json(['error' => 'درس نامعتبر است'], 400);
+            return;
+        }
+
         $existing = Database::fetch(
             "SELECT id FROM course_lessons_completed WHERE user_id = ? AND course_id = ? AND lesson_index = ?",
             [$userId, $courseId, $lessonIndex]
@@ -290,8 +303,6 @@ class AcademyController extends BaseController
             ]);
         }
 
-        $course = Database::fetch("SELECT curriculum FROM courses WHERE id = ?", [$courseId]);
-        $curriculum = json_decode($course['curriculum'] ?? '[]', true) ?: [];
         $totalLessons = 0;
         foreach ($curriculum as $module) {
             $totalLessons += count($module['lessons'] ?? []);
@@ -332,6 +343,8 @@ class AcademyController extends BaseController
             return;
         }
 
+        $course = normalizeCourse($course);
+
         $userId = $_SESSION['user']['id'];
         $enrollment = Database::fetch(
             "SELECT * FROM course_enrollments WHERE user_id = ? AND course_id = ?",
@@ -344,7 +357,9 @@ class AcademyController extends BaseController
         }
 
         $user = $_SESSION['user'];
-        $certificateDate = jdate('Y/m/d', strtotime($enrollment['created_at']));
+        $completedAt = $enrollment['created_at'] ?? '';
+        $completedTs = $completedAt !== '' ? strtotime($completedAt) : false;
+        $certificateDate = jdate('Y/m/d', $completedTs === false ? time() : $completedTs);
         $settings = Settings::all();
 
         $this->view('academy/certificate', compact('course', 'user', 'enrollment', 'certificateDate', 'settings'));

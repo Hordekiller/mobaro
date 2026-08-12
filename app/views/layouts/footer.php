@@ -14,9 +14,7 @@ use App\Captcha;
             <div class="grid grid-cols-2 md:grid-cols-5 gap-y-8 md:gap-y-12">
                 <div>
                     <div class="flex items-center gap-x-3 text-white mb-6">
-                        <div class="w-8 h-8 bg-rose-500 rounded-2xl flex items-center justify-center">
-                            <i class="fa-solid fa-spa"></i>
-                        </div>
+                        <img src="<?= e(brandLogo()) ?>" alt="<?= e($brandName) ?>" class="h-8 w-auto" style="filter: brightness(0) invert(1);">
                         <span class="logo-font text-4xl font-bold text-white">
                             <?= e($brandName) ?>
                         </span>

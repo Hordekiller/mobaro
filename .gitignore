@@ -88,6 +88,9 @@ legacy/
 # Report / audit files
 REPORT-PRODUCTION-ISSUES.md
 
+# Security audit output
+security-audit/
+
 # Image cache
 public/assets/images/cache/
 

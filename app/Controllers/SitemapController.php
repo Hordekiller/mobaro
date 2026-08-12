@@ -469,7 +469,7 @@ class SitemapController extends BaseController
 
         $thumbnail = $this->absoluteImage((string) ($course['image'] ?? ''));
         if ($thumbnail === '') {
-            $thumbnail = asset('images/logo.png');
+            $thumbnail = brandLogo(true);
         }
 
         $title = trim((string) ($course['title'] ?? ''));

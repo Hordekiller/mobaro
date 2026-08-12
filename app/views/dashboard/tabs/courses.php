@@ -40,7 +40,8 @@ declare(strict_types=1);
                 </div>
                 <div class="flex items-center justify-between mt-3 text-xs text-[#9e9e9e]">
                     <span><i class="fa-regular fa-clock text-[#B76E79] ml-1"></i><?= e($enrollment['duration']) ?></span>
-                    <span><i class="fa-regular fa-calendar text-[#B76E79] ml-1"></i><?= jdate('Y/m/d', strtotime($enrollment['created_at'])) ?></span>
+                    <?php $courseTs = !empty($enrollment['created_at']) ? strtotime($enrollment['created_at']) : false; ?>
+                    <span><i class="fa-regular fa-calendar text-[#B76E79] ml-1"></i><?= jdate('Y/m/d', $courseTs === false ? time() : $courseTs) ?></span>
                 </div>
                 <a href="/course/<?= e($enrollment['slug'] ?? $enrollment['course_id']) ?>/watch" class="block w-full mt-4 py-3 bg-[#B76E79] text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all text-center">
                     <?= ($enrollment['progress'] ?? 0) >= 100 ? 'مشاهده دوره' : 'ادامه دوره' ?>

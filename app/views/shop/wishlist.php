@@ -31,9 +31,9 @@ $title = 'علاقه‌مندی‌ها | ' . ($settings['brand_name'] ?? 'موب
                 <div class="flex items-center justify-between mt-4">
                     <div>
                         <?php if ($product['is_sale'] && $product['old_price'] > $product['price']) : ?>
-                        <span class="text-zinc-400 text-xs line-through"><?= number_format((float) $product['old_price']) ?></span>
+                        <span class="text-zinc-400 text-xs line-through"><?= nformat((float) $product['old_price']) ?></span>
                         <?php endif; ?>
-                        <span class="font-bold text-sm"><?= number_format((int) $product['price']) ?> <span class="text-xs text-zinc-400">تومان</span></span>
+                        <span class="font-bold text-sm"><?= nformat((int) $product['price']) ?> <span class="text-xs text-zinc-400">تومان</span></span>
                     </div>
                     <button onclick="quickAddToCart(<?= $product['id'] ?>)" class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all" aria-label="افزودن <?= e($product['name']) ?> به سبد خرید">
                         <i class="fa-solid fa-cart-plus text-sm"></i>

@@ -181,6 +181,14 @@ declare(strict_types=1);
                     'hero_title' => 'عنوان هدر',
                     'hero_description' => 'توضیحات هدر',
                     'hero_customers_text' => 'متن تعداد مشتریان (HTML)',
+                    'hero_trust_1_icon' => 'آیکون ۱ نوار اعتماد (کلاس فونت‌آوسام)',
+                    'hero_trust_1_text' => 'متن ۱ نوار اعتماد',
+                    'hero_trust_2_icon' => 'آیکون ۲ نوار اعتماد (کلاس فونت‌آوسام)',
+                    'hero_trust_2_text' => 'متن ۲ نوار اعتماد',
+                    'hero_trust_3_icon' => 'آیکون ۳ نوار اعتماد (کلاس فونت‌آوسام)',
+                    'hero_trust_3_text' => 'متن ۳ نوار اعتماد',
+                    'hero_trust_4_icon' => 'آیکون ۴ نوار اعتماد (کلاس فونت‌آوسام)',
+                    'hero_trust_4_text' => 'متن ۴ نوار اعتماد',
                 ],
                 'رزرو نوبت' => [
                     'booking_phone' => 'تلفن هماهنگی رزرو',
@@ -234,6 +242,9 @@ declare(strict_types=1);
                 'آنالیتیکس' => [
                     'analytics_gtag_id' => 'شناسه Google Analytics 4 (مثال: G-XXXXXXXXXX)',
                 ],
+                'لوگو و برند' => [
+                    'site_logo' => 'لوگوی سایت (با پس‌زمینه شفاف)',
+                ],
                 'ویرایشگر متن' => [
                     'tinymce_source' => 'روش بارگذاری ویرایشگر متن (برای وبلاگ، محصولات و آکادمی)',
                 ],
@@ -247,11 +258,12 @@ declare(strict_types=1);
             ];
             ?>
             <?php
-            $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'about_image'];
+            $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'about_image', 'site_logo'];
             $imagePaths = [
                 'hero_bg_image' => '/assets/images/',
                 'hero_model_image' => '/assets/images/',
                 'about_image' => '/assets/images/',
+                'site_logo' => '/assets/images/',
             ];
             ?>
             <form action="/admin/settings/update" method="POST" enctype="multipart/form-data" class="space-y-6">

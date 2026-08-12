@@ -70,7 +70,7 @@ use App\Database;
             --hero-bg: url('/assets/images/<?= e($settings['hero_bg_image'] ?? 'hero-bg.jpg') ?>');
         }
         body { font-family: 'Vazirmatn', system-ui, sans-serif; }
-        .logo-font { font-family: 'Playfair Display', serif; }
+        .logo-font { font-family: 'Playfair Display', 'Vazirmatn', sans-serif; }
     </style>
     <?php if (!empty($jsonLd)) : ?>
         <?php foreach ((array) $jsonLd as $block) : ?>
@@ -85,9 +85,7 @@ use App\Database;
         <div class="max-w-screen-2xl mx-auto">
             <div class="px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-x-3">
-                    <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner overflow-hidden">
-                        <img src="/assets/images/logo.png" alt="<?= e($brandName) ?>" class="w-full h-full object-cover" data-fallback-icon="<i class='fa-solid fa-spa text-white text-3xl'></i>">
-                    </div>
+                    <img src="<?= e(brandLogo()) ?>" alt="<?= e($brandName) ?>" class="h-11 w-auto">
                     <span class="logo-font text-4xl font-bold tracking-tighter text-rose-600">
                         <?= e($brandName) ?>
                     </span>

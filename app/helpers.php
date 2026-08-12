@@ -33,6 +33,14 @@ function url(string $path = ''): string
     return $baseUrl . ($normalizedPath === '/' ? '/' : $normalizedPath);
 }
 
+function brandLogo(bool $absolute = false): string
+{
+    $logo = Settings::get('site_logo', '');
+    $path = '/assets/images/' . ($logo !== '' ? basename((string) $logo) : 'logo.png');
+
+    return $absolute ? url(ltrim($path, '/')) : $path;
+}
+
 function redirect(string $path): void
 {
     header('Location: ' . url($path));
@@ -102,17 +110,91 @@ function csrf(): string
     return '<input type="hidden" name="_csrf" value="' . $_SESSION['_csrf'] . '">';
 }
 
-function verifyCsrf(string $token): bool
+function verifyCsrf(mixed $token): bool
 {
-    return hash_equals($_SESSION['_csrf'] ?? '', $token);
+    if (!is_string($token)) {
+        return false;
+    }
+    return hash_equals((string) ($_SESSION['_csrf'] ?? ''), $token);
 }
 
-function sanitize(string $input): string
+function sanitize(mixed $input): string
 {
+    if (is_array($input)) {
+        return implode(',', array_map(static fn($item) => sanitize($item), $input));
+    } elseif (!is_string($input) && !is_numeric($input) && $input !== null) {
+        $input = (string) $input;
+    }
+    $input = (string) $input;
     $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
     $english = ['0','1','2','3','4','5','6','7','8','9'];
     $input = str_replace($persian, $english, $input);
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+}
+
+function toNumber(mixed $value): int|float
+{
+    if (is_int($value) || is_float($value)) {
+        return $value;
+    }
+    if (is_bool($value)) {
+        return (int) $value;
+    }
+    if (is_array($value)) {
+        $value = implode(',', $value);
+    }
+    if ($value === null) {
+        return 0;
+    }
+
+    $s = trim(faToEnDigits((string) $value));
+    if ($s === '' || $s === 'null' || $s === 'NULL' || strtolower($s) === 'nan') {
+        return 0;
+    }
+
+    $s = str_replace([',', '،', '٬', '_', ' '], '', $s);
+
+    if (preg_match('/^-?\d+$/', $s)) {
+        return (int) $s;
+    }
+
+    $s = preg_replace('/[^\d.+eE-]/', '', $s);
+    if ($s === '' || $s === '.' || $s === '-' || $s === '+' || $s === '-.' || $s === '+.') {
+        return 0;
+    }
+
+    return (float) $s;
+}
+
+function nformat(mixed $value, int $decimals = 0): string
+{
+    return number_format(toNumber($value), $decimals);
+}
+
+function normalizeProduct(array $row): array
+{
+    $row['id'] = (int) ($row['id'] ?? 0);
+    $row['price'] = (int) toNumber($row['price'] ?? 0);
+    $row['old_price'] = (int) toNumber($row['old_price'] ?? 0);
+    $row['stock'] = (int) toNumber($row['stock'] ?? 0);
+    $row['rating'] = (float) toNumber($row['rating'] ?? 0);
+    $row['reviews'] = (int) toNumber($row['reviews'] ?? 0);
+    $row['is_new'] = (int) ($row['is_new'] ?? 0);
+    $row['is_sale'] = (int) ($row['is_sale'] ?? 0);
+    $row['is_active'] = (int) ($row['is_active'] ?? 0);
+    return $row;
+}
+
+function normalizeCourse(array $row): array
+{
+    $row['id'] = (int) ($row['id'] ?? 0);
+    $row['price'] = (int) toNumber($row['price'] ?? 0);
+    $row['old_price'] = (int) toNumber($row['old_price'] ?? 0);
+    $row['rating'] = (float) toNumber($row['rating'] ?? 0);
+    $row['students'] = (int) toNumber($row['students'] ?? 0);
+    $row['is_free'] = (int) ($row['is_free'] ?? 0);
+    $row['is_active'] = (int) ($row['is_active'] ?? 0);
+    return $row;
 }
 
 function faToEnDigits(string $input): string
@@ -189,9 +271,9 @@ function isActive(string $path): string
     return $uri === $path ? 'active' : '';
 }
 
-function priceFormat(int|string $amount): string
+function priceFormat(mixed $amount): string
 {
-    return number_format((int) $amount) . ' تومان';
+    return nformat(toNumber($amount)) . ' تومان';
 }
 
 function formatFileSize(int $bytes): string
@@ -294,13 +376,12 @@ function truncate(string $text, int $length = 100): string
     return mb_substr($text, 0, $length) . '...';
 }
 
-function faNum(int|string|float $num): string
+function faNum(mixed $num): string
 {
+    $num = toNumber($num);
     $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
     if (is_float($num)) {
         $num = normalizeDecimal($num);
-    } elseif (is_string($num) && str_contains($num, '.') && is_numeric($num)) {
-        $num = normalizeDecimal((float) $num);
     }
     return str_replace(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], $persian, (string) $num);
 }

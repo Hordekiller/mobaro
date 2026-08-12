@@ -24,9 +24,7 @@ $brandName = $settings['brand_name'] ?? 'موبارو';
     <div class="w-full max-w-sm">
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div class="p-8 text-center">
-                <div class="w-16 h-16 bg-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-200 overflow-hidden" aria-label="لوگوی <?= e($brandName) ?>">
-                    <img src="/assets/images/logo.png" alt="لوگوی <?= e($brandName) ?>" class="w-full h-full object-cover" data-fallback-icon="<i class='fa-solid fa-shield-halved text-white text-3xl'></i>">
-                </div>
+                <img src="<?= e(brandLogo()) ?>" alt="لوگوی <?= e($brandName) ?>" class="h-16 w-auto mx-auto mb-6">
                 <h1 class="text-2xl font-bold mb-1">پنل مدیریت</h1>
                 <p class="text-zinc-500 text-sm"><?= e($brandName) ?></p>
             </div>

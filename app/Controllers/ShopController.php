@@ -139,6 +139,7 @@ class ShopController extends BaseController
         }, 'products');
 
         $products = $cached['products'];
+        $products = array_map('normalizeProduct', $products);
         $totalProducts = $cached['totalProducts'];
         $totalPages = $cached['totalPages'];
         $allTotal = $cached['allTotal'];
@@ -184,10 +185,13 @@ class ShopController extends BaseController
             return;
         }
 
+        $product = normalizeProduct($product);
+
         $related = Database::fetchAll(
             "SELECT * FROM products WHERE category = ? AND id != ? AND is_active = 1 LIMIT 4",
             [$product['category'], $id]
         );
+        $related = array_map('normalizeProduct', $related);
 
         $reviews = Database::fetchAll(
             "SELECT * FROM reviews WHERE product_id = ? ORDER BY id DESC",
@@ -367,6 +371,7 @@ class ShopController extends BaseController
         } else {
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             $products = Database::fetchAll("SELECT * FROM products WHERE id IN ({$placeholders}) AND is_active = 1", $ids);
+            $products = array_map('normalizeProduct', $products);
         }
         $cart = $_SESSION['cart'] ?? [];
         $settings = Settings::all();
@@ -412,7 +417,7 @@ class ShopController extends BaseController
         $this->json([
             'cart_count' => array_sum(array_column($_SESSION['cart'] ?? [], 'qty')),
             'total' => $total,
-            'total_formatted' => number_format($total) . self::CURRENCY_SUFFIX,
+            'total_formatted' => nformat($total) . self::CURRENCY_SUFFIX,
         ]);
     }
 
@@ -458,8 +463,8 @@ class ShopController extends BaseController
             $_SESSION['cart'][] = [
                 'id' => $product['id'],
                 'name' => $product['name'],
-                'price' => (int) $product['price'],
-                'old_price' => (int) ($product['old_price'] ?? 0),
+                'price' => (int) toNumber($product['price'] ?? 0),
+                'old_price' => (int) toNumber($product['old_price'] ?? 0),
                 'image' => $product['image'],
                 'category' => $product['category'],
                 'brand' => $product['brand'] ?? '',
@@ -677,7 +682,7 @@ class ShopController extends BaseController
         }
 
         if ($coupon['min_order'] > 0 && $total < $coupon['min_order']) {
-            return ['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format((int) $coupon['min_order']) . ' تومان است.', 'discount' => 0, 'code' => ''];
+            return ['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . nformat((int) $coupon['min_order']) . ' تومان است.', 'discount' => 0, 'code' => ''];
         }
 
         $discount = $coupon['discount_type'] === 'percentage'
@@ -967,7 +972,7 @@ class ShopController extends BaseController
             $user = Auth::user();
             $userPhone = $user['phone'] ?? '';
             $userName = $user['name'] ?? 'کاربر';
-            $total = faNum(number_format((int) ($order['total'] ?? 0))) . ' تومان';
+            $total = faNum(nformat((int) ($order['total'] ?? 0))) . ' تومان';
             $code = $order['tracking_code'] ?? $order['id'];
 
             if ($userPhone !== '') {
@@ -1054,7 +1059,7 @@ class ShopController extends BaseController
         }
 
         if ($coupon['min_order'] > 0 && $total < $coupon['min_order']) {
-            $this->json(['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . number_format((int) $coupon['min_order']) . ' تومان است.'], 400);
+            $this->json(['error' => 'حداقل مبلغ خرید برای این کد تخفیف ' . nformat((int) $coupon['min_order']) . ' تومان است.'], 400);
             return;
         }
 
@@ -1067,9 +1072,9 @@ class ShopController extends BaseController
         $this->json([
             'success' => true,
             'discount' => $discount,
-            'discount_formatted' => number_format($discount) . self::CURRENCY_SUFFIX,
+            'discount_formatted' => nformat($discount) . self::CURRENCY_SUFFIX,
             'total_after' => $total - $discount,
-            'total_after_formatted' => number_format($total - $discount) . self::CURRENCY_SUFFIX,
+            'total_after_formatted' => nformat($total - $discount) . self::CURRENCY_SUFFIX,
             'message' => 'کد تخفیف اعمال شد.',
         ]);
     }

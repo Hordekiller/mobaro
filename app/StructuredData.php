@@ -78,7 +78,7 @@ class StructuredData
             '@type' => 'Organization',
             'name' => $name,
             'url' => $url,
-            'logo' => asset('images/logo.png'),
+            'logo' => brandLogo(true),
         ];
         if (!empty($sameAs)) {
             $org['sameAs'] = array_values(array_unique($sameAs));
@@ -151,7 +151,7 @@ class StructuredData
             '@type' => 'Product',
             'name' => $name,
             'description' => self::truncate((string) ($p['description'] ?? ''), 200),
-            'image' => $image ?: asset('images/logo.png'),
+            'image' => $image ?: brandLogo(true),
             'offers' => $offer,
         ];
 
@@ -225,7 +225,7 @@ class StructuredData
             'publisher' => [
                 '@type' => 'Organization',
                 'name' => $s['brand_name'] ?? 'موبارو',
-                'logo' => ['@type' => 'ImageObject', 'url' => asset('images/logo.png')],
+                'logo' => ['@type' => 'ImageObject', 'url' => brandLogo(true)],
             ],
         ];
 
@@ -344,7 +344,7 @@ class StructuredData
     {
         $image = (string) ($post['image'] ?? ($post['og_image'] ?? ''));
         if ($image === '') {
-            return asset('images/logo.png');
+            return brandLogo(true);
         }
         if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://')) {
             return $image;

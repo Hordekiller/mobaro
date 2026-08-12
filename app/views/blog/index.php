@@ -270,7 +270,7 @@ $dateFormat = 'Y/m/d';
                             <?php if (!empty($latestCourse['is_free'])) : ?>
                             <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">رایگان</span>
                             <?php else : ?>
-                            <span class="text-rose-500 font-bold text-sm"><?= number_format($latestCourse['price']) ?> تومان</span>
+                            <span class="text-rose-500 font-bold text-sm"><?= nformat($latestCourse['price']) ?> تومان</span>
                             <?php endif; ?>
                         </a>
                     </div>

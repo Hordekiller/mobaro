@@ -31,9 +31,9 @@ class HomeController extends BaseController
                 ),
                 'artists' => Database::fetchAll("SELECT * FROM artists WHERE is_active = 1"),
                 'hairModels' => Database::fetchAll("SELECT * FROM hair_models WHERE is_active = 1 LIMIT 10"),
-                'products' => Database::fetchAll("SELECT * FROM products WHERE is_active = 1 ORDER BY id LIMIT 10"),
+                'products' => array_map('normalizeProduct', Database::fetchAll("SELECT * FROM products WHERE is_active = 1 ORDER BY id LIMIT 10")),
                 'testimonials' => Database::fetchAll("SELECT * FROM testimonials WHERE is_active = 1 ORDER BY id"),
-                'educationCourses' => Database::fetchAll("SELECT * FROM courses WHERE is_active = 1 ORDER BY RAND() LIMIT 4"),
+                'educationCourses' => array_map('normalizeCourse', Database::fetchAll("SELECT * FROM courses WHERE is_active = 1 ORDER BY RAND() LIMIT 4")),
             ];
         }, 'homepage');
 

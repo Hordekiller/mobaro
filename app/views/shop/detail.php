@@ -92,14 +92,14 @@ $inWishlist = Auth::check()
                                 <?php endif; ?>
                             <?php endfor; ?>
                         </div>
-                        <span class="text-zinc-500">(<?= number_format($product['reviews'] ?? 0) ?> نظر)</span>
+                        <span class="text-zinc-500">(<?= nformat($product['reviews'] ?? 0) ?> نظر)</span>
                     </div>
 
                     <div class="mb-6">
                         <?php if ($discount > 0) : ?>
-                        <span class="text-zinc-400 text-xl line-through ml-3"><?= number_format((float) $product['old_price']) ?> تومان</span>
+                        <span class="text-zinc-400 text-xl line-through ml-3"><?= nformat((float) $product['old_price']) ?> تومان</span>
                         <?php endif; ?>
-                        <span class="text-4xl font-bold text-rose-500"><?= number_format((int) $product['price']) ?> تومان</span>
+                        <span class="text-4xl font-bold text-rose-500"><?= nformat((int) $product['price']) ?> تومان</span>
                     </div>
 
                     <!-- Qty + Add to Cart -->
@@ -172,7 +172,7 @@ $inWishlist = Auth::check()
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-zinc-800">نظرات کاربران</h2>
-                    <p class="text-zinc-400 text-sm mt-1"><?= faNum($reviewCount) ?> نظر • میانگین امتیاز <?= number_format($avgRating, 1) ?></p>
+                    <p class="text-zinc-400 text-sm mt-1"><?= faNum($reviewCount) ?> نظر • میانگین امتیاز <?= nformat($avgRating, 1) ?></p>
                 </div>
                 <button onclick="document.getElementById('review-form').scrollIntoView({behavior:'smooth'})" class="px-5 py-2.5 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">
                     <i class="fa-solid fa-plus ml-1"></i>ثبت نظر
@@ -260,7 +260,7 @@ $inWishlist = Auth::check()
                         <span class="text-xs text-rose-500 font-medium"><?= e($rel['brand'] ?? '') ?></span>
                         <h3 class="font-bold text-zinc-800 mt-1"><a href="/product/<?= $rel['id'] ?>" class="hover:text-rose-500 transition-colors"><?= e($rel['name']) ?></a></h3>
                         <div class="flex items-center justify-between mt-3">
-                            <span class="font-bold text-rose-500"><?= number_format((int) $rel['price']) ?> تومان</span>
+                            <span class="font-bold text-rose-500"><?= nformat((int) $rel['price']) ?> تومان</span>
                             <button onclick="addToCart(<?= $rel['id'] ?>)" class="w-9 h-9 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 hover:bg-rose-600 hover:text-white transition-all" aria-label="افزودن <?= e($rel['name']) ?> به سبد خرید">
                                 <i class="fa-solid fa-plus"></i>
                             </button>

@@ -26,7 +26,7 @@ declare(strict_types=1);
                 <div class="p-7">
                     <div class="flex justify-between items-baseline">
                         <div class="font-semibold text-2xl"><?= e($service['title']) ?></div>
-                        <div class="text-rose-500 font-bold"><?= number_format($service['price'] / 1000) ?></div>
+                        <div class="text-rose-500 font-bold"><?= nformat(toNumber($service['price']) / 1000) ?></div>
                     </div>
                     <div class="text-zinc-500 text-sm mt-1"><?= e($service['description'] ?? '') ?></div>
                     <div class="mt-8 flex items-center justify-between text-xs">

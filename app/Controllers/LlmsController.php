@@ -55,11 +55,24 @@ class LlmsController extends BaseController
         $lines[] = '- [تماس با ما](' . $baseUrl . '/contact): اطلاعات تماس';
         $lines[] = '- [حریم خصوصی](' . $baseUrl . '/privacy): سیاست حفظ حریم خصوصی';
         $lines[] = '- [شرایط استفاده](' . $baseUrl . '/terms): قوانین و مقررات';
+        $lines[] = '- [نقشه سایت](' . $baseUrl . '/sitemap.xml): نقشه کامل سایت (XML) برای خزش همه صفحات';
+
+        $services = $this->topServices();
+        if (!empty($services)) {
+            $lines[] = '';
+            $lines[] = '## خدمات';
+            $lines[] = '';
+            foreach ($services as $s) {
+                $lines[] = '- ' . ($s['title'] ?? '')
+                    . ($s['category'] ? ' (' . $s['category'] . ')' : '')
+                    . ' — رزرو آنلاین: ' . $baseUrl . '/#booking';
+            }
+        }
 
         $products = $this->topProducts();
         if (!empty($products)) {
             $lines[] = '';
-            $lines[] = '## محصولات برتر';
+            $lines[] = '## محصولات';
             $lines[] = '';
             foreach ($products as $p) {
                 $lines[] = '- [' . ($p['name'] ?? '') . '](' . $baseUrl . '/product/' . (int) $p['id'] . '): '
@@ -76,6 +89,18 @@ class LlmsController extends BaseController
                 $price = (int) ($c['price'] ?? 0) > 0 ? priceFormat($c['price']) : 'رایگان';
                 $lines[] = '- [' . ($c['title'] ?? '') . '](' . $baseUrl . '/course/' . ($c['slug'] ?? '') . '): '
                     . ($c['teacher'] ? 'مدرس: ' . $c['teacher'] . ' — ' : '') . $price;
+            }
+        }
+
+        $models = $this->topModels();
+        if (!empty($models)) {
+            $lines[] = '';
+            $lines[] = '## مدل‌ها';
+            $lines[] = '';
+            foreach ($models as $m) {
+                $lines[] = '- ' . ($m['title'] ?? '')
+                    . ($m['category'] ? ' (' . $m['category'] . ')' : '')
+                    . ' — [' . $baseUrl . '/models]';
             }
         }
 
@@ -143,7 +168,7 @@ class LlmsController extends BaseController
     {
         try {
             return Database::fetchAll(
-                "SELECT id, name, price, brand FROM products WHERE is_active = 1 ORDER BY id DESC LIMIT 5"
+                "SELECT id, name, price, brand FROM products WHERE is_active = 1 ORDER BY id DESC"
             );
         } catch (\Throwable $e) {
             return [];
@@ -166,6 +191,28 @@ class LlmsController extends BaseController
         try {
             return Database::fetchAll(
                 "SELECT id, title, slug, excerpt FROM blog_posts WHERE is_published = 1 ORDER BY published_at DESC, id DESC LIMIT 5"
+            );
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function topServices(): array
+    {
+        try {
+            return Database::fetchAll(
+                "SELECT title, category FROM services WHERE is_active = 1 ORDER BY id LIMIT 20"
+            );
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function topModels(): array
+    {
+        try {
+            return Database::fetchAll(
+                "SELECT title, category FROM hair_models WHERE is_active = 1 ORDER BY id LIMIT 20"
             );
         } catch (\Throwable $e) {
             return [];

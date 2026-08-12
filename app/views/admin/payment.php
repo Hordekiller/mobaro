@@ -111,7 +111,7 @@ $paymentStats = $paymentStats ?? ['total' => 0, 'success' => 0, 'failed' => 0];
                             ?>
                             <span class="px-2 py-1 rounded-lg text-xs bg-zinc-100 text-zinc-600"><?= $label ?></span>
                         </td>
-                        <td class="py-2 px-2"><?= faNum(number_format((int) ($log['amount'] ?? 0))) ?></td>
+                        <td class="py-2 px-2"><?= faNum(nformat((int) ($log['amount'] ?? 0))) ?></td>
                         <td class="py-2 px-2">
                             <?php
                             $statusLabels = ['sent' => 'ارسال شد', 'verified' => 'تأیید شد', 'failed' => 'ناموفق', 'cancelled' => 'لغو شد', 'invalid' => 'نامعتبر'];

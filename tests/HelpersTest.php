@@ -219,4 +219,72 @@ class HelpersTest extends TestCase
     {
         $this->assertSame('تأیید شد', smsStatusLabel('CONFIRMED'));
     }
+
+    public function testToNumberParsesVariousInputs(): void
+    {
+        $this->assertSame(9000000, toNumber('9,000,000'));
+        $this->assertSame(9000000, toNumber('۹,۰۰۰,۰۰۰'));
+        $this->assertSame(9000000, toNumber('9٬000٬000'));
+        $this->assertSame(0, toNumber(''));
+        $this->assertSame(0, toNumber('  '));
+        $this->assertSame(0, toNumber(null));
+        $this->assertSame(1, toNumber(true));
+        $this->assertSame(125, toNumber('125'));
+        $this->assertSame(12.5, toNumber('12.5'));
+        $this->assertSame(0, toNumber('abc'));
+    }
+
+    public function testNformatFormatsSafely(): void
+    {
+        $this->assertSame('9,000,000', nformat('9,000,000'));
+        $this->assertSame('0', nformat(''));
+        $this->assertSame('1,250,000', nformat('۱,۲۵۰,۰۰۰'));
+        $this->assertSame('0', nformat('abc'));
+        $this->assertSame('12,345', nformat(12345));
+    }
+
+    public function testSanitizeHandlesArrayInput(): void
+    {
+        $result = sanitize(['<b>x</b>', 'y"z']);
+        $this->assertStringContainsString('&lt;b&gt;x&lt;/b&gt;', $result);
+        $this->assertStringContainsString('y&quot;z', $result);
+    }
+
+    public function testVerifyCsrfRejectsArrayToken(): void
+    {
+        $this->assertFalse(verifyCsrf(['token']));
+    }
+
+    public function testNormalizeProductCleansNumericFields(): void
+    {
+        $row = normalizeProduct([
+            'id' => '5',
+            'name' => 'تست',
+            'price' => '9,000,000',
+            'old_price' => '10,000,000',
+            'stock' => '12',
+            'rating' => '4.7',
+            'reviews' => '0',
+        ]);
+        $this->assertSame(5, $row['id']);
+        $this->assertSame(9000000, $row['price']);
+        $this->assertSame(10000000, $row['old_price']);
+        $this->assertSame(12, $row['stock']);
+        $this->assertSame(4.7, $row['rating']);
+        $this->assertSame(0, $row['reviews']);
+    }
+
+    public function testNormalizeCourseCleansNumericFields(): void
+    {
+        $row = normalizeCourse([
+            'price' => '2,500,000',
+            'old_price' => '',
+            'rating' => '5.0',
+            'students' => '10',
+        ]);
+        $this->assertSame(2500000, $row['price']);
+        $this->assertSame(0, $row['old_price']);
+        $this->assertSame(5.0, $row['rating']);
+        $this->assertSame(10, $row['students']);
+    }
 }

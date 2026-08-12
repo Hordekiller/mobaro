@@ -10,9 +10,7 @@ $title = 'ورود | ' . ($settings['brand_name'] ?? 'موبارو'); ?>
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
             <div class="p-8 text-center">
                 <a href="/" class="inline-flex items-center gap-x-3 mb-8">
-                    <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center">
-                        <i class="fa-solid fa-spa text-white text-2xl"></i>
-                    </div>
+                    <img src="<?= e(brandLogo()) ?>" alt="<?= e($settings['brand_name'] ?? 'موبارو') ?>" class="h-11 w-auto">
                     <span class="logo-font text-3xl font-bold text-rose-600"><?= e($settings['brand_name'] ?? 'موبارو') ?></span>
                 </a>
                 <h2 class="text-2xl font-bold mb-2">ورود به حساب</h2>

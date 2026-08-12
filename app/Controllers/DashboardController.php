@@ -667,7 +667,7 @@ class DashboardController extends BaseController
             );
             if ($already) {
                 unset($_SESSION['wallet_topup_amount'], $_SESSION['wallet_topup_authority']);
-                flash('success', 'کیف پول شما قبلاً به مبلغ ' . number_format($amount) . ' تومان افزایش یافته بود.');
+                flash('success', 'کیف پول شما قبلاً به مبلغ ' . nformat($amount) . ' تومان افزایش یافته بود.');
                 redirect(self::PATH_WALLET);
                 return;
             }
@@ -686,7 +686,7 @@ class DashboardController extends BaseController
             Database::update('users', ['wallet' => $newBalance], self::WHERE_ID, ['id' => Auth::id()]);
 
             unset($_SESSION['wallet_topup_amount'], $_SESSION['wallet_topup_authority']);
-            flash('success', 'کیف پول شما به مبلغ ' . number_format($amount) . ' تومان افزایش یافت.');
+            flash('success', 'کیف پول شما به مبلغ ' . nformat($amount) . ' تومان افزایش یافت.');
         } else {
             flash('error', 'پرداخت ناموفق بود: ' . $result['message']);
         }

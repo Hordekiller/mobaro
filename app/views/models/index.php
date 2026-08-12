@@ -19,7 +19,7 @@ $title = 'مدل‌های مو | ' . ($settings['brand_name'] ?? 'موبارو')
                 مدل‌های مو و <span class="text-amber-300">آرایش</span>
             </h1>
             <p class="mt-6 text-lg text-white/80 leading-relaxed">
-                بیش از <?= number_format($totalModels) ?> مدل زیبا برای انتخاب بهترین سبک مو و آرایش
+                بیش از <?= nformat($totalModels) ?> مدل زیبا برای انتخاب بهترین سبک مو و آرایش
             </p>
         </div>
     </div>

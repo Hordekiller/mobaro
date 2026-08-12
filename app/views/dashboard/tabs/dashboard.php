@@ -41,7 +41,7 @@ declare(strict_types=1);
             <i class="fa-solid fa-star"></i>
         </div>
         <div>
-            <h3 class="text-2xl font-extrabold leading-none mb-1"><?= e(number_format((int) $user['points'])) ?></h3>
+            <h3 class="text-2xl font-extrabold leading-none mb-1"><?= e(nformat((int) $user['points'])) ?></h3>
             <p class="text-[#9e9e9e] text-sm">امتیاز شما</p>
         </div>
     </div>

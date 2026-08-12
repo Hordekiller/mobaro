@@ -2,16 +2,36 @@
 
 declare(strict_types=1);
 
+$settings = $settings ?? [];
+
+$heroTrustDefaults = [
+    ['fa-shield-halved', 'ضمانت کیفیت'],
+    ['fa-clock', 'نوبت‌دهی ۲۴ ساعته'],
+    ['fa-wand-magic-sparkles', 'محصولات اورجینال'],
+    ['fa-users', 'آرایشگران حرفه‌ای'],
+];
+
+$heroTrust = [];
+foreach ($heroTrustDefaults as $index => [$defaultIcon, $defaultText]) {
+    $key = $index + 1;
+    $icon = (string) ($settings['hero_trust_' . $key . '_icon'] ?? $defaultIcon);
+    $icon = preg_match('/^fa-[a-z0-9-]+$/', $icon) ? $icon : $defaultIcon;
+    $heroTrust[] = [
+        'icon' => $icon,
+        'text' => (string) ($settings['hero_trust_' . $key . '_text'] ?? $defaultText),
+    ];
+}
+
 ?>
-<header id="home" class="hero-bg min-h-screen flex items-center pt-16">
-    <div class="max-w-screen-2xl mx-auto px-8 grid md:grid-cols-2 gap-12 items-center h-full w-full">
+<header id="home" class="hero-bg min-h-screen flex flex-col items-center pt-16">
+    <div class="max-w-screen-2xl mx-auto px-8 grid md:grid-cols-2 gap-12 items-center flex-1 w-full">
         <div class="text-white pt-12 md:pt-0">
             <div class="inline-flex items-center gap-x-2 bg-white/20 backdrop-blur-md px-6 py-2 rounded-3xl text-sm mb-6">
                 <div class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
                 <span class="font-medium">باز شده از ساعت ۹ صبح</span>
             </div>
 
-            <h1 class="text-5xl md:text-7xl font-bold leading-none tracking-tighter logo-font mb-4">
+            <h1 class="text-4xl md:text-7xl font-bold leading-tight tracking-tighter logo-font mb-4">
                 <?= e($settings['hero_title'] ?? 'زیبایی را<br>با ما تجربه کنید') ?>
             </h1>
 
@@ -21,16 +41,16 @@ declare(strict_types=1);
 
             <div class="flex items-center gap-x-4">
                 <a href="/#booking"
-                   class="flex-1 md:flex-none bg-white text-rose-600 hover:bg-amber-100 px-6 py-4 md:px-10 md:py-6 rounded-3xl font-bold text-xl shadow-2xl shadow-rose-500/30 transition-all active:scale-95 text-center">
+                   class="flex-1 md:flex-none bg-white text-rose-600 hover:bg-amber-100 px-5 py-4 md:px-10 md:py-6 rounded-3xl font-bold text-lg md:text-xl shadow-2xl shadow-rose-500/30 transition-all active:scale-95 text-center">
                     رزرو نوبت
                 </a>
                 <a href="/#models"
-                   class="flex-1 md:flex-none border-2 border-white/80 hover:border-white px-6 py-4 md:px-8 md:py-6 rounded-3xl font-semibold text-lg transition-all text-center">
+                   class="flex-1 md:flex-none border-2 border-white/80 hover:border-white px-5 py-4 md:px-8 md:py-6 rounded-3xl font-semibold text-base md:text-lg transition-all text-center">
                     مشاهده مدل‌ها
                 </a>
             </div>
 
-            <div class="mt-16 flex items-center gap-x-8 text-sm">
+            <div class="mt-16 flex flex-wrap items-center gap-x-6 gap-y-3 md:gap-x-8 text-sm">
                 <div class="flex items-center">
                     <div class="flex -space-x-4">
                         <div class="w-7 h-7 bg-white rounded-2xl border-2 border-rose-500 flex items-center justify-center text-[10px] font-bold text-rose-600">۱</div>
@@ -72,17 +92,18 @@ declare(strict_types=1);
         </div>
     </div>
 
-    <div class="absolute bottom-12 left-1/2 flex flex-col items-center gap-y-1 text-white/60 text-xs">
+    <div class="absolute bottom-12 left-1/2 hidden md:flex flex-col items-center gap-y-1 text-white/60 text-xs">
         <div class="animate-bounce"><i class="fa-solid fa-chevron-down"></i></div>
         <span class="tracking-widest text-[10px]">پایین</span>
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md py-5 border-t border-white">
+    <div class="relative mt-auto md:absolute md:bottom-0 md:left-0 md:right-0 bg-white/90 backdrop-blur-md py-5 border-t border-white">
         <div class="max-w-screen-2xl mx-auto px-8 flex flex-wrap justify-center items-center gap-x-12 text-xs text-zinc-500 font-medium">
-            <div class="flex items-center gap-x-2"><i class="fa-solid fa-shield-halved"></i><span>ضمانت کیفیت</span></div>
-            <div class="flex items-center gap-x-2"><i class="fa-solid fa-clock"></i><span>نوبت‌دهی ۲۴ ساعته</span></div>
-            <div class="flex items-center gap-x-2"><i class="fa-solid fa-wand-magic-sparkles"></i><span>محصولات اورجینال</span></div>
-            <div class="flex items-center gap-x-2"><i class="fa-solid fa-users"></i><span>آرایشگران حرفه‌ای</span></div>
+            <?php foreach ($heroTrust as $item) : ?>
+                <?php if ($item['text'] !== '') : ?>
+                <div class="flex items-center gap-x-2"><i class="fa-solid <?= e($item['icon']) ?>"></i><span><?= e($item['text']) ?></span></div>
+                <?php endif; ?>
+            <?php endforeach; ?>
         </div>
     </div>
 </header>

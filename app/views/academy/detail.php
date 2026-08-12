@@ -47,7 +47,7 @@ if (isset($_SESSION['user'])) {
                 <?php $desc = $course['description'] ?? ''; ?>
                 <?php if (!empty($desc)) : ?>
                 <div class="mt-4 rich-description rich-description-invert max-w-2xl">
-                    <?= str_contains($desc, '<') ? $desc : nl2br(e($desc)) ?>
+                    <?= nl2br(e($desc)) ?>
                 </div>
                 <?php endif; ?>
                 <div class="mt-6 flex flex-wrap items-center gap-6 text-sm text-white/70">
@@ -57,9 +57,9 @@ if (isset($_SESSION['user'])) {
                     </div>
                     <div class="flex items-center gap-1 text-amber-300">
                         <?= str_repeat('★', (int) round((float) $course['rating'])) ?>
-                        <span class="text-white/70 mr-1"><?= number_format((float) $course['rating'], 1) ?></span>
+                        <span class="text-white/70 mr-1"><?= nformat((float) $course['rating'], 1) ?></span>
                     </div>
-                    <div><i class="fa-solid fa-user-group ml-1"></i><?= number_format($course['students']) ?> دانشجو</div>
+                    <div><i class="fa-solid fa-user-group ml-1"></i><?= nformat($course['students']) ?> دانشجو</div>
                     <div><i class="fa-solid fa-clock ml-1"></i><?= e($course['duration']) ?></div>
                 </div>
             </div>
@@ -140,8 +140,8 @@ if (isset($_SESSION['user'])) {
                     <h3 class="font-bold text-lg"><?= e($course['teacher']) ?></h3>
                     <p class="text-sm text-zinc-500 mt-1"><?= e($settings['academy_instructor_bio'] ?? 'مدرس ' . $course['category'] . ' با بیش از ۱۰ سال سابقه تدریس و فعالیت حرفه‌ای در سالن‌های زیبایی معتبر.') ?></p>
                     <div class="flex flex-wrap gap-2 mt-3">
-                        <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-star text-amber-400 ml-1"></i>امتیاز <?= number_format((float) $course['rating'], 1) ?></span>
-                        <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-user-group text-rose-400 ml-1"></i><?= number_format($course['students']) ?> دانشجو</span>
+                        <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-star text-amber-400 ml-1"></i>امتیاز <?= nformat((float) $course['rating'], 1) ?></span>
+                        <span class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full"><i class="fa-solid fa-user-group text-rose-400 ml-1"></i><?= nformat($course['students']) ?> دانشجو</span>
                     </div>
                 </div>
             </div>
@@ -152,8 +152,8 @@ if (isset($_SESSION['user'])) {
             <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-star text-amber-400 ml-2"></i>نظرات دانشجویان</h2>
             <div class="flex items-center gap-6 mb-6 p-4 bg-gradient-to-l from-rose-50 to-amber-50 rounded-2xl">
                 <div class="text-center">
-                    <div class="text-4xl font-bold text-rose-600"><?= number_format((float) $course['rating'], 1) ?></div>
-                    <div class="text-amber-400 text-sm mt-1"><?= str_repeat('★', (int) round((float) $course['rating'])) ?></div>
+                    <div class="text-4xl font-bold text-rose-600"><?= nformat((float) $course['rating'], 1) ?></div>
+                    <div class="text-amber-400 text-sm mt-1"><?= str_repeat('★', min(5, (int) round((float) toNumber($course['rating'] ?? 0)))) ?></div>
                     <div class="text-xs text-zinc-500 mt-1">از ۵</div>
                 </div>
                 <div class="flex-1 space-y-1">
@@ -175,7 +175,7 @@ if (isset($_SESSION['user'])) {
                             <div class="w-8 h-8 bg-<?= e($review['color'] ?? 'rose') ?>-100 text-<?= e($review['color'] ?? 'rose') ?>-600 rounded-full flex items-center justify-center text-xs font-bold"><?= e($review['initial'] ?? '') ?></div>
                             <span class="font-medium text-sm"><?= e($review['name'] ?? '') ?></span>
                         </div>
-                        <div class="text-amber-400 text-xs"><?= str_repeat('★', $review['rating'] ?? 5) ?><?= str_repeat('☆', 5 - ($review['rating'] ?? 5)) ?></div>
+                        <div class="text-amber-400 text-xs"><?php $revRating = max(0, min(5, (int) toNumber($review['rating'] ?? 5))); ?><?= str_repeat('★', $revRating) ?><?= str_repeat('☆', 5 - $revRating) ?></div>
                     </div>
                     <p class="text-sm text-zinc-600 mt-2 leading-relaxed"><?= e($review['text'] ?? '') ?></p>
                 </div>
@@ -234,9 +234,9 @@ if (isset($_SESSION['user'])) {
                     <?php else : ?>
                     <div>
                         <?php if (($course['old_price'] ?? 0) > $course['price']) : ?>
-                        <div class="text-sm text-zinc-400 line-through"><?= number_format($course['old_price'] ?? 0) ?> تومان</div>
+                        <div class="text-sm text-zinc-400 line-through"><?= nformat($course['old_price'] ?? 0) ?> تومان</div>
                         <?php endif; ?>
-                        <div class="text-2xl font-bold"><?= number_format($course['price']) ?> <span class="text-sm font-normal text-zinc-500">تومان</span></div>
+                        <div class="text-2xl font-bold"><?= nformat($course['price']) ?> <span class="text-sm font-normal text-zinc-500">تومان</span></div>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -314,7 +314,7 @@ if (isset($_SESSION['user'])) {
                             <?php if ($rel['is_free']) : ?>
                             <span class="text-emerald-600">رایگان</span>
                             <?php else : ?>
-                                <?= number_format($rel['price']) ?> تومان
+                                <?= nformat($rel['price']) ?> تومان
                             <?php endif; ?>
                         </div>
                     </div>
@@ -332,7 +332,7 @@ if (isset($_SESSION['user'])) {
             <?php if ($course['is_free']) : ?>
             <span class="text-lg font-bold text-emerald-600">رایگان</span>
             <?php else : ?>
-            <span class="text-lg font-bold"><?= number_format($course['price']) ?> <span class="text-xs font-normal text-zinc-500">تومان</span></span>
+            <span class="text-lg font-bold"><?= nformat($course['price']) ?> <span class="text-xs font-normal text-zinc-500">تومان</span></span>
             <?php endif; ?>
         </div>
         <?php if ($isEnrolled) : ?>
