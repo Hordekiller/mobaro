@@ -145,6 +145,8 @@ class ShopController extends BaseController
         $allTotal = $cached['allTotal'];
 
         $facets = $this->getFacets();
+        $maxPriceRow = Database::fetch("SELECT MAX(price) AS mx FROM products WHERE is_active = 1 AND price > 0");
+        $maxCatalogPrice = (int) ($maxPriceRow['mx'] ?? 0);
         $cart = $_SESSION['cart'] ?? [];
         if (Auth::check()) {
             $wRows = Database::fetchAll(self::WISHLIST_QUERY, [Auth::id()]);
@@ -164,6 +166,7 @@ class ShopController extends BaseController
             'seo' => $seo,
             'priceMin' => $priceMin, 'priceMax' => $priceMax, 'rating' => $rating,
             'isSale' => $isSale, 'isNew' => $isNew, 'inStock' => $inStock,
+            'maxCatalogPrice' => $maxCatalogPrice,
         ] + $facets);
     }
 
@@ -1094,7 +1097,7 @@ class ShopController extends BaseController
             return;
         }
 
-        if ($course['is_free']) {
+        if ($course['is_free'] || (int) $course['price'] <= 0) {
             $this->json(['error' => 'این دوره رایگان است'], 400);
             return;
         }

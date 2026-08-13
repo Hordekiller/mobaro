@@ -167,7 +167,7 @@ class AdminController extends BaseController
     public function section(string $section): void
     {
         $this->requireAdmin();
-        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices', 'sms', 'blog-categories', 'seo', 'payment'];
+        $validSections = ['services', 'artists', 'appointments', 'products', 'users', 'courses', 'enrollments', 'testimonials', 'transactions', 'settings', 'captcha', 'hair-models', 'tutorials', 'orders', 'newsletter', 'coupons', 'contact-messages', 'blog', 'reviews', 'blog-comments', 'product-categories', 'product-brands', 'gallery', 'hair-prices', 'sms', 'blog-categories', 'seo', 'payment', 'faqs'];
 
         if (!in_array($section, $validSections)) {
             redirect(self::PATH_ADMIN);
@@ -199,10 +199,11 @@ class AdminController extends BaseController
             'product-categories' => ['fa-layer-group', 'دسته‌بندی محصولات'],
             'product-brands' => ['fa-tag', 'برندها'],
             'gallery' => ['fa-photo-film', 'گالری رسانه'],
-            'hair-prices' => ['fa-money-bill-wave', 'قیمتهای قد مو'],
+            'hair-prices' => ['fa-money-bill-wave', 'قیمت‌های قد مو'],
             'sms' => ['fa-comment-sms', 'مدیریت پیامک'],
             'seo' => ['fa-globe', 'مدیریت سئو'],
             'payment' => ['fa-credit-card', 'پرداخت'],
+            'faqs' => ['fa-circle-question', 'سؤالات متداول'],
         ];
 
         $method = 'section' . str_replace('-', '', ucwords($section, '-'));
@@ -234,6 +235,7 @@ class AdminController extends BaseController
             'product-brands' => 'product_brands',
             'hair-prices' => 'hair_prices',
             'blog-categories' => 'blog_categories',
+            'faqs' => 'faqs',
         ];
 
         $data['columns'] = $this->getColumns($section);
@@ -297,7 +299,7 @@ class AdminController extends BaseController
     private function loadSectionData(string $table, string $section, array &$data): void
     {
         $search = trim($_GET['s'] ?? '');
-        $searchable = ['name', 'title', 'email', 'phone', 'category', 'code', 'family', 'teacher', 'subject', 'message'];
+        $searchable = ['name', 'title', 'email', 'phone', 'category', 'code', 'family', 'teacher', 'subject', 'message', 'question'];
         $searchWhere = '';
         $searchParams = [];
         if ($search !== '') {
@@ -609,6 +611,13 @@ class AdminController extends BaseController
                 ['key' => 'duration_modifier', 'label' => 'ضریب مدت', 'type' => 'text'],
                 ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
             ],
+            'faqs' => [
+                ['key' => 'question', 'label' => 'سؤال', 'type' => 'text', 'required' => true],
+                ['key' => 'answer', 'label' => 'پاسخ', 'type' => 'textarea', 'required' => true],
+                ['key' => 'category', 'label' => 'دسته', 'type' => 'text'],
+                ['key' => 'sort_order', 'label' => 'ترتیب', 'type' => 'text'],
+                ['key' => 'is_active', 'label' => 'فعال', 'type' => 'boolean'],
+            ],
         ];
         return $all[$section] ?? [['key' => 'id', 'label' => 'شناسه', 'type' => 'text']];
     }
@@ -748,6 +757,7 @@ class AdminController extends BaseController
             'hair-prices' => ['booking'],
             'blog-categories' => ['blog'],
             'seo' => ['homepage', 'blog'],
+            'faqs' => ['faq'],
         ];
 
         $tags = $sectionToTags[$section] ?? [$section];
@@ -764,6 +774,10 @@ class AdminController extends BaseController
         ];
         foreach ($extraKeys as $key) {
             Cache::forget($key);
+        }
+
+        if ($section === 'faqs') {
+            Cache::forget('seo_page_faq:' . hostKey());
         }
 
         $this->invalidateSitemapFiles();
@@ -879,6 +893,15 @@ class AdminController extends BaseController
 
         $data = $this->collectPostData($section);
 
+        if ($section === 'courses') {
+            $postedFree = (int) ($data['is_free'] ?? 0) === 1;
+            $isFree = $postedFree || (int) ($data['price'] ?? 0) <= 0;
+            $data['is_free'] = $isFree ? 1 : 0;
+            if ($isFree) {
+                $data['price'] = 0;
+            }
+        }
+
         $handled = match ($section) {
             'orders' => $this->saveOrders($id, $data, $table),
             'blog-comments' => $this->saveBlogComments($id, $data, $table),
@@ -938,7 +961,10 @@ class AdminController extends BaseController
         $allowedFields[] = 'notes';
         $allowedFields[] = 'instagram';
 
-        $rawFields = ['description', 'bio', 'text', 'notes', 'content'];
+        $rawFields = ['description', 'bio', 'text', 'notes', 'content', 'answer'];
+        if ($section === 'courses') {
+            $rawFields = array_merge($rawFields, ['curriculum', 'audience', 'faqs', 'reviews']);
+        }
         $intFields = [
             'views', 'reading_time', 'sort_order', 'stock', 'students',
             'price', 'old_price', 'discount_value', 'max_uses', 'used_count',
@@ -1660,9 +1686,9 @@ class AdminController extends BaseController
                     if (!in_array($value, $enumKeys[$settingKey], true)) {
                         continue;
                     }
-                    $value = sanitize($value);
+                    $value = sanitizeKeepDigits($value);
                 } else {
-                    $value = in_array($settingKey, $htmlKeys) ? $value : sanitize($value);
+                    $value = in_array($settingKey, $htmlKeys) ? $value : sanitizeKeepDigits($value);
                 }
                 $upserts[] = self::PLACEHOLDER_PAIR;
                 $upsertParams[] = $settingKey;
@@ -2150,6 +2176,7 @@ class AdminController extends BaseController
             'product-brands' => 'product_brands',
             'hair-prices' => 'service_hair_prices',
             'blog-categories' => 'blog_categories',
+            'faqs' => 'faqs',
         ];
         return $map[$section] ?? null;
     }

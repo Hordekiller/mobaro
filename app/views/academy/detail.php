@@ -75,11 +75,25 @@ if (isset($_SESSION['user'])) {
                 <iframe class="w-full h-full" src="https://www.youtube.com/embed/<?= e(getYoutubeId($course['video_url'])) ?>" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
                 <?php elseif (($course['video_type'] ?? 'upload') === 'aparat') : ?>
                 <iframe class="w-full h-full" src="https://www.aparat.com/video/video/embed/videohash/<?= e(getAparatHash($course['video_url'])) ?>/vt/frame" allowfullscreen allow="autoplay; encrypted-media" title="ویدیوی دوره"></iframe>
-                <?php else : ?>
+                <?php elseif (!empty($courseMedia) && $isEnrolled) : ?>
                 <video controls preload="metadata" id="preview-video" class="w-full h-full object-contain" poster="/assets/images/<?= e($course['image'] ?? '') ?>">
-                    <source src="<?= e($course['video_url']) ?>" type="video/mp4">
+                    <source src="/media/stream/<?= (int) $courseMedia['id'] ?>" type="video/mp4">
                     مرورگر شما پخش ویدیو را پشتیبانی نمی‌کند.
                 </video>
+                <?php else : ?>
+                <div class="w-full h-full relative">
+                    <img src="/assets/images/<?= e($course['image'] ?? '') ?>" alt="<?= e($course['title'] ?? '') ?>" class="w-full h-full object-cover" data-fallback="/media/400/300/<?= (int) $course['id'] ?>">
+                    <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-4 text-center px-6">
+                        <div class="text-amber-300"><i class="fa-solid fa-lock text-lg"></i></div>
+                        <div>
+                            <div class="text-white font-semibold text-sm mb-1">پیش‌نمایش ویدیو برای ثبت‌نام‌شده‌ها</div>
+                            <div class="text-zinc-300 text-xs">برای مشاهدهٔ کامل ویدیو ابتدا در دوره ثبت‌نام کنید.</div>
+                        </div>
+                        <a href="#course-actions" class="px-5 py-2.5 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:bg-rose-700 transition-all">
+                            <?= $course['is_free'] ? 'ثبت‌نام رایگان' : 'اطلاعات ثبت‌نام' ?>
+                        </a>
+                    </div>
+                </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -204,7 +218,7 @@ if (isset($_SESSION['user'])) {
         <?php endif; ?>
     </div>
 
-    <div class="lg:sticky lg:top-28 space-y-4 h-fit">
+    <div class="lg:sticky lg:top-28 space-y-4 h-fit" id="course-actions">
         <div class="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
             <div class="relative">
                 <img src="/assets/images/<?= e($course['image']) ?>"
@@ -220,10 +234,14 @@ if (isset($_SESSION['user'])) {
                     <a href="<?= e($course['video_url']) ?>" target="_blank" class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center text-rose-600 text-2xl hover:bg-white hover:scale-110 transition-all shadow-lg">
                         <i class="fa-solid fa-play mr-[-2px]"></i>
                     </a>
-                    <?php else : ?>
+                    <?php elseif (!empty($courseMedia) && $isEnrolled) : ?>
                     <button onclick="document.getElementById('preview-video').play()" class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center text-rose-600 text-2xl hover:bg-white hover:scale-110 transition-all shadow-lg">
                         <i class="fa-solid fa-play mr-[-2px]"></i>
                     </button>
+                    <?php else : ?>
+                    <div class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center text-zinc-400 text-2xl shadow-lg">
+                        <i class="fa-solid fa-lock mr-[-2px]"></i>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -277,13 +295,13 @@ if (isset($_SESSION['user'])) {
                     </div>
                     <div class="flex items-center gap-3 text-sm text-zinc-600">
                         <i class="fa-solid fa-shield-halved text-rose-400 w-5 text-center"></i>
-                        <span>پشتیبانی ۳۰ روزه</span>
+                        <span><?= e($settings['academy_support_days'] ?? 'پشتیبانی ۳۰ روزه') ?></span>
                     </div>
                 </div>
 
                 <div class="mt-5 p-3 bg-emerald-50 rounded-xl text-center text-sm text-emerald-700">
                     <i class="fa-solid fa-check-circle ml-1"></i>
-                    ضمانت بازگشت وجه تا ۳۰ روز
+                    <?= e($settings['academy_support_guarantee'] ?? 'ضمانت بازگشت وجه تا ۳۰ روز') ?>
                 </div>
             </div>
         </div>
@@ -291,9 +309,14 @@ if (isset($_SESSION['user'])) {
         <div class="bg-white rounded-3xl border border-zinc-100 shadow-sm p-5">
             <h3 class="font-bold text-sm mb-3"><i class="fa-solid fa-headset text-rose-500 ml-1.5"></i>پشتیبانی دوره</h3>
             <div class="space-y-2.5 text-sm text-zinc-600">
-                <div class="flex items-center gap-2"><span>💬</span> پاسخ به سؤالات در کمتر از ۲۴ ساعت</div>
-                <div class="flex items-center gap-2"><span>📄</span> منابع تکمیلی قابل دانلود</div>
-                <div class="flex items-center gap-2"><span>🎓</span> مشاوره رایگان شغلی</div>
+                <?php $supportIcons = ['💬', '📄', '🎓']; ?>
+                <?php $supportDefaults = ['پاسخ به سؤالات در کمتر از ۲۴ ساعت', 'منابع تکمیلی قابل دانلود', 'مشاوره رایگان شغلی']; ?>
+                <?php foreach ($supportIcons as $i => $icon) : ?>
+                    <?php $supportText = $settings['academy_support_feature_' . ($i + 1)] ?? $supportDefaults[$i]; ?>
+                    <?php if ($supportText !== '') : ?>
+                    <div class="flex items-center gap-2"><span><?= $icon ?></span><?= e($supportText) ?></div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </div>
         </div>
 

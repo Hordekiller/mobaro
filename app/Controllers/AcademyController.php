@@ -111,6 +111,15 @@ class AcademyController extends BaseController
 
         $course = normalizeCourse($course);
 
+        $courseMedia = null;
+        if (!empty($course['video_url']) && $course['video_type'] === 'upload') {
+            $courseMedia = Cache::remember('course_media_' . $course['id'], Config::get('cache.ttl.page', 600), function () use ($course) {
+                $row = Database::fetch("SELECT id FROM media WHERE filepath = ?", [ltrim($course['video_url'], '/')]);
+                Cache::tag('academy', 'course_media_' . $course['id']);
+                return $row;
+            });
+        }
+
         $related = Database::fetchAll(
             "SELECT * FROM courses WHERE category = ? AND id != ? AND is_active = 1 LIMIT 3",
             [$course['category'], $course['id']]
@@ -119,7 +128,7 @@ class AcademyController extends BaseController
 
         $settings = Settings::all();
 
-        $seo = SEOService::forPage('academy');
+        $seo = SEOService::forCourse($course);
         $jsonLd = StructuredData::render(
             StructuredData::organization(),
             StructuredData::breadcrumb([
@@ -129,7 +138,7 @@ class AcademyController extends BaseController
             ]),
             StructuredData::course($course)
         );
-        $this->view('academy/detail', compact('course', 'related', 'settings', 'seo', 'jsonLd'));
+        $this->view('academy/detail', compact('course', 'related', 'settings', 'seo', 'jsonLd', 'courseMedia'));
     }
 
     public function enroll(string $slug): void
@@ -145,7 +154,7 @@ class AcademyController extends BaseController
         }
 
         $course = Database::fetch(
-            "SELECT id, is_free FROM courses WHERE (slug = ? OR id = ?) AND is_active = 1",
+            "SELECT id, price, is_free FROM courses WHERE (slug = ? OR id = ?) AND is_active = 1",
             [$slug, (int) $slug]
         );
 
@@ -154,7 +163,8 @@ class AcademyController extends BaseController
             return;
         }
 
-        if (!$course['is_free']) {
+        $isFree = (int) $course['is_free'] === 1 || (int) $course['price'] <= 0;
+        if (!$isFree) {
             redirect(self::COURSE_PREFIX . $slug);
             return;
         }
@@ -264,7 +274,6 @@ class AcademyController extends BaseController
 
         $courseId = (int) ($_POST['course_id'] ?? 0);
         $lessonIndex = (int) ($_POST['lesson_index'] ?? 0);
-        $moduleIndex = (int) ($_POST['module_index'] ?? 0);
 
         if (!$courseId || $lessonIndex < 0) {
             $this->json(['error' => 'اطلاعات نامعتبر'], 400);
@@ -284,7 +293,20 @@ class AcademyController extends BaseController
 
         $course = Database::fetch("SELECT curriculum FROM courses WHERE id = ?", [$courseId]);
         $curriculum = json_decode($course['curriculum'] ?? '[]', true) ?: [];
-        if (!isset($curriculum[$moduleIndex]['lessons'][$lessonIndex])) {
+
+        $flatLessons = [];
+        foreach ($curriculum as $module) {
+            foreach ($module['lessons'] ?? [] as $lesson) {
+                $flatLessons[] = $lesson;
+            }
+        }
+        if (!isset($flatLessons[$lessonIndex])) {
+            $this->json(['error' => 'درس نامعتبر است'], 400);
+            return;
+        }
+
+        $moduleIndex = $this->resolveLessonModule($curriculum, $lessonIndex);
+        if ($moduleIndex === null) {
             $this->json(['error' => 'درس نامعتبر است'], 400);
             return;
         }
@@ -324,6 +346,28 @@ class AcademyController extends BaseController
             'total' => $totalLessons,
             'message' => $progress >= 100 ? 'تبریک! دوره را تکمیل کردید.' : 'درس تکمیل شد.',
         ]);
+    }
+
+    /**
+     * Resolve the module index that contains the given global lesson index.
+     *
+     * @param array<int, array{lessons?: array<int, mixed>}> $curriculum
+     * @return int|null Module index, or null when the index is out of range.
+     */
+    private function resolveLessonModule(array $curriculum, int $lessonIndex): ?int
+    {
+        if ($lessonIndex < 0) {
+            return null;
+        }
+        $cursor = 0;
+        foreach ($curriculum as $moduleIndex => $module) {
+            $lessonCount = count($module['lessons'] ?? []);
+            if ($lessonIndex < $cursor + $lessonCount) {
+                return (int) $moduleIndex;
+            }
+            $cursor += $lessonCount;
+        }
+        return null;
     }
 
     public function certificate(string $slug): void

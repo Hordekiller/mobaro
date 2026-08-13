@@ -119,6 +119,8 @@ Router::get('/api/user/addresses', [API, 'userAddresses']);
 Router::get('/privacy', ['App\Controllers\PagesController', 'privacy']);
 Router::get('/terms', ['App\Controllers\PagesController', 'terms']);
 
+Router::get('/faq', ['App\Controllers\FaqController', 'index']);
+
 Router::get('/academy', [ACADEMY, 'index']);
 Router::get('/course/{slug}', [ACADEMY, 'show']);
 Router::post('/course/{slug}/enroll', [ACADEMY, 'enroll']);

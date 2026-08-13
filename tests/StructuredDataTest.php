@@ -44,7 +44,8 @@ class StructuredDataTest extends TestCase
 
         $this->assertSame('Product', $product['@type']);
         $this->assertSame('IRR', $product['offers']['priceCurrency']);
-        $this->assertSame('450000', $product['offers']['price']);
+        $this->assertSame('4500000', $product['offers']['price']);
+        $this->assertSame('4500000', $product['offers']['priceSpecification']['price']);
         $this->assertSame('https://schema.org/InStock', $product['offers']['availability']);
         $this->assertSame('4.5', $product['aggregateRating']['ratingValue']);
         $this->assertSame(2, $product['aggregateRating']['reviewCount']);
@@ -104,9 +105,25 @@ class StructuredDataTest extends TestCase
 
         $this->assertSame('Course', $schema['@type']);
         $this->assertSame('پیشرفته', $schema['coursePrerequisites']);
-        $this->assertSame('PT30M', $schema['timeRequired']);
+        $this->assertSame('PT30H', $schema['timeRequired']);
         $this->assertSame('4.8', $schema['aggregateRating']['ratingValue']);
-        $this->assertSame('1200000', $schema['offers']['price']);
+        $this->assertSame('12000000', $schema['offers']['price']);
+        $this->assertSame(false, $schema['isAccessibleForFree']);
+    }
+
+    public function testCourseFreeSchemaEmitsZeroRialPrice(): void
+    {
+        $schema = StructuredData::course([
+            'id' => 3,
+            'title' => 'دوره رایگان',
+            'slug' => 'free-course',
+            'price' => 0,
+            'is_free' => 1,
+        ]);
+
+        $this->assertSame('IRR', $schema['offers']['priceCurrency']);
+        $this->assertSame('0', $schema['offers']['price']);
+        $this->assertSame(true, $schema['isAccessibleForFree']);
     }
 
     public function testRenderFiltersEmptyBlocks(): void

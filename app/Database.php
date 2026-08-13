@@ -23,7 +23,7 @@ class Database
         'product_brands', 'hair_models', 'tutorials', 'media',
         'blog_posts', 'contact_messages', 'coupons',
         'sms_logs', 'sms_templates', 'sms_credits', 'verification_codes',
-        'blog_categories', 'payment_logs',
+        'blog_categories', 'payment_logs', 'faqs',
     ];
 
     public static function connection(): PDO

@@ -38,6 +38,7 @@ use App\Captcha;
                         <a href="/academy" class="block cursor-pointer hover:text-white transition-colors">آکادمی</a>
                         <a href="/shop" class="block cursor-pointer hover:text-white transition-colors">فروشگاه</a>
                         <a href="/blog" class="block cursor-pointer hover:text-white transition-colors">وبلاگ</a>
+                        <a href="/faq" class="block cursor-pointer hover:text-white transition-colors">سؤالات متداول</a>
                         <a href="/contact" class="block cursor-pointer hover:text-white transition-colors">تماس با ما</a>
                     </div>
                 </div>

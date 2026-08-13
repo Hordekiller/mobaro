@@ -159,6 +159,16 @@ function sanitize(mixed $input): string
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
+function sanitizeKeepDigits(mixed $input): string
+{
+    if (is_array($input)) {
+        return implode(',', array_map(static fn($item) => sanitizeKeepDigits($item), $input));
+    } elseif (!is_string($input) && !is_numeric($input) && $input !== null) {
+        $input = (string) $input;
+    }
+    return htmlspecialchars(trim((string) $input), ENT_QUOTES, 'UTF-8');
+}
+
 function toNumber(mixed $value): int|float
 {
     if (is_int($value) || is_float($value)) {
@@ -220,6 +230,9 @@ function normalizeCourse(array $row): array
     $row['students'] = (int) toNumber($row['students'] ?? 0);
     $row['is_free'] = (int) ($row['is_free'] ?? 0);
     $row['is_active'] = (int) ($row['is_active'] ?? 0);
+    if ($row['price'] <= 0) {
+        $row['is_free'] = 1;
+    }
     return $row;
 }
 

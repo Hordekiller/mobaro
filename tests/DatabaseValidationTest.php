@@ -80,6 +80,7 @@ class DatabaseValidationTest extends TestCase
         $this->assertContains('blog_posts', $allowed);
         $this->assertContains('coupons', $allowed);
         $this->assertContains('contact_messages', $allowed);
+        $this->assertContains('faqs', $allowed);
     }
 
     public function testAllowedTablesDoesNotContainWalletTopups(): void

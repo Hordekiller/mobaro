@@ -82,24 +82,6 @@ function academyFilterUrl(array $overrides = []): string
                         <span><?= nformat($featuredCourse['students']) ?> دانشجو</span>
                     </div>
                 </a>
-                <?php else : ?>
-                <div class="relative bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
-                    <img src="/assets/images/cache/600x340_1015.svg" alt="دوره ویژه" class="w-full h-56 object-cover rounded-2xl">
-                    <div class="mt-4 flex items-center justify-between">
-                        <div>
-                            <div class="text-sm text-white/60">دوره ویژه هفته</div>
-                            <div class="font-semibold text-lg mt-1">تکنیک‌های حرفه‌ای رنگ مو</div>
-                        </div>
-                        <div class="text-amber-300 text-2xl font-bold">۴.۸</div>
-                    </div>
-                    <div class="mt-3 flex items-center gap-2 text-sm text-white/60">
-                        <i class="fa-solid fa-clock"></i>
-                        <span>۱۲ ساعت آموزش</span>
-                        <span class="mx-2">•</span>
-                        <i class="fa-solid fa-user"></i>
-                        <span>۳۴۲ دانشجو</span>
-                    </div>
-                </div>
                 <?php endif; ?>
             </div>
         </div>

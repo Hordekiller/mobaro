@@ -44,6 +44,7 @@ declare(strict_types=1);
                         'tutorials' => ['fa-video', 'آموزش‌ها'],
                         'gallery' => ['fa-photo-film', 'گالری رسانه'],
                         'testimonials' => ['fa-comment', 'نظرات'],
+                        'faqs' => ['fa-circle-question', 'سؤالات متداول'],
                     ]],
                     ['key' => 'users', 'label' => 'کاربران', 'icon' => 'fa-users', 'items' => [
                         'users' => ['fa-users', 'کاربران'],
@@ -261,6 +262,11 @@ declare(strict_types=1);
                 ],
                 'آکادمی' => [
                     'academy_instructor_bio' => 'بیوگرافی پیش‌فرض مدرس',
+                    'academy_support_days' => 'متن پشتیبانی سایدبار',
+                    'academy_support_guarantee' => 'متن ضمانت بازگشت وجه',
+                    'academy_support_feature_1' => 'مورد پشتیبانی ۱',
+                    'academy_support_feature_2' => 'مورد پشتیبانی ۲',
+                    'academy_support_feature_3' => 'مورد پشتیبانی ۳',
                 ],
                 'تصاویر هیرو' => [
                     'hero_bg_image' => 'نام تصویر پس‌زمینه هیرو (مثلاً hero-bg.jpg)',

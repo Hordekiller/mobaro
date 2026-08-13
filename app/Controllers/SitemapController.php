@@ -295,7 +295,7 @@ class SitemapController extends BaseController
 
     private function staticPages(): array
     {
-        $staticSlugs = ['home', 'shop', 'blog', 'about', 'contact', 'academy'];
+        $staticSlugs = ['home', 'shop', 'blog', 'about', 'contact', 'academy', 'faq'];
         $extraPages = [
             ['loc' => url('/models')],
             ['loc' => url('/booking')],

@@ -129,7 +129,7 @@ class StructuredData
         $offer = [
             '@type' => 'Offer',
             'priceCurrency' => $currency,
-            'price' => (string) $price,
+            'price' => (string) ($price * 10),
             'availability' => ((int) ($p['stock'] ?? 0)) > 0
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
@@ -140,7 +140,7 @@ class StructuredData
             $offer['priceValidUntil'] = date('Y-12-31');
             $offer['priceSpecification'] = [
                 '@type' => 'PriceSpecification',
-                'price' => (string) $price,
+                'price' => (string) ($price * 10),
                 'priceCurrency' => $currency,
                 'referenceQuantity' => ['@type' => 'QuantitativeValue', 'value' => 1],
             ];
@@ -271,7 +271,10 @@ class StructuredData
             $data['instructor'] = ['@type' => 'Person', 'name' => (string) $course['teacher']];
         }
         if (!empty($course['duration'])) {
-            $data['timeRequired'] = 'PT' . (int) preg_replace('/\D+/', '', (string) $course['duration']) . 'M';
+            $timeRequired = self::durationToIso8601((string) $course['duration']);
+            if ($timeRequired !== '') {
+                $data['timeRequired'] = $timeRequired;
+            }
         }
         if (!empty($course['level'])) {
             $data['coursePrerequisites'] = (string) $course['level'];
@@ -288,8 +291,19 @@ class StructuredData
         $data['offers'] = [
             '@type' => 'Offer',
             'priceCurrency' => 'IRR',
-            'price' => (string) $price,
+            'price' => (string) ($price * 10),
             'availability' => 'https://schema.org/InStock',
+            'url' => url('/course/' . ($course['slug'] ?? '')),
+        ];
+
+        $isFree = (int) ($course['is_free'] ?? 0) === 1;
+        $courseMode = strtolower((string) ($course['type'] ?? '')) === 'online' ? 'online' : 'onsite';
+
+        $data['isAccessibleForFree'] = $isFree;
+        $data['hasCourseInstance'] = [
+            '@type' => 'CourseInstance',
+            'courseMode' => $courseMode,
+            'isAccessibleForFree' => $isFree,
             'url' => url('/course/' . ($course['slug'] ?? '')),
         ];
 
@@ -315,6 +329,38 @@ class StructuredData
             $data['description'] = (string) $page['description'];
         }
         return $data;
+    }
+
+    /**
+     * FAQPage schema.org markup for the public FAQ listing.
+     *
+     * @param array<int, array{question?: string, answer?: string}> $faqs
+     * @return array<string, mixed>
+     */
+    public static function faqPage(array $faqs): array
+    {
+        $questions = [];
+        foreach ($faqs as $faq) {
+            $q = trim((string) ($faq['question'] ?? ''));
+            $a = trim((string) ($faq['answer'] ?? ''));
+            if ($q === '' || $a === '') {
+                continue;
+            }
+            $questions[] = [
+                '@type' => 'Question',
+                'name' => $q,
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => self::truncate($a, 300),
+                ],
+            ];
+        }
+
+        return [
+            '@context' => self::CONTEXT,
+            '@type' => 'FAQPage',
+            'mainEntity' => $questions,
+        ];
     }
 
     /**
@@ -374,5 +420,45 @@ class StructuredData
             return $clean;
         }
         return mb_substr($clean, 0, $length) . '…';
+    }
+
+    /**
+     * Convert Persian/English course durations like "۱۲ ساعت", "۱.۵ ساعت" or
+     * "۴۵ دقیقه" into a schema.org ISO-8601 duration (PT...H/M).
+     *
+     * @return string Empty string when the duration cannot be parsed.
+     */
+    private static function durationToIso8601(string $duration): string
+    {
+        $value = faToEnDigits(trim($duration));
+        if ($value === '') {
+            return '';
+        }
+
+        if (!preg_match('/(\d+(?:[.,]\d+)?)\s*(ساعت|دقیقه|هفته|ماه)/u', $value, $m)) {
+            return '';
+        }
+
+        $amount = (float) str_replace(',', '.', $m[1]);
+        $minutes = match ($m[2]) {
+            'ساعت' => (int) round($amount * 60),
+            'دقیقه' => (int) round($amount),
+            'هفته' => (int) round($amount * 7 * 24 * 60),
+            'ماه' => (int) round($amount * 30 * 24 * 60),
+            default => 0,
+        };
+
+        if ($minutes <= 0) {
+            return '';
+        }
+
+        $hours = intdiv($minutes, 60);
+        $mins = $minutes % 60;
+
+        if ($hours > 0) {
+            return 'PT' . $hours . 'H' . ($mins > 0 ? $mins . 'M' : '');
+        }
+
+        return 'PT' . $mins . 'M';
     }
 }

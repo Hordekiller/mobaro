@@ -10,6 +10,20 @@ class HelpersTest extends TestCase
         $this->assertSame('0123456789', $result);
     }
 
+    public function testSanitizeKeepDigitsPreservesPersianDigits(): void
+    {
+        $result = sanitizeKeepDigits('تهران، خیابان ولیعصر، پلاک ۱۲۸');
+        $this->assertSame('تهران، خیابان ولیعصر، پلاک ۱۲۸', $result);
+        $this->assertSame('۰۳۱-۳۶۶۶۲۱۲۲', sanitizeKeepDigits(' ۰۳۱-۳۶۶۶۲۱۲۲ '));
+    }
+
+    public function testSanitizeKeepDigitsEscapesHtml(): void
+    {
+        $result = sanitizeKeepDigits('<script>alert("xss")</script>');
+        $this->assertStringContainsString('&lt;script&gt;', $result);
+        $this->assertStringNotContainsString('<script>', $result);
+    }
+
     public function testSanitizeTrimsAndEscapes(): void
     {
         $result = sanitize('  hello  ');
@@ -49,6 +63,25 @@ class HelpersTest extends TestCase
     public function testPriceFormatAcceptsString(): void
     {
         $this->assertSame('150,000 تومان', priceFormat('150000'));
+    }
+
+    public function testNormalizeCourseZeroPriceIsFree(): void
+    {
+        $course = normalizeCourse(['id' => 1, 'price' => 0, 'is_free' => 0, 'old_price' => 0]);
+        $this->assertSame(1, $course['is_free']);
+    }
+
+    public function testNormalizeCourseKeepsPaidPrice(): void
+    {
+        $course = normalizeCourse(['id' => 2, 'price' => 245000, 'is_free' => 0, 'old_price' => 300000]);
+        $this->assertSame(0, $course['is_free']);
+        $this->assertSame(245000, $course['price']);
+    }
+
+    public function testNormalizeCourseKeepsExplicitFree(): void
+    {
+        $course = normalizeCourse(['id' => 3, 'price' => 245000, 'is_free' => 1, 'old_price' => 0]);
+        $this->assertSame(1, $course['is_free']);
     }
 
     public function testSlugifyNormalizesText(): void

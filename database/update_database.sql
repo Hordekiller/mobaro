@@ -193,7 +193,66 @@ CREATE TABLE IF NOT EXISTS seo_meta (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('contact'), ('about'), ('academy');
+INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('contact'), ('about'), ('academy'), ('faq');
+
+-- ------------------------------------------------------------
+-- 5a) faqs table (created only if absent) + seed rows when empty
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS faqs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question VARCHAR(500) NOT NULL,
+    answer TEXT NOT NULL,
+    category VARCHAR(100) DEFAULT NULL,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_active_sort (is_active, sort_order),
+    KEY idx_category (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO faqs (question, answer, category, sort_order, is_active)
+SELECT * FROM (
+    SELECT 'چگونه میتوانم در دورههای آکادمی ثبتنام کنم؟' AS question,
+           'برای ثبتنام در دورههای رایگان کافی است وارد حساب کاربری خود شوید و دکمه «ثبتنام رایگان» را بزنید. دورههای پولی از طریق افزودن به سبد خرید و پرداخت آنلاین فعال میشوند.' AS answer,
+           'آکادمی' AS category, 1 AS sort_order, 1 AS is_active
+    UNION ALL
+    SELECT 'آیا پس از اتمام دوره گواهی دریافت میکنم؟',
+           'بله، پس از تکمیل ۱۰۰٪ محتوای دوره، گواهی معتبر آکادمی موبارو برای شما صادر و در بخش دورههای من در دسترس قرار میگیرد.',
+           'آکادمی', 2, 1
+    UNION ALL
+    SELECT 'چگونه میتوانم به صورت آنلاین نوبت رزرو کنم؟',
+           'از صفحه رزرو نوبت، خدمت، آرایشگر و تاریخ موردنظر خود را انتخاب کرده و درخواست نوبت را ثبت کنید. پس از تأیید، نوبت شما در داشبورد و از طریق پیامک اطلاعرسانی میشود.',
+           'نوبتدهی', 1, 1
+    UNION ALL
+    SELECT 'چه روشهای پرداختی در دسترس است؟',
+           'پرداخت آنلاین از طریق درگاه زرینپال برای سفارشات فروشگاه، دورههای آموزشی و نوبتهای رزرو شده در دسترس است.',
+           'پرداخت', 1, 1
+    UNION ALL
+    SELECT 'آیا امکان بازگشت وجه وجود دارد؟',
+           'بله، تا ۳۰ روز پس از خرید در صورت عدم رضایت، امکان درخواست بازگشت وجه وجود دارد. برای این کار با پشتیبانی در تماس باشید.',
+           'پرداخت', 2, 1
+    UNION ALL
+    SELECT 'چگونه میتوانم با پشتیبانی در تماس باشم؟',
+           'از طریق فرم صفحه «تماس با ما» یا شماره تماس درجشده در وبسایت میتوانید سؤال یا مشکل خود را مطرح کنید. پاسخگویی حداکثر در کمتر از ۲۴ ساعت انجام میشود.',
+           'پشتیبانی', 1, 1
+) AS seed
+WHERE NOT EXISTS (SELECT 1 FROM faqs LIMIT 1);
+
+-- ------------------------------------------------------------
+-- 5b) academy support settings (insert-ignore — never overwrite)
+-- ------------------------------------------------------------
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
+    ('academy_support_days', 'پشتیبانی ۳۰ روزه'),
+    ('academy_support_guarantee', 'ضمانت بازگشت وجه تا ۳۰ روز'),
+    ('academy_support_feature_1', 'پاسخ به سؤالات در کمتر از ۲۴ ساعت'),
+    ('academy_support_feature_2', 'منابع تکمیلی قابل دانلود'),
+    ('academy_support_feature_3', 'مشاوره رایگان شغلی');
+
+-- ------------------------------------------------------------
+-- 5c) normalize free courses (price <= 0 → is_free = 1)
+-- ------------------------------------------------------------
+UPDATE courses SET is_free = 1 WHERE price <= 0;
 
 -- ------------------------------------------------------------
 -- 6) seo_meta — robots column

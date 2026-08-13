@@ -83,10 +83,10 @@ function filterUrl(array $overrides = []): string
                             محدوده قیمت
                         </h4>
                         <label for="priceRange" class="sr-only">محدوده قیمت</label>
-                        <input type="range" min="0" max="5000000" value="<?= min($priceMax ?: 2500000, 5000000) ?>" class="range-slider mb-4" id="priceRange">
+                        <input type="range" min="0" max="<?= $maxCatalogPrice ?: 5000000 ?>" value="<?= min($priceMax ?: ($maxCatalogPrice ?: 2500000), $maxCatalogPrice ?: 5000000) ?>" class="range-slider mb-4" id="priceRange">
                         <div class="flex justify-between text-sm text-zinc-600">
                             <span>۰ تومان</span>
-                            <span id="priceValue" class="font-medium text-rose-500"><?= $priceMax ? nformat($priceMax) : '۲,۵۰۰,۰۰۰' ?> تومان</span>
+                            <span id="priceValue" class="font-medium text-rose-500"><?= $priceMax ? nformat($priceMax) : nformat($maxCatalogPrice ?: 2500000) ?> تومان</span>
                         </div>
                         <button onclick="applyPriceFilter()" class="mt-3 w-full py-2 bg-rose-100 text-rose-600 rounded-xl text-sm font-semibold hover:bg-rose-200 transition">اعمال فیلتر قیمت</button>
                     </div>

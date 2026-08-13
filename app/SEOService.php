@@ -25,6 +25,34 @@ class SEOService
         ];
     }
 
+    public static function forCourse(array $course): array
+    {
+        $settings = Settings::all();
+        $brandName = (string) ($settings['brand_name'] ?? 'موبارو');
+        $title = trim((string) ($course['title'] ?? ''));
+        $defaultDesc = Settings::get('meta_description', '');
+
+        $description = trim(strip_tags((string) ($course['description'] ?? '')));
+        if ($description === '') {
+            $description = (string) $defaultDesc;
+        }
+
+        $fullTitle = $title !== '' ? $title . ' | ' . $brandName : $brandName;
+        $slug = (string) ($course['slug'] ?? $course['id'] ?? '');
+
+        return [
+            'title'       => $fullTitle,
+            'description' => self::truncateText($description, 160),
+            'canonical'   => url('/course/' . $slug),
+            'og_title'    => $fullTitle,
+            'og_desc'     => self::truncateText($description, 160),
+            'og_image'    => !empty($course['image'])
+                ? asset('images/' . ltrim((string) $course['image'], '/'))
+                : (Settings::get('og_image', '/favicon/og-image.png') ?: '/favicon/og-image.png'),
+            'robots'      => '',
+        ];
+    }
+
     public static function forPage(string $pageSlug): array
     {
         $cacheKey = 'seo_page_' . $pageSlug . ':' . hostKey();
@@ -38,6 +66,7 @@ class SEOService
                 'about'   => url('/about'),
                 'contact' => url('/contact'),
                 'academy' => url('/academy'),
+                'faq'     => url('/faq'),
                 'terms'   => url('/terms'),
                 'privacy' => url('/privacy'),
                 default   => url('/'),
@@ -53,5 +82,14 @@ class SEOService
                 'robots'      => $row['robots']                    ?? $settings['default_robots'] ?? '',
             ];
         });
+    }
+
+    private static function truncateText(string $value, int $length): string
+    {
+        $clean = trim(strip_tags($value));
+        if (mb_strlen($clean) <= $length) {
+            return $clean;
+        }
+        return mb_substr($clean, 0, $length) . '…';
     }
 }
