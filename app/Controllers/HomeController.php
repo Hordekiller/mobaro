@@ -16,7 +16,10 @@ class HomeController extends BaseController
 {
     public function index(): void
     {
-        $homeData = Cache::remember('home_data', Config::get('cache.ttl.page', 600), function () {
+        $educationCount = max(1, min((int) faToEnDigits((string) Settings::get('home_education_count', 4)), 6));
+        $blogCount = max(1, min((int) faToEnDigits((string) Settings::get('home_blog_count', 3)), 6));
+
+        $homeData = Cache::remember('home_data', Config::get('cache.ttl.page', 600), function () use ($educationCount, $blogCount) {
             return [
                 'services' => Database::fetchAll(
                     "SELECT s.*,
@@ -33,8 +36,8 @@ class HomeController extends BaseController
                 'hairModels' => Database::fetchAll("SELECT * FROM hair_models WHERE is_active = 1 LIMIT 10"),
                 'products' => array_map('normalizeProduct', Database::fetchAll("SELECT * FROM products WHERE is_active = 1 ORDER BY id LIMIT 10")),
                 'testimonials' => Database::fetchAll("SELECT * FROM testimonials WHERE is_active = 1 ORDER BY id"),
-                'educationCourses' => array_map('normalizeCourse', Database::fetchAll("SELECT * FROM courses WHERE is_active = 1 ORDER BY id LIMIT 4")),
-                'latestPosts' => Database::fetchAll("SELECT * FROM blog_posts WHERE is_published = 1 ORDER BY published_at DESC, id DESC LIMIT 3"),
+                'educationCourses' => array_map('normalizeCourse', Database::fetchAll("SELECT * FROM courses WHERE is_active = 1 ORDER BY id LIMIT ?", [$educationCount])),
+                'latestPosts' => Database::fetchAll("SELECT * FROM blog_posts WHERE is_published = 1 ORDER BY published_at DESC, id DESC LIMIT ?", [$blogCount]),
             ];
         }, 'homepage');
 
@@ -57,6 +60,8 @@ class HomeController extends BaseController
             'products' => $homeData['products'],
             'testimonials' => $homeData['testimonials'],
             'latestPosts' => $homeData['latestPosts'],
+            'homeShowEducation' => (int) Settings::get('home_show_education', 1) === 1,
+            'homeShowBlog' => (int) Settings::get('home_show_blog', 1) === 1,
             'jsonLd' => StructuredData::render(StructuredData::organization()),
         ]);
     }

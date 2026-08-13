@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
+$homeEducationTitle = $settings['home_education_title'] ?? 'آموزش‌های رایگان زیبایی';
+$homeEducationReadmore = $settings['home_education_readmore'] ?? 'مشاهده تمام دوره‌ها در آکادمی';
+
 ?>
-<?php if (!empty($educationCourses)) : ?>
+<?php if (($homeShowEducation ?? true) && !empty($educationCourses)) : ?>
 <section id="education" class="bg-gradient-to-br from-zinc-100 to-white py-20">
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="grid md:grid-cols-12 gap-16">
             <div class="md:col-span-5">
                 <div>
                     <span class="uppercase text-xs tracking-widest font-medium text-rose-500">یاد بگیرید • رشد کنید</span>
-                    <h2 class="text-3xl md:text-5xl font-semibold leading-none tracking-tighter mt-4">آموزش‌های رایگان زیبایی</h2>
+                    <h2 class="text-3xl md:text-5xl font-semibold leading-none tracking-tighter mt-4"><?= e($homeEducationTitle) ?></h2>
                     <p class="mt-6 text-zinc-600">ویدیوهای آموزشی کوتاه برای یادگیری آرایش، مراقبت از مو و پوست در خانه</p>
                     <a href="/academy" class="mt-8 inline-flex items-center gap-x-4 group">
                         <div class="w-16 h-16 bg-rose-600 text-white rounded-3xl flex items-center justify-center text-4xl shadow-inner group-active:scale-95 transition-transform">▶</div>
@@ -59,7 +62,7 @@ declare(strict_types=1);
                 <div class="mt-8 text-center">
                     <a href="/academy" class="inline-flex items-center gap-2 bg-white border border-zinc-200 hover:border-rose-300 hover:text-rose-600 px-6 py-3 rounded-2xl text-sm font-medium transition-all">
                         <i class="fa-solid fa-graduation-cap"></i>
-                        مشاهده تمام دوره‌ها در آکادمی
+                        <?= e($homeEducationReadmore) ?>
                         <i class="fa-solid fa-arrow-left text-xs"></i>
                     </a>
                 </div>

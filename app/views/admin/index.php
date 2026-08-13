@@ -268,6 +268,19 @@ declare(strict_types=1);
                     'academy_support_feature_2' => 'مورد پشتیبانی ۲',
                     'academy_support_feature_3' => 'مورد پشتیبانی ۳',
                 ],
+                'بخش آموزش صفحه اصلی' => [
+                    'home_show_education' => 'نمایش بخش آموزش در صفحه اصلی',
+                    'home_education_count' => 'تعداد دوره در صفحه اصلی (۱ تا ۶)',
+                    'home_education_title' => 'عنوان بخش آموزش',
+                    'home_education_readmore' => 'متن دکمه «مشاهده تمام دوره‌ها»',
+                ],
+                'بخش وبلاگ صفحه اصلی' => [
+                    'home_show_blog' => 'نمایش بخش وبلاگ در صفحه اصلی',
+                    'home_blog_count' => 'تعداد پست در صفحه اصلی (۱ تا ۶)',
+                    'home_blog_title' => 'عنوان بخش وبلاگ',
+                    'home_blog_readmore' => 'متن دکمه «بیشتر بخوانید» هر کارت',
+                    'home_blog_all_text' => 'متن لینک «مشاهده همه مطالب»',
+                ],
                 'تصاویر هیرو' => [
                     'hero_bg_image' => 'نام تصویر پس‌زمینه هیرو (مثلاً hero-bg.jpg)',
                     'hero_model_image' => 'نام تصویر مدل هیرو (مثلاً hero-model.jpg)',
@@ -300,7 +313,16 @@ declare(strict_types=1);
                     'local' => 'بارگذاری از داخل سایت (لوکال)',
                     'cdn' => 'بارگذاری از CDN (ابری)',
                 ],
+                'home_show_education' => [
+                    '1' => 'نمایش',
+                    '0' => 'مخفی',
+                ],
+                'home_show_blog' => [
+                    '1' => 'نمایش',
+                    '0' => 'مخفی',
+                ],
             ];
+            $numberKeys = ['home_education_count', 'home_blog_count'];
             ?>
             <?php
             $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'about_image', 'site_logo'];
@@ -346,6 +368,8 @@ declare(strict_types=1);
                                     <option value="<?= e($optVal) ?>" <?= ($value === $optVal || ($value === '' && $optVal === 'cdn')) ? 'selected' : '' ?>><?= e($optLabel) ?></option>
                                     <?php endforeach; ?>
                                 </select>
+                            <?php elseif (in_array($key, $numberKeys)) : ?>
+                                <input id="setting_<?= e($key) ?>" type="number" min="1" max="6" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <?php else : ?>
                                 <input id="setting_<?= e($key) ?>" type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                             <?php endif; ?>
