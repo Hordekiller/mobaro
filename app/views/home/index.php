@@ -11,4 +11,5 @@ $title = ($settings['brand_name'] ?? 'موبارو') . ' | سالن زیبایی
 <?php require_once __DIR__ . '/../partials/education.php'; ?>
 <?php require_once __DIR__ . '/../partials/shop-block.php'; ?>
 <?php require_once __DIR__ . '/../partials/testimonials.php'; ?>
+<?php require_once __DIR__ . '/../partials/blog-section.php'; ?>
 <?php require_once __DIR__ . '/../partials/newsletter-block.php';

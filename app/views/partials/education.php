@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 ?>
+<?php if (!empty($educationCourses)) : ?>
 <section id="education" class="bg-gradient-to-br from-zinc-100 to-white py-20">
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="grid md:grid-cols-12 gap-16">
@@ -29,6 +30,9 @@ declare(strict_types=1);
                                  alt="<?= e($course['title']) ?>"
                                  class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
                                  data-fallback="/media/600/340/<?= e($course['id']) ?>">
+                            <?php if ((int) $course['is_free'] === 1) : ?>
+                            <div class="absolute top-4 left-4 bg-emerald-500 text-white text-[11px] font-semibold px-3 py-1 rounded-full">رایگان</div>
+                            <?php endif; ?>
                             <div class="absolute bottom-4 left-4 bg-black/70 text-white text-[10px] px-3 py-1 rounded-3xl flex items-center gap-x-2">
                                 <i class="fa-solid fa-clock"></i>
                                 <span><?= e($course['duration']) ?></span>
@@ -40,6 +44,14 @@ declare(strict_types=1);
                                 <span class="text-zinc-400"><?= nformat($course['students']) ?> دانشجو</span>
                             </div>
                             <h4 class="font-semibold mt-2 group-hover:text-rose-500 transition-colors"><?= e($course['title']) ?></h4>
+                            <div class="mt-4 flex items-center justify-between">
+                                <span class="text-xs text-zinc-500"><?= e($course['teacher']) ?></span>
+                                <?php if ((int) $course['is_free'] === 1) : ?>
+                                <span class="text-emerald-600 text-sm font-semibold">رایگان</span>
+                                <?php else : ?>
+                                <div class="text-rose-500 font-bold"><?= nformat($course['price']) ?> <span class="text-xs font-normal text-zinc-400">تومان</span></div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </a>
                     <?php endforeach; ?>
@@ -55,3 +67,4 @@ declare(strict_types=1);
         </div>
     </div>
 </section>
+<?php endif; ?>

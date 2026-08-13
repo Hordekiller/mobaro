@@ -33,7 +33,8 @@ class HomeController extends BaseController
                 'hairModels' => Database::fetchAll("SELECT * FROM hair_models WHERE is_active = 1 LIMIT 10"),
                 'products' => array_map('normalizeProduct', Database::fetchAll("SELECT * FROM products WHERE is_active = 1 ORDER BY id LIMIT 10")),
                 'testimonials' => Database::fetchAll("SELECT * FROM testimonials WHERE is_active = 1 ORDER BY id"),
-                'educationCourses' => array_map('normalizeCourse', Database::fetchAll("SELECT * FROM courses WHERE is_active = 1 ORDER BY RAND() LIMIT 4")),
+                'educationCourses' => array_map('normalizeCourse', Database::fetchAll("SELECT * FROM courses WHERE is_active = 1 ORDER BY id LIMIT 4")),
+                'latestPosts' => Database::fetchAll("SELECT * FROM blog_posts WHERE is_published = 1 ORDER BY published_at DESC, id DESC LIMIT 3"),
             ];
         }, 'homepage');
 
@@ -55,6 +56,7 @@ class HomeController extends BaseController
             'educationCourses' => $homeData['educationCourses'],
             'products' => $homeData['products'],
             'testimonials' => $homeData['testimonials'],
+            'latestPosts' => $homeData['latestPosts'],
             'jsonLd' => StructuredData::render(StructuredData::organization()),
         ]);
     }
