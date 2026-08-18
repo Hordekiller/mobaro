@@ -10,6 +10,18 @@ use App\Settings;
 
 error_reporting(E_ALL);
 
+// ── Force HTTPS + non-www (PHP fallback for when .htaccess is bypassed) ──
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || ($_SERVER['SERVER_PORT'] ?? '') == 443
+    || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'
+    || ($_SERVER['HTTP_X_FORWARDED_SSL'] ?? '') === 'on';
+
+if ($host !== 'mobaro.ir' || !$isHttps) {
+    header('Location: https://mobaro.ir' . ($_SERVER['REQUEST_URI'] ?? '/'), true, 301);
+    exit;
+}
+
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/SEOService.php';
 
