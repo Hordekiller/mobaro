@@ -108,23 +108,6 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
 
 UPDATE courses SET is_free = 1 WHERE price <= 0;
 
--- =============================================
--- 3.7 کلیدهای تنظیمات بخش‌های صفحه اصلی (آموزش + وبلاگ)
---     کاملاً داینامیک: عنوان، متن دکمه‌ها، تعداد نمایش و نمایش/مخفی
---     INSERT IGNORE — مقادیر موجود بازنویسی نمی‌شوند
--- =============================================
-
-INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
-    ('home_show_education', '1'),
-    ('home_education_count', '4'),
-    ('home_education_title', 'آموزش‌های رایگان زیبایی'),
-    ('home_education_readmore', 'مشاهده تمام دوره‌ها در آکادمی'),
-    ('home_show_blog', '1'),
-    ('home_blog_count', '3'),
-    ('home_blog_title', 'جدیدترین مقالات مجله زیبایی'),
-    ('home_blog_readmore', 'بیشتر بخوانید'),
-    ('home_blog_all_text', 'مشاهده همه مطالب');
-
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =============================================
@@ -135,6 +118,5 @@ SELECT CONCAT(
     ' faqs table: ', (SELECT IF(COUNT(*) > 0, 'yes', 'no') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'faqs'),
     ' faqs rows: ', (SELECT COUNT(*) FROM faqs),
     ' seo_meta(faq): ', (SELECT IF(COUNT(*) > 0, 'yes', 'no') FROM seo_meta WHERE page_slug = 'faq'),
-    ' support settings: ', (SELECT COUNT(*) FROM settings WHERE setting_key IN ('academy_support_days','academy_support_guarantee','academy_support_feature_1','academy_support_feature_2','academy_support_feature_3')),
-    ' homepage settings: ', (SELECT COUNT(*) FROM settings WHERE setting_key IN ('home_show_education','home_education_count','home_education_title','home_education_readmore','home_show_blog','home_blog_count','home_blog_title','home_blog_readmore','home_blog_all_text'))
+    ' support settings: ', (SELECT COUNT(*) FROM settings WHERE setting_key IN ('academy_support_days','academy_support_guarantee','academy_support_feature_1','academy_support_feature_2','academy_support_feature_3'))
 ) AS result;

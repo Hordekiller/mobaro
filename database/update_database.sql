@@ -255,21 +255,6 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
 UPDATE courses SET is_free = 1 WHERE price <= 0;
 
 -- ------------------------------------------------------------
--- 5d) homepage section settings (education + blog) — insert-ignore
---     کاملاً داینامیک: عنوان، متن دکمه‌ها، تعداد نمایش و نمایش/مخفی
--- ------------------------------------------------------------
-INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
-    ('home_show_education', '1'),
-    ('home_education_count', '4'),
-    ('home_education_title', 'آموزش‌های رایگان زیبایی'),
-    ('home_education_readmore', 'مشاهده تمام دوره‌ها در آکادمی'),
-    ('home_show_blog', '1'),
-    ('home_blog_count', '3'),
-    ('home_blog_title', 'جدیدترین مقالات مجله زیبایی'),
-    ('home_blog_readmore', 'بیشتر بخوانید'),
-    ('home_blog_all_text', 'مشاهده همه مطالب');
-
--- ------------------------------------------------------------
 -- 6) seo_meta — robots column
 -- ------------------------------------------------------------
 CALL add_column_if_missing('seo_meta', 'robots', 'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');

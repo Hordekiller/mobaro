@@ -2,18 +2,14 @@
 
 declare(strict_types=1);
 
-$homeBlogTitle = $settings['home_blog_title'] ?? 'جدیدترین مقالات مجله زیبایی';
-$homeBlogAllText = $settings['home_blog_all_text'] ?? 'مشاهده همه مطالب';
-$homeBlogReadmore = $settings['home_blog_readmore'] ?? 'بیشتر بخوانید';
-
 ?>
-<?php if (($homeShowBlog ?? true) && !empty($latestPosts)) : ?>
+<?php if (!empty($latestPosts)) : ?>
 <section id="blog" class="py-24 bg-white">
     <div class="max-w-screen-2xl mx-auto px-8">
         <div class="flex items-center justify-between mb-12">
-            <h2 class="font-semibold text-5xl tracking-tighter"><?= e($homeBlogTitle) ?></h2>
+            <h2 class="font-semibold text-5xl tracking-tighter">جدیدترین مقالات مجله زیبایی</h2>
             <a href="/blog" class="text-rose-500 hover:text-rose-600 font-medium flex items-center gap-2 transition-colors">
-                <?= e($homeBlogAllText) ?>
+                مشاهده همه مطالب
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
         </div>
@@ -38,13 +34,6 @@ $homeBlogReadmore = $settings['home_blog_readmore'] ?? 'بیشتر بخوانی�
                         </div>
                         <h3 class="font-semibold mt-3 group-hover:text-rose-500 transition-colors line-clamp-2"><?= e($post['title']) ?></h3>
                         <p class="mt-2 text-sm text-zinc-500 line-clamp-2"><?= e($post['excerpt']) ?></p>
-                        <div class="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between">
-                            <span class="text-rose-600 text-sm font-medium flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-                                <?= e($homeBlogReadmore) ?>
-                                <i class="fas fa-arrow-left text-xs"></i>
-                            </span>
-                            <i class="fas fa-long-arrow-alt-left text-zinc-300 group-hover:text-rose-400 transition-colors"></i>
-                        </div>
                     </div>
                 </a>
             </article>
