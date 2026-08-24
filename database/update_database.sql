@@ -255,6 +255,13 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
 UPDATE courses SET is_free = 1 WHERE price <= 0;
 
 -- ------------------------------------------------------------
+-- 5e) hero section artist settings
+-- ------------------------------------------------------------
+INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
+    ('hero_artist_name', 'سارا احمدی'),
+    ('hero_artist_service', 'آرایش عروس');
+
+-- ------------------------------------------------------------
 -- 6) seo_meta — robots column
 -- ------------------------------------------------------------
 CALL add_column_if_missing('seo_meta', 'robots', 'ADD COLUMN `robots` VARCHAR(255) DEFAULT NULL AFTER `og_image`');

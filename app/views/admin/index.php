@@ -271,6 +271,8 @@ declare(strict_types=1);
                 'تصاویر هیرو' => [
                     'hero_bg_image' => 'نام تصویر پس‌زمینه هیرو (مثلاً hero-bg.jpg)',
                     'hero_model_image' => 'نام تصویر مدل هیرو (مثلاً hero-model.jpg)',
+                    'hero_artist_name' => 'نام آرایشگر در کارت هیرو',
+                    'hero_artist_service' => 'خدمت آرایشگر در کارت هیرو',
                 ],
                 'صفحات استاتیک' => [
                     'privacy_content' => 'محتوای حریم خصوصی (HTML)',

@@ -84,8 +84,8 @@ foreach ($heroTrustDefaults as $index => [$defaultIcon, $defaultText]) {
                 <div class="absolute -bottom-4 -right-4 bg-white rounded-3xl px-6 py-4 shadow-2xl flex items-center gap-x-3">
                     <div class="text-rose-500"><i class="fa-solid fa-heart text-3xl"></i></div>
                     <div class="text-xs leading-tight">
-                        <div class="font-bold text-zinc-700">سارا احمدی</div>
-                        <div class="text-rose-500">آرایش عروس</div>
+                        <div class="font-bold text-zinc-700"><?= e($settings['hero_artist_name'] ?? 'سارا احمدی') ?></div>
+                        <div class="text-rose-500"><?= e($settings['hero_artist_service'] ?? 'آرایش عروس') ?></div>
                     </div>
                 </div>
             </div>
