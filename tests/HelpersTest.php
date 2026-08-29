@@ -102,6 +102,32 @@ class HelpersTest extends TestCase
         $this->assertStringStartsWith('item-', $result);
     }
 
+    public function testSlugifyCollapsesSpaceBeforeDash(): void
+    {
+        // Regression: a manually-entered slug like "bleach -touch-up-time-guide"
+        // (with a stray space) must normalize to "bleach-touch-up-time-guide",
+        // otherwise the blog post URL becomes /blog/bleach%20-touch-up... and 404s.
+        $this->assertSame('bleach-touch-up-time-guide', slugify('bleach -touch-up-time-guide'));
+    }
+
+    public function testSlugifyCollapsesMultipleWhitespace(): void
+    {
+        $this->assertSame('bleach-touch-up-guide', slugify('bleach  touch-up   guide'));
+    }
+
+    public function testSlugifyTrimsSurroundingWhitespace(): void
+    {
+        $this->assertSame('my-great-post', slugify('  My Great Post  '));
+    }
+
+    public function testSlugifyPreservesHexFallbackThenReslugifiesIdempotently(): void
+    {
+        // slugify is idempotent for slugs it produced, so re-running it on a
+        // stored slug never corrupts it (important for BlogController::show()).
+        $this->assertSame('post-abc123', slugify('post-abc123'));
+        $this->assertSame('item-9cd58637', slugify('item-9cd58637'));
+    }
+
     public function testTruncateShortTextUnchanged(): void
     {
         $this->assertSame('hello', truncate('hello', 10));

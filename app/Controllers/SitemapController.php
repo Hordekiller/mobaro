@@ -71,17 +71,32 @@ class SitemapController extends BaseController
             $sections[] = 'news';
         }
 
+        // Only persist static files when the site is reached through a public
+        // host. If APP_URL points at a local/dev host (a leftover localhost
+        // build), writing the file would let it shadow the real production
+        // sitemap once copied to the server (the .htaccess serves any existing
+        // public/sitemap-*.xml before this controller runs). We still emit the
+        // correct XML on the fly, but never persist a dev-host file that would
+        // otherwise leak 127.0.0.1 URLs to Google.
+        $persist = $this->shouldPersistFiles();
+
         $entries = [];
         foreach ($sections as $name) {
             $built = $this->buildSection($name);
-            @file_put_contents($this->sitemapFilePath('sitemap-' . $name . '.xml'), $built['xml']);
+            if ($persist) {
+                @file_put_contents($this->sitemapFilePath('sitemap-' . $name . '.xml'), $built['xml']);
+            }
             $entries[] = ['loc' => url('/sitemap-' . $name . '.xml'), 'lastmod' => $built['lastmod']];
         }
 
         $xml = $this->buildIndexXml($entries);
-        @file_put_contents($this->sitemapFilePath('sitemap.xml'), $xml);
-
-        SitemapNotifier::notify($this->collectLocs($sections));
+        if ($persist) {
+            @file_put_contents($this->sitemapFilePath('sitemap.xml'), $xml);
+            // Only announce indexed URLs when we actually persisted the files;
+            // on a local/dev host the collected <loc> values would point at a
+            // private box and must never be pushed to Bing/Yandex (IndexNow).
+            SitemapNotifier::notify($this->collectLocs($sections));
+        }
 
         echo $xml;
         exit;
@@ -92,10 +107,47 @@ class SitemapController extends BaseController
         header('Content-Type: application/xml; charset=utf-8');
 
         $built = $this->buildSection($name);
-        @file_put_contents($this->sitemapFilePath('sitemap-' . $name . '.xml'), $built['xml']);
+        if ($this->shouldPersistFiles()) {
+            @file_put_contents($this->sitemapFilePath('sitemap-' . $name . '.xml'), $built['xml']);
+        }
 
         echo $built['xml'];
         exit;
+    }
+
+    /**
+     * Whether the generator may write static files. We refuse to persist any
+     * sitemap whose base host is a private/dev host, so a stale file with
+     * localhost URLs can never be copied to production and served to Google.
+     *
+     * The $host argument is only used to make this method deterministically
+     * testable; callers use the resolved url('/') host by default.
+     */
+    private function shouldPersistFiles(?string $host = null): bool
+    {
+        $host = strtolower(trim((string) ($host ?? parse_url(url('/'), PHP_URL_HOST))));
+        if ($host === '') {
+            return false;
+        }
+        // Loopback (browser bars / IP).
+        if ($host === 'localhost' || $host === '127.0.0.1' || $host === '::1') {
+            return false;
+        }
+        // Common private/testing TLDs used in local setups.
+        if (preg_match('/(^|\.)(local|test|dev|lan|internal|home\.arpa)$/', $host)) {
+            return false;
+        }
+        // Private / reserved IP ranges (RFC 1918, link-local, CGNAT, etc.).
+        // These indicate a dev box that must never publish a cached sitemap URL.
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return filter_var(
+                $host,
+                FILTER_VALIDATE_IP,
+                FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+            ) !== false;
+        }
+
+        return true;
     }
 
     /**

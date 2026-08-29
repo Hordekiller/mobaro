@@ -47,6 +47,18 @@ class Router
             if (preg_match($route['pattern'], $uri, $matches)) {
                 $params = array_filter($matches, fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
 
+                // Path segments arrive percent-encoded (e.g. /blog/bleach%20-touch-up
+                // as "bleach%20-touch-up"). Decode them so slug/course lookups match
+                // the stored, human-readable value. rawurldecode() only expands %XX
+                // and leaves "+" untouched — correct for URL paths (unlike urldecode,
+                // which would turn "+" into a space). Numeric casts below then see
+                // the decoded value (e.g. "%31" -> "1"), also the intended number.
+                foreach ($params as $k => $v) {
+                    if (is_string($v)) {
+                        $params[$k] = rawurldecode($v);
+                    }
+                }
+
                 // Numeric path segments (id, size, width, height, seed) are
                 // always cast to int. A non-numeric value such as /product/abc
                 // becomes 0 so the controller's own "not found" branch decides

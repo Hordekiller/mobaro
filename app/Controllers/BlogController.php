@@ -115,6 +115,9 @@ class BlogController extends BaseController
         header(self::CONTENT_TYPE_JSON);
         $this->verifyCsrf();
 
+        // Keep in sync with show(): map URL slug variations to the stored slug.
+        $slug = slugify($slug);
+
         $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
         if (RateLimiter::isLocked('comment:' . $ip, 5, 15)) {
             http_response_code(429);
@@ -222,12 +225,99 @@ class BlogController extends BaseController
             exit;
         }
 
+        $this->registerInMedia($uploaded, $_FILES['file'], 'blog');
+
         echo json_encode(['location' => '/assets/images/' . $uploaded]);
         exit;
     }
 
+    /**
+     * Register an uploaded image in the shared media library so every image
+     * inserted through TinyMCE is also visible/selectable in the site gallery.
+     */
+    private function registerInMedia(string $filename, array $file, string $sourceType): void
+    {
+        $filepath = 'assets/images/' . $filename;
+        $publicDir = realpath(__DIR__ . '/../../public');
+        $fullPath = realpath($publicDir . '/' . $filepath);
+        if ($fullPath === false || !str_starts_with($fullPath, $publicDir . '/')) {
+            return;
+        }
+
+        $existing = Database::fetch("SELECT id FROM media WHERE filepath = ?", [$filepath]);
+        if ($existing) {
+            return;
+        }
+
+        $mime = file_exists($fullPath) ? mime_content_type($fullPath) : ($file['type'] ?? '');
+        $size = file_exists($fullPath) ? filesize($fullPath) : 0;
+
+        Database::insert('media', [
+            'filepath' => $filepath,
+            'original_name' => $file['name'] ?? $filename,
+            'type' => 'image',
+            'mime_type' => $mime,
+            'size' => $size,
+            'source_type' => $sourceType,
+            'uploaded_by' => Auth::id(),
+        ]);
+    }
+
+    /**
+     * JSON list of gallery images for the TinyMCE media-picker modal.
+     * Only authenticated admins may call it; returns public-absolute URLs.
+     */
+    public function galleryImages(): void
+    {
+        header(self::CONTENT_TYPE_JSON);
+        $this->requireAdmin();
+        echo json_encode(
+            ['items' => $this->collectGalleryEntries()],
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
+        exit;
+    }
+
+    /**
+     * Build the gallery picker entries (id, name, public url, stream url) for
+     * the current media library. Kept free of output/exit so it is testable.
+     */
+    private function collectGalleryEntries(): array
+    {
+        $rows = Database::fetchAll(
+            "SELECT id, filepath, original_name, mime_type, alt_text
+             FROM media
+             WHERE type = 'image' AND is_active = 1
+             ORDER BY id DESC"
+        );
+
+        $items = [];
+        foreach ($rows as $row) {
+            $path = ltrim((string) ($row['filepath'] ?? ''), '/');
+            if ($path === '') {
+                continue;
+            }
+            $items[] = [
+                'id'       => (int) $row['id'],
+                'name'     => ($row['alt_text'] ?? '') !== '' ? $row['alt_text'] : ($row['original_name'] ?? ''),
+                'url'      => url('/' . $path),
+                'original' => url('/media/stream/' . (int) $row['id']),
+            ];
+        }
+
+        return $items;
+    }
+
     public function show(string $slug): void
     {
+        // Normalize the incoming slug so URL variations — a stray space, a
+        // percent-encoded space (%20) already decoded by the Router, or
+        // duplicated/collapsed separators (e.g. "bleach -touch-up") — all map
+        // to the canonical stored slug (e.g. "bleach-touch-up"). Without this,
+        // a manually-entered slug that accidentally contained a space would
+        // produce /blog/bleach%20-touch-up... and 404 on the published post.
+        $slug = slugify($slug);
+
         $post = Cache::remember('blog_post_' . $slug, Config::get('cache.ttl.page', 600), function () use ($slug) {
             $p = Database::fetch(
                 "SELECT * FROM blog_posts WHERE slug = ? AND is_published = 1",

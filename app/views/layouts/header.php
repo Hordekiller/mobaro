@@ -25,6 +25,12 @@ use App\Database;
     }
     $metaDescDefault = 'سالن زیبایی ' . $brandName . ' با بهترین آرایشگران و محصولات حرفه‌ای';
     $gtagId = isset($settings['analytics_gtag_id']) ? trim((string) $settings['analytics_gtag_id']) : '';
+    $ogTitle = ($seo['og_title'] ?? '') ?: (($settings['og_title'] ?? '') ?: $rawTitle);
+    $ogDesc = ($seo['og_desc'] ?? '') ?: (($settings['og_description'] ?? '') ?: $metaDescDefault);
+    $ogImage = ($seo['og_image'] ?? '') ?: (($settings['og_image'] ?? '') ?: '/favicon/og-image.png');
+    $ogImage = str_starts_with($ogImage, '/') ? url($ogImage) : $ogImage;
+    $canonicalUrl = ($seo['canonical'] ?? '') ?: url(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH));
+    $ogType = $seo['og_type'] ?? 'website';
     ?>
     <?php if ($gtagId !== '' && $gtagId !== '#' && preg_match('/^(?:G|GTM|AW)-[A-Z0-9_-]{4,}$/i', $gtagId)) : ?>
     <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($gtagId) ?>"></script>
@@ -40,11 +46,17 @@ use App\Database;
     <?php if (!empty($seo['canonical'])) : ?>
     <link rel="canonical" href="<?= e($seo['canonical']) ?>">
     <?php endif; ?>
-    <meta property="og:title" content="<?= e(($seo['og_title'] ?? '') ?: (($settings['og_title'] ?? '') ?: $rawTitle)) ?>">
-    <meta property="og:description" content="<?= e(($seo['og_desc'] ?? '') ?: (($settings['og_description'] ?? '') ?: $metaDescDefault)) ?>">
-    <meta property="og:image" content="<?= e(($seo['og_image'] ?? '') ?: (($settings['og_image'] ?? '') ?: '/favicon/og-image.png')) ?>">
-    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= e($ogTitle) ?>">
+    <meta property="og:description" content="<?= e($ogDesc) ?>">
+    <meta property="og:image" content="<?= e($ogImage) ?>">
+    <meta property="og:type" content="<?= e($ogType) ?>">
+    <meta property="og:url" content="<?= e($canonicalUrl) ?>">
+    <meta property="og:site_name" content="<?= e($settings['site_name'] ?? $brandName) ?>">
+    <meta property="og:locale" content="fa_IR">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= e($ogTitle) ?>">
+    <meta name="twitter:description" content="<?= e($ogDesc) ?>">
+    <meta name="twitter:image" content="<?= e($ogImage) ?>">
     <?php
     $robots = $seo['robots'] ?? $settings['default_robots'] ?? '';
     if (!empty($robots)) : ?>

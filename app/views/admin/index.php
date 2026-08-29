@@ -1244,6 +1244,112 @@ function closeItemModal(e) {
     <?php else : ?>
 <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" integrity="sha384-Ovv1ZPEkpW4ElBKDKaEIPkNfTTadFpifFwNJOBnuStg0PQ0RBln5Lsf9AI8BsCmx" crossorigin="anonymous"></script>
     <?php endif; ?>
+<style>
+.tox-tinymce-aux{ z-index:1000000 !important; }
+.tox-dialog-wrap{ position:fixed !important; top:0 !important; left:0 !important; right:0 !important; bottom:0 !important; display:flex !important; align-items:center !important; justify-content:center !important; z-index:1000000 !important; }
+.tox-tinymce-aux .tox-dialog{ max-width:480px; width:95vw; }
+</style>
+<div id="tinymceMediaModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden" style="z-index:100" role="dialog" aria-modal="true" data-modal-backdrop>
+    <div class="bg-white rounded-[20px] p-6 w-full max-w-2xl mx-4 shadow-2xl max-h-[85vh] flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">انتخاب تصویر از گالری</h3>
+            <button type="button" onclick="closeTinymceMediaModal()" class="w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-all text-sm"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex gap-2 mb-4 border-b border-zinc-100 pb-3">
+            <button type="button" id="tinymceTabGallery" onclick="switchTinymceTab('gallery')" class="px-4 py-2 rounded-xl text-sm font-medium bg-rose-600 text-white transition-all">گالری</button>
+            <button type="button" id="tinymceTabUpload" onclick="switchTinymceTab('upload')" class="px-4 py-2 rounded-xl text-sm font-medium bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-all">آپلود جدید</button>
+        </div>
+        <div id="tinymceTabGalleryPanel" class="flex-1 min-h-0">
+            <div id="tinymceMediaGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 overflow-y-auto max-h-[50vh]"></div>
+            <div id="tinymceMediaEmpty" class="hidden text-center py-10 text-zinc-400 text-sm">تصویری در گالری نیست. از تب «آپلود جدید» استفاده کنید.</div>
+        </div>
+        <div id="tinymceTabUploadPanel" class="hidden">
+            <input id="tinymceNewFile" type="file" accept="image/*" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
+            <button type="button" onclick="uploadTinymceFile()" class="mt-4 w-full py-3 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">آپلود و درج</button>
+        </div>
+    </div>
+</div>
+<script>
+var _tinymceMediaCb = null;
+function switchTinymceTab(tab) {
+    var g = document.getElementById('tinymceTabGalleryPanel');
+    var u = document.getElementById('tinymceTabUploadPanel');
+    var tbG = document.getElementById('tinymceTabGallery');
+    var tbU = document.getElementById('tinymceTabUpload');
+    if (tab === 'gallery') {
+        g.classList.remove('hidden'); u.classList.add('hidden');
+        tbG.className = 'px-4 py-2 rounded-xl text-sm font-medium bg-rose-600 text-white transition-all';
+        tbU.className = 'px-4 py-2 rounded-xl text-sm font-medium bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-all';
+    } else {
+        g.classList.add('hidden'); u.classList.remove('hidden');
+        tbU.className = 'px-4 py-2 rounded-xl text-sm font-medium bg-rose-600 text-white transition-all';
+        tbG.className = 'px-4 py-2 rounded-xl text-sm font-medium bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-all';
+    }
+}
+function openTinymceMediaPicker(cb) {
+    _tinymceMediaCb = cb;
+    switchTinymceTab('gallery');
+    document.getElementById('tinymceMediaModal').classList.remove('hidden');
+    loadTinymceGallery();
+}
+function closeTinymceMediaModal() {
+    document.getElementById('tinymceMediaModal').classList.add('hidden');
+    _tinymceMediaCb = null;
+}
+function loadTinymceGallery() {
+    var grid = document.getElementById('tinymceMediaGrid');
+    var empty = document.getElementById('tinymceMediaEmpty');
+    grid.innerHTML = '<p class="col-span-full text-center py-8 text-zinc-400 text-sm">در حال بارگذاری...</p>';
+    empty.classList.add('hidden');
+    fetch('/admin/blog/gallery-images', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(data) {
+            var items = data.items || [];
+            grid.innerHTML = '';
+            if (!items.length) { empty.classList.remove('hidden'); return; }
+            items.forEach(function(item) {
+                var d = document.createElement('button');
+                d.type = 'button';
+                d.className = 'relative group rounded-xl overflow-hidden border border-zinc-200 hover:border-rose-400 transition-all';
+                var img = document.createElement('img');
+                img.src = item.url;
+                img.alt = item.name || '';
+                img.className = 'w-full h-24 object-cover';
+                img.onerror = function() { this.src = item.original; };
+                d.appendChild(img);
+                d.onclick = function() {
+                    if (_tinymceMediaCb) _tinymceMediaCb(item.url);
+                    closeTinymceMediaModal();
+                };
+                grid.appendChild(d);
+            });
+        })
+        .catch(function() {
+            grid.innerHTML = '<p class="col-span-full text-center py-8 text-red-500 text-sm">خطا در بارگذاری گالری.</p>';
+        });
+}
+function uploadTinymceFile() {
+    var input = document.getElementById('tinymceNewFile');
+    if (!input.files || !input.files[0]) { alert('ابتدا یک تصویر انتخاب کنید.'); return; }
+    var formData = new FormData();
+    formData.append('file', input.files[0]);
+    var csrfMeta = document.querySelector('meta[name="csrf"]');
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/admin/blog/upload-image');
+    if (csrfMeta) xhr.setRequestHeader('X-CSRF-Token', csrfMeta.getAttribute('content'));
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var resp = JSON.parse(xhr.responseText);
+            if (_tinymceMediaCb && resp.location) _tinymceMediaCb(resp.location);
+            closeTinymceMediaModal();
+        } else {
+            try { var e = JSON.parse(xhr.responseText); alert((e.error && e.error.message) || 'آپلود ناموفق بود.'); }
+            catch (err) { alert('آپلود ناموفق بود.'); }
+        }
+    };
+    xhr.send(formData);
+}
+</script>
 <script>
 function initRichEditor(selector, content) {
     if (tinymce.activeEditor) tinymce.remove();
@@ -1256,32 +1362,61 @@ function initRichEditor(selector, content) {
             toolbar: 'undo redo | formatselect | bold italic underline | forecolor backcolor | alignright aligncenter | bullist numlist | link image | code',
             branding: false,
             promotion: false,
-            images_upload_url: '/admin/blog/upload-image',
-            images_upload_credentials: true,
-            file_picker_types: 'image',
-            file_picker_callback: function(cb, value, meta) {
-                var input = document.createElement('input');
-                input.setAttribute('type', 'file');
-                input.setAttribute('accept', 'image/*');
-                input.onchange = function() {
-                    var file = this.files[0];
-                    var formData = new FormData();
-                    formData.append('file', file);
+            images_upload_handler: function(blobInfo) {
+                return new Promise(function(resolve, reject) {
+                    var fd = new FormData();
+                    fd.append('file', blobInfo.blob(), blobInfo.filename());
+                    var csrfMeta = document.querySelector('meta[name="csrf"]');
                     var xhr = new XMLHttpRequest();
                     xhr.open('POST', '/admin/blog/upload-image');
-                    var csrfMeta = document.querySelector('meta[name="csrf"]');
-                    if (csrfMeta) {
-                        xhr.setRequestHeader('X-CSRF-Token', csrfMeta.getAttribute('content'));
-                    }
+                    if (csrfMeta) xhr.setRequestHeader('X-CSRF-Token', csrfMeta.getAttribute('content'));
                     xhr.onload = function() {
                         if (xhr.status === 200) {
                             var resp = JSON.parse(xhr.responseText);
-                            cb(resp.location);
+                            var abs = resp.location;
+                            if (typeof abs === 'string' && abs.charAt(0) === '/') {
+                                abs = window.location.origin + abs;
+                            }
+                            resolve(abs);
+                        } else {
+                            var msg = 'خطا در آپلود';
+                            try { var e = JSON.parse(xhr.responseText); if (e && e.error && e.error.message) msg = e.error.message; }
+                            catch (err) {}
+                            reject(msg);
                         }
                     };
-                    xhr.send(formData);
-                };
-                input.click();
+                    xhr.onerror = function() { reject('خطا در اتصال.'); };
+                    xhr.send(fd);
+                });
+            },
+            file_picker_types: 'image',
+            file_picker_callback: function(cb, value, meta) {
+                if (typeof openTinymceMediaPicker === 'function') {
+                    openTinymceMediaPicker(cb);
+                } else {
+                    var input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', 'image/*');
+                    input.onchange = function() {
+                        var file = this.files[0];
+                        var formData = new FormData();
+                        formData.append('file', file);
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('POST', '/admin/blog/upload-image');
+                        var csrfMeta = document.querySelector('meta[name="csrf"]');
+                        if (csrfMeta) {
+                            xhr.setRequestHeader('X-CSRF-Token', csrfMeta.getAttribute('content'));
+                        }
+                        xhr.onload = function() {
+                            if (xhr.status === 200) {
+                                var resp = JSON.parse(xhr.responseText);
+                                cb(resp.location);
+                            }
+                        };
+                        xhr.send(formData);
+                    };
+                    input.click();
+                }
             },
             setup: function(editor) {
                 if (content) editor.on('init', function() { editor.setContent(content); });

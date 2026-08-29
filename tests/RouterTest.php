@@ -114,6 +114,57 @@ class RouterTest extends TestCase
 
         $this->assertSame(0, RouterTestControllerDouble::$lastProductId);
     }
+
+    public function testPercentEncodedSlugIsDecoded(): void
+    {
+        // A blog URL containing a stray space arrives percent-encoded, e.g.
+        // /blog/bleach%20-touch-up-time-guide. The Router must decode %20 so the
+        // controller can compare against the (human-readable) stored slug.
+        RouterSlugCaptureDialogDouble::$lastSlug = null;
+        Router::get('/blog/{slug}', [RouterSlugCaptureDialogDouble::class, 'show']);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/blog/bleach%20-touch-up-time-guide';
+        Router::dispatch();
+
+        $this->assertSame('bleach -touch-up-time-guide', RouterSlugCaptureDialogDouble::$lastSlug);
+    }
+
+    public function testPlainSlugLeftIntact(): void
+    {
+        RouterSlugCaptureDialogDouble::$lastSlug = null;
+        Router::get('/blog/{slug}', [RouterSlugCaptureDialogDouble::class, 'show']);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/blog/bleach-touch-up-time-guide';
+        Router::dispatch();
+
+        $this->assertSame('bleach-touch-up-time-guide', RouterSlugCaptureDialogDouble::$lastSlug);
+    }
+
+    public function testPlusSignInPathIsNotTreatedAsSpace(): void
+    {
+        // rawurldecode (unlike urldecode) must not turn "+" into a space in a
+        // URL path segment.
+        RouterSlugCaptureDialogDouble::$lastSlug = null;
+        Router::get('/blog/{slug}', [RouterSlugCaptureDialogDouble::class, 'show']);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/blog/c++-guide';
+        Router::dispatch();
+
+        $this->assertSame('c++-guide', RouterSlugCaptureDialogDouble::$lastSlug);
+    }
+}
+
+class RouterSlugCaptureDialogDouble
+{
+    public static ?string $lastSlug = null;
+
+    public function show(string $slug): void
+    {
+        self::$lastSlug = $slug;
+    }
 }
 
 class RouterTestControllerDouble

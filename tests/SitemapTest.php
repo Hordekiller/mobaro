@@ -237,6 +237,27 @@ final class SitemapTest extends TestCase
         $this->assertStringContainsString('<?xml-stylesheet type="text/xsl" href="', $this->xml());
     }
 
+    public function testShouldPersistFilesSkipsLocalhost(): void
+    {
+        $ctrl = new SitemapController();
+        $m = new ReflectionMethod(SitemapController::class, 'shouldPersistFiles');
+
+        // Simulate a leftover localhost/dev APP_URL build: must refuse to
+        // persist the static file so it can never shadow the production one.
+        foreach (['localhost', '127.0.0.1', '::1', 'mybox.local', 'site.test', '192.168.1.9', '10.0.0.2', '172.16.5.5'] as $host) {
+            $this->assertFalse($m->invoke($ctrl, $host), "must NOT persist for host {$host}");
+        }
+    }
+
+    public function testShouldPersistFilesAllowsPublicHost(): void
+    {
+        $ctrl = new SitemapController();
+        $m = new ReflectionMethod(SitemapController::class, 'shouldPersistFiles');
+
+        $this->assertTrue($m->invoke($ctrl, 'mobaro.ir'));
+        $this->assertTrue($m->invoke($ctrl, '8.8.8.8'));
+    }
+
     public function testBlogSectionIsWellFormedWithImageCapability(): void
     {
         $built = $this->buildSection('blog');

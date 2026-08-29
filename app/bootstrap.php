@@ -17,7 +17,11 @@ $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'
     || ($_SERVER['HTTP_X_FORWARDED_SSL'] ?? '') === 'on';
 
-if ($host !== 'mobaro.ir' || !$isHttps) {
+$isLocalHost = in_array($host, ['127.0.0.1', 'localhost', '::1'], true)
+    || str_starts_with($host, '127.0.0.1:')
+    || str_starts_with($host, 'localhost:');
+
+if (!$isLocalHost && ($host !== 'mobaro.ir' || !$isHttps)) {
     header('Location: https://mobaro.ir' . ($_SERVER['REQUEST_URI'] ?? '/'), true, 301);
     exit;
 }
@@ -78,7 +82,13 @@ if (
     !str_starts_with($uri, '/dashboard') &&
     !str_starts_with($uri, '/api')
 ) {
-    header('Cache-Control: public, max-age=300, stale-while-revalidate=60');
+    // Personalized markup (logged-in nav, cart/wishlist counters, and the CSRF
+    // token in a <meta> tag) must never be served from a shared cache to another
+    // visitor. Use private caching for authenticated requests.
+    $cacheControl = Auth::check()
+        ? 'Cache-Control: private, no-store'
+        : 'Cache-Control: public, max-age=300, stale-while-revalidate=60';
+    header($cacheControl);
 }
 
 set_exception_handler(function (Throwable $e) {

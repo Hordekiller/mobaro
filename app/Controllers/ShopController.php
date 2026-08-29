@@ -224,7 +224,7 @@ class ShopController extends BaseController
 
         $settings = Settings::all();
         $cart = $_SESSION['cart'] ?? [];
-        $seo = SEOService::forPage('shop');
+        $seo = SEOService::forProduct($product);
 
         $jsonLd = StructuredData::render(
             StructuredData::organization(),

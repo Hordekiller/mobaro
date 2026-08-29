@@ -50,7 +50,7 @@ class ModelsController extends BaseController
         }, 'models');
 
         $settings = Settings::all();
-        $seo = SEOService::forPage('home');
+        $seo = SEOService::forPage('models');
 
         $this->view('models/index', compact(
             'models',

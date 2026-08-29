@@ -756,8 +756,8 @@ class AdminController extends BaseController
             'product-brands' => ['products'],
             'hair-prices' => ['booking'],
             'blog-categories' => ['blog'],
-            'seo' => ['homepage', 'blog'],
-            'faqs' => ['faq'],
+            'seo' => ['seo', 'homepage', 'blog'],
+            'faqs' => ['faq', 'seo'],
         ];
 
         $tags = $sectionToTags[$section] ?? [$section];
@@ -1162,6 +1162,24 @@ class AdminController extends BaseController
             flash('error', 'عنوان پست الزامی است.');
             redirect('/admin/blog');
             return;
+        }
+
+        if (!empty($data['slug'])) {
+            // Normalize a manually-entered slug so a stray space (which would
+            // otherwise surface as %20 and 404 the post) never reaches storage.
+            $slug = slugify((string) $data['slug']);
+            if ($slug === '') {
+                $data['slug'] = '';
+            } else {
+                // Ensure the normalized slug stays unique across other posts,
+                // mirroring the collision handling used for auto-generated slugs.
+                $counter = 1;
+                $baseSlug = $slug;
+                while (Database::fetch("SELECT id FROM blog_posts WHERE slug = ? AND id != ?", [$slug, $id ?: 0])) {
+                    $slug = $baseSlug . '-' . $counter++;
+                }
+                $data['slug'] = $slug;
+            }
         }
 
         if (empty($data['slug'])) {

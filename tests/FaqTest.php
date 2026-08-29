@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\FaqController;
 use App\Controllers\SitemapController;
 use App\StructuredData;
 use PHPUnit\Framework\TestCase;
@@ -49,5 +50,18 @@ final class FaqTest extends TestCase
         $xml = (new SitemapController())->generate();
 
         $this->assertStringContainsString('<loc>' . url('/faq') . '</loc>', $xml);
+    }
+
+    public function testFaqPageRendersWithoutError(): void
+    {
+        ob_start();
+        (new FaqController())->index();
+        $html = ob_get_clean();
+
+        $this->assertIsString($html);
+        $this->assertStringContainsString('سؤالات متداول', $html);
+        $this->assertStringNotContainsString('SQLSTATE', $html);
+        $this->assertStringNotContainsString('Fatal error', $html);
+        $this->assertStringNotContainsString("doesn't exist", $html);
     }
 }

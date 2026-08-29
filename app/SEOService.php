@@ -21,6 +21,7 @@ class SEOService
             'og_title'    => $post['og_title']          ?: ($post['meta_title'] ?: $post['title']),
             'og_desc'     => $post['og_description']    ?: ($post['meta_description'] ?: ($post['excerpt'] ?: $defaultDesc)),
             'og_image'    => $post['og_image']          ?: ($post['image'] ? asset('images/' . $post['image']) : Settings::get('og_image', '/favicon/og-image.png')),
+            'og_type'     => 'article',
             'robots'      => $post['robots']            ?? '',
         ];
     }
@@ -49,6 +50,38 @@ class SEOService
             'og_image'    => !empty($course['image'])
                 ? asset('images/' . ltrim((string) $course['image'], '/'))
                 : (Settings::get('og_image', '/favicon/og-image.png') ?: '/favicon/og-image.png'),
+            'og_type'     => 'website',
+            'robots'      => '',
+        ];
+    }
+
+    public static function forProduct(array $product): array
+    {
+        $settings = Settings::all();
+        $brandName = (string) ($settings['brand_name'] ?? 'موبارو');
+        $name = trim((string) ($product['name'] ?? ''));
+        $defaultDesc = Settings::get('meta_description', '');
+        $id = (string) ($product['id'] ?? 0);
+        $slug = trim((string) ($product['slug'] ?? ''));
+        $urlPath = $slug !== '' ? '/product/' . $slug : '/product/' . $id;
+
+        $description = trim(strip_tags((string) ($product['description'] ?? '')));
+        if ($description === '') {
+            $description = (string) $defaultDesc;
+        }
+
+        $fullTitle = $name !== '' ? $name . ' | ' . $brandName : $brandName;
+
+        return [
+            'title'       => $fullTitle,
+            'description' => self::truncateText($description, 160),
+            'canonical'   => url($urlPath),
+            'og_title'    => $fullTitle,
+            'og_desc'     => self::truncateText($description, 160),
+            'og_image'    => !empty($product['image'])
+                ? asset('images/' . ltrim((string) $product['image'], '/'))
+                : (Settings::get('og_image', '/favicon/og-image.png') ?: '/favicon/og-image.png'),
+            'og_type'     => 'website',
             'robots'      => '',
         ];
     }
@@ -69,6 +102,8 @@ class SEOService
                 'faq'     => url('/faq'),
                 'terms'   => url('/terms'),
                 'privacy' => url('/privacy'),
+                'models'  => url('/models'),
+                'blog'    => url('/blog'),
                 default   => url('/'),
             };
 
@@ -79,9 +114,10 @@ class SEOService
                 'og_title'    => ($row['og_title'] ?? '')          ?: (($row['meta_title'] ?? '') ?: $settings['og_title'] ?? ''),
                 'og_desc'     => ($row['og_description'] ?? '')    ?: (($row['meta_description'] ?? '') ?: $settings['og_description'] ?? ''),
                 'og_image'    => ($row['og_image'] ?? '')          ?: $settings['og_image'] ?? '/favicon/og-image.png',
+                'og_type'     => 'website',
                 'robots'      => $row['robots']                    ?? $settings['default_robots'] ?? '',
             ];
-        });
+        }, 'seo');
     }
 
     private static function truncateText(string $value, int $length): string
