@@ -61,12 +61,12 @@ function filterUrl(array $overrides = []): string
                             دسته‌بندی‌ها
                         </h4>
                         <div class="space-y-3">
-                            <a href="<?= filterUrl(['category' => null]) ?>" class="flex items-center justify-between group <?= $category === 'all' ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['category' => null]) ?>" rel="nofollow" class="flex items-center justify-between group <?= $category === 'all' ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition">همه محصولات</span>
                                 <span class="text-xs text-zinc-400"><?= $allTotal ?></span>
                             </a>
                             <?php foreach ($categoryRows as $cat) : ?>
-                            <a href="<?= filterUrl(['category' => $cat['category']]) ?>" class="flex items-center justify-between group <?= $category === $cat['category'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['category' => $cat['category']]) ?>" rel="nofollow" class="flex items-center justify-between group <?= $category === $cat['category'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition"><?= e($cat['category']) ?></span>
                                 <span class="text-xs text-zinc-400"><?= $cat['cnt'] ?></span>
                             </a>
@@ -101,7 +101,7 @@ function filterUrl(array $overrides = []): string
                         </h4>
                         <div class="space-y-3">
                             <?php foreach ($brandRows as $br) : ?>
-                            <a href="<?= filterUrl(['brand' => $br['brand']]) ?>" class="flex items-center justify-between group <?= $brand === $br['brand'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['brand' => $br['brand']]) ?>" rel="nofollow" class="flex items-center justify-between group <?= $brand === $br['brand'] ? 'text-rose-500 font-medium' : 'text-zinc-600' ?>">
                                 <span class="group-hover:text-rose-500 transition"><?= e($br['brand']) ?></span>
                                 <span class="text-xs text-zinc-400"><?= $br['cnt'] ?></span>
                             </a>
@@ -119,7 +119,7 @@ function filterUrl(array $overrides = []): string
                         </h4>
                         <div class="space-y-3">
                             <?php foreach ([5,4,3] as $r) : ?>
-                            <a href="<?= filterUrl(['rating' => $r]) ?>" class="flex items-center gap-3 group <?= ($rating ?? 0) == $r ? 'text-rose-500' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['rating' => $r]) ?>" rel="nofollow" class="flex items-center gap-3 group <?= ($rating ?? 0) == $r ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <div class="star-rating text-amber-400 text-sm">
                                     <?php for ($i = 1; $i <= 5; $i++) : ?>
                                         <i class="<?= $i <= $r ? 'fa-solid' : 'fa-regular text-zinc-300' ?> fa-star"></i>
@@ -140,7 +140,7 @@ function filterUrl(array $overrides = []): string
                             فیلترهای بیشتر
                         </h4>
                         <div class="space-y-3">
-                            <a href="<?= filterUrl(['is_sale' => $isSale ? null : 1]) ?>" class="flex items-center gap-3 group <?= $isSale ? 'text-rose-500' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['is_sale' => $isSale ? null : 1]) ?>" rel="nofollow" class="flex items-center gap-3 group <?= $isSale ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $isSale ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
                                     <?php if ($isSale) :
                                         ?><i class="fa-solid fa-check"></i><?php
@@ -148,7 +148,7 @@ function filterUrl(array $overrides = []): string
                                 </span>
                                 <span class="group-hover:text-rose-500 transition">حراج و تخفیف‌دار</span>
                             </a>
-                            <a href="<?= filterUrl(['is_new' => $isNew ? null : 1]) ?>" class="flex items-center gap-3 group <?= $isNew ? 'text-rose-500' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['is_new' => $isNew ? null : 1]) ?>" rel="nofollow" class="flex items-center gap-3 group <?= $isNew ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $isNew ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
                                     <?php if ($isNew) :
                                         ?><i class="fa-solid fa-check"></i><?php
@@ -156,7 +156,7 @@ function filterUrl(array $overrides = []): string
                                 </span>
                                 <span class="group-hover:text-rose-500 transition">جدیدترین محصولات</span>
                             </a>
-                            <a href="<?= filterUrl(['in_stock' => $inStock ? null : 1]) ?>" class="flex items-center gap-3 group <?= $inStock ? 'text-rose-500' : 'text-zinc-600' ?>">
+                            <a href="<?= filterUrl(['in_stock' => $inStock ? null : 1]) ?>" rel="nofollow" class="flex items-center gap-3 group <?= $inStock ? 'text-rose-500' : 'text-zinc-600' ?>">
                                 <span class="w-5 h-5 rounded border-2 flex items-center justify-center text-xs <?= $inStock ? 'bg-rose-500 border-rose-500 text-white' : 'border-zinc-300' ?>">
                                     <?php if ($inStock) :
                                         ?><i class="fa-solid fa-check"></i><?php
@@ -179,10 +179,10 @@ function filterUrl(array $overrides = []): string
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
                             <span class="text-zinc-600 text-sm">مرتب‌سازی:</span>
-                            <a href="<?= filterUrl(['sort' => 'newest']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'newest' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">جدیدترین</a>
-                            <a href="<?= filterUrl(['sort' => 'popular']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'popular' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">پرفروش‌ترین</a>
-                            <a href="<?= filterUrl(['sort' => 'price_asc']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_asc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">ارزان‌ترین</a>
-                            <a href="<?= filterUrl(['sort' => 'price_desc']) ?>" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_desc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">گران‌ترین</a>
+                            <a href="<?= filterUrl(['sort' => 'newest']) ?>" rel="nofollow" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'newest' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">جدیدترین</a>
+                            <a href="<?= filterUrl(['sort' => 'popular']) ?>" rel="nofollow" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'popular' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">پرفروش‌ترین</a>
+                            <a href="<?= filterUrl(['sort' => 'price_asc']) ?>" rel="nofollow" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_asc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">ارزان‌ترین</a>
+                            <a href="<?= filterUrl(['sort' => 'price_desc']) ?>" rel="nofollow" class="border border-zinc-200 rounded-lg px-4 py-2 text-zinc-700 <?= $sort === 'price_desc' ? 'bg-rose-50 border-rose-300 text-rose-500' : '' ?>">گران‌ترین</a>
                         </div>
                     </div>
                 </div>

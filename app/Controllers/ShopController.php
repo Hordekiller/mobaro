@@ -157,6 +157,14 @@ class ShopController extends BaseController
         $settings = Settings::all();
         $seo = SEOService::forPage('shop');
 
+        $seoFilterParams = ['category', 'brand', 'search', 'sort', 'price_min', 'price_max', 'rating', 'is_sale', 'is_new', 'in_stock'];
+        foreach ($seoFilterParams as $_fk) {
+            if (!empty($_GET[$_fk])) {
+                $seo['robots'] = 'noindex,follow';
+                break;
+            }
+        }
+
         $this->view('shop/index', [
             'products' => $products, 'category' => $category, 'brand' => $brand,
             'search' => $search, 'sort' => $sort, 'page' => $page,
