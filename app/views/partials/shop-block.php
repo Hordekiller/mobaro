@@ -19,6 +19,7 @@ declare(strict_types=1);
                     <img src="/assets/images/<?= e($product['image']) ?>"
                          alt="<?= e($product['name']) ?>"
                          class="w-full aspect-square object-cover"
+                         loading="lazy" decoding="async">
                          data-fallback="/media/280/280/<?= e($product['id']) ?>">
                     <button onclick="event.preventDefault(); quickAddToCart(<?= $product['id'] ?>, '<?= jsEscape($product['name']) ?>', <?= $product['price'] ?>, '/assets/images/<?= jsEscape($product['image']) ?>', '<?= jsEscape($product['category']) ?>')"
                             class="absolute top-4 left-4 bg-white h-8 w-8 rounded-2xl flex items-center justify-center shadow text-rose-500 text-lg leading-none pt-px" aria-label="افزودن <?= e($product['name']) ?> به سبد خرید">🛒</button>

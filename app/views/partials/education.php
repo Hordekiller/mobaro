@@ -29,6 +29,7 @@ declare(strict_types=1);
                             <img src="/assets/images/<?= e($course['image']) ?>"
                                  alt="<?= e($course['title']) ?>"
                                  class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+                                 loading="lazy" decoding="async">
                                  data-fallback="/media/600/340/<?= e($course['id']) ?>">
                             <?php if ((int) $course['is_free'] === 1) : ?>
                             <div class="absolute top-4 left-4 bg-emerald-500 text-white text-[11px] font-semibold px-3 py-1 rounded-full">رایگان</div>

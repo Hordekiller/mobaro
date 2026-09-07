@@ -20,7 +20,8 @@ declare(strict_types=1);
                     <div class="relative overflow-hidden">
                         <img src="/assets/images/<?= e($post['image'] ?: 'placeholder.svg') ?>"
                              alt="<?= e($post['image_alt'] ?? $post['title']) ?>"
-                             class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
+                             class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                             loading="lazy" decoding="async">
                         <?php if (!empty($post['category'])) : ?>
                         <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-xs font-bold text-rose-600 shadow-md">
                             <?= e($post['category']) ?>

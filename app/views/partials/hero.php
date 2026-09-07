@@ -80,6 +80,7 @@ foreach ($heroTrustDefaults as $index => [$defaultIcon, $defaultText]) {
                 </div>
                 <img src="/assets/images/<?= e($settings['hero_model_image'] ?? 'hero-model.jpg') ?>" alt="مدل مو"
                      class="w-80 h-[520px] object-cover rounded-[4rem] shadow-2xl ring-8 ring-white/60"
+                     width="520" height="620" fetchpriority="high" decoding="async"
                      data-fallback="/media/520/620/1005">
                 <div class="absolute -bottom-4 -right-4 bg-white rounded-3xl px-6 py-4 shadow-2xl flex items-center gap-x-3">
                     <div class="text-rose-500"><i class="fa-solid fa-heart text-3xl"></i></div>

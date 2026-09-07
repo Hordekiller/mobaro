@@ -19,6 +19,7 @@ declare(strict_types=1);
                     <img src="/assets/images/<?= e($model['image']) ?>"
                          alt="<?= e($model['title']) ?>"
                          class="w-full h-48 sm:h-56 md:h-72 object-cover hair-model"
+                         loading="lazy" decoding="async">
                          data-fallback="/media/400/520/<?= e($model['id']) ?>">
                     <div class="absolute top-4 right-4 text-[10px] bg-white/90 backdrop-blur px-4 py-1 rounded-3xl font-medium"><?= e($model['category']) ?></div>
                 </div>
