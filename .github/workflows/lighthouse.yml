@@ -75,6 +75,18 @@ jobs:
           cat storage/lighthouse-server.log 2>/dev/null || true
           exit 1
 
+      - name: Smoke-test public routes
+        run: |
+          for path in / /shop /faq; do
+            status=$(curl -sS -o /tmp/route-response -w '%{http_code}' "http://127.0.0.1:8080${path}")
+            echo "${path}: HTTP ${status}"
+            if [ "${status}" -lt 200 ] || [ "${status}" -ge 400 ]; then
+              echo "Public route ${path} returned HTTP ${status}"
+              cat /tmp/route-response
+              exit 1
+            fi
+          done
+
       - name: Run Lighthouse CI
         run: npx -y @lhci/cli@0.14.0 autorun
 
