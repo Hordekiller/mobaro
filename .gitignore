@@ -85,8 +85,7 @@ rozhin_db_backup.sql
 # Legacy / dev artifacts
 legacy/
 
-# Report / audit files
-REPORT-PRODUCTION-ISSUES.md
+# Report / audit files (kept for reference; unignored so the audit stays versioned)
 
 # Security audit output
 security-audit/

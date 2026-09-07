@@ -11,12 +11,19 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/version-1.1.14-27ae60?style=flat-square" alt="Version 1.1.14"/>
   <img src="https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=flat-square&logo=php" alt="PHP Version"/>
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql" alt="MySQL"/>
   <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat-square&logo=bootstrap" alt="Bootstrap"/>
   <img src="https://img.shields.io/badge/RTL-Persian-27ae60?style=flat-square" alt="RTL Persian"/>
   <img src="https://img.shields.io/badge/phpcs-PSR12-8892BF?style=flat-square" alt="PHPCS PSR-12"/>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Hordekiller/mobaro/actions/workflows/ci.yml"><img src="https://github.com/Hordekiller/mobaro/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
+  <a href="https://github.com/Hordekiller/mobaro/actions/workflows/codeql.yml"><img src="https://github.com/Hordekiller/mobaro/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"/></a>
+  <a href="https://github.com/Hordekiller/mobaro/actions/workflows/lighthouse.yml"><img src="https://github.com/Hordekiller/mobaro/actions/workflows/lighthouse.yml/badge.svg" alt="Lighthouse CI"/></a>
 </p>
 
 ---
@@ -43,20 +50,27 @@
 ├── app/
 │   ├── Controllers/        کنترلرهای برنامه
 │   ├── Models/             مدل‌های Active Record
-│   ├── Services/           منطق کسب‌وکار (ZarinPal, FileUploader)
+│   ├── Services/           منطق کسب‌وکار (ZarinPal, SmsService, OrderEffects)
 │   ├── Middleware/         اعتبارسنجی و احراز هویت
 │   ├── views/              قالب‌های PHP (داشبورد، فروشگاه، ادمین)
+│   ├── bootstrap.php       راه‌اندازی، هدرهای امنیتی، مدیریت خطا
+│   ├── routes.php          تعریف مسیرها
 │   ├── helpers.php         توابع کمکی سراسری
 │   ├── Auth.php            مدیریت احراز هویت
 │   ├── Router.php          مسیریاب اختصاصی
 │   ├── Database.php        کلاس PDO wrapper
 │   ├── Cache.php           سیستم کش فایل با برچسب
-│   └── Config.php          مدیریت تنظیمات
+│   ├── Config.php          مدیریت تنظیمات
+│   ├── SEOService.php      سئو، structured data و متا
+│   └── StructuredData.php  JSON-LD (سازمان، FAQ، مقاله و …)
 ├── public/                 پوشه ریشه وب سرور
 │   ├── index.php           Front Controller
 │   ├── .htaccess           قوانین بازنویسی Apache
 │   └── assets/             فایل‌های CSS, JS, تصاویر
-├── storage/                ذخیره‌ساز فایل، کش، session
+├── storage/                ذخیره‌ساز فایل، کش، session، لاگ
+├── database/               schema.sql، seed.sql و اسکریپت‌های آپدیت
+├── tests/                  تست‌های PHPUnit
+├── .github/workflows/      CI (PHPCS, PHPStan, PHPUnit, CodeQL, Lighthouse)
 ├── vendor/                 وابستگی‌های Composer
 ├── .env.example            الگوی فایل تنظیمات محیطی
 ├── composer.json           وابستگی‌های PHP
@@ -74,12 +88,12 @@
 
 ### ۱. دریافت فایل انتشار
 
-آخرین نسخه را از بخش [Releases](https://github.com/Hordekiller/mobaro/releases) گیت‌هاب دانلود کنید.
+آخرین نسخه را از بخش [Releases](https://github.com/Hordekiller/mobaro/releases) گیت‌هاب دانلود کنید. پروژه با یک اسکریپت نصبدار ارائه نمی‌شود؛ دیتابیس را با اسکریپت‌های `database/` آماده کنید.
 
 ### ۲. استخراج و نصب وابستگی‌ها
 
 ```bash
-tar xzf rozhingit-release-v1.0.tar.gz -d /public_html/
+tar xzf mobaro-v1.1.14.tar.gz -d /public_html/
 cd /public_html/
 composer install --no-dev --optimize-autoloader
 ```
@@ -104,10 +118,11 @@ cp .env.example .env
 
 ### ۴. تنظیم دیتابیس
 
-دیتابیس MySQL خود را بسازید، سپس import کنید:
+دیتابیس MySQL خود را بسازید، سپس import کنید (`schema.sql` جداول و `seed.sql` داده‌های پیش‌فرض را می‌سازد):
 
 ```bash
 mysql -u USER -p DB_NAME < database/schema.sql
+mysql -u USER -p DB_NAME < database/seed.sql
 ```
 
 ### ۵. تنظیم مجوزها
@@ -120,7 +135,13 @@ chmod -R 755 public/uploads/
 
 ### ۶. اجرا
 
-مستقیماً روی Apache قرار دهید — فایل `.htaccess` مسیرها را به `public/` هدایت می‌کند.
+مستقیماً روی Apache قرار دهید — فایل `.htaccess` مسیرها را به `public/` هدایت می‌کند؛ یا با سرور داخلی PHP در توسعه:
+
+```bash
+php -d variables_order=EGPCS -S 127.0.0.1:8080 -t public
+```
+
+> نکته: برای کارکرد صحیح متغیرهای محیطی در سرور داخلی PHP، اجرا با `-d variables_order=EGPCS` ضروری است.
 
 ## توسعه
 
@@ -134,9 +155,14 @@ composer lint
 # اصلاح خودکار lint
 composer lint:fix
 
+# اجرای آنالیز استاتیک (PHPStan)
+composer analyse
+
 # اجرای تست‌ها
 composer test
 ```
+
+تست‌ها به دیتابیس وصل می‌شوند؛ محیط GitHub Actions دیتابیس MySQL را با `database/schema.sql` و `database/seed.sql` آماده می‌کند. برای اجرای محلی تست‌ها ابتدا همان importها را روی دیتابیس خودتان انجام دهید.
 
 ## راه‌اندازی درگاه پرداخت زرین‌پال
 
@@ -154,18 +180,29 @@ composer test
 
 - تمام query‌های دیتابیس با Prepared Statements
 - توکن CSRF روی تمام فرم‌ها
-- Rate Limiting روی نقاط لاگین و ثبت‌نام
+- Rate Limiting روی نقاط لاگین و ثبت‌نام (با پاک‌سازی خودکار رکوردهای قدیمی)
 - اعتبارسنجی و پالایش ورودی‌ها
-- جلوگیری از directory listing
-- جلوگیری از اجرای PHP در پوشه آپلود
-- session امن با HttpOnly, SameSite=Lax
-- هدرهای امنیتی (X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
+- جلوگیری از directory listing و اجرای PHP در پوشه آپلود
+- session امن با HttpOnly, SameSite=Lax و تشخیص صحیح HTTPS پشت proxy (`X-Forwarded-Proto`)
+- هدرهای امنیتی: `Content-Security-Policy`، `X-Frame-Options: DENY`، `X-Content-Type-Options: nosniff`، `Referrer-Policy`، `Strict-Transport-Security`
+- لاگ مرکزی خطاها در `storage/logs/app.log` با تبدیل خطاها به پاسخ ۵۰۰
+- تشخیص HTTPS فعال/غیرفعال و ریدایرکت خودکار به `https` در محیط واقعی
+
+## CI
+
+پروژه در GitHub Actions به‌صورت خودکار بررسی می‌شود:
+
+| Workflow | وظیفه |
+|----------|-------|
+| **CI** | PHPCS (PSR-12)، PHPStan و PHPUnit روی PHP 8.2 و 8.3 |
+| **Lighthouse CI** | سنجش عملکرد و دسترس‌پذیری صفحات `/` و `/shop` + smoke test مسیرهای عمومی |
+| **CodeQL** | آنالیز استاتیک JavaScript و GitHub Actions |
 
 ## مشارکت
 
 1. پروژه را Fork کنید
 2. برنچ بسازید (`git checkout -b feature/amazing`)
-3. lint و تست را اجرا کنید (`composer lint && composer test`)
+3. lint، آنالیز و تست را اجرا کنید (`composer lint && composer analyse && composer test`)
 4. Commit کنید (`git commit -m 'Add amazing feature'`)
 5. Push کنید (`git push origin feature/amazing`)
 6. Pull Request باز کنید
@@ -173,6 +210,10 @@ composer test
 ## مجوز
 
 این پروژه تحت مجوز MIT منتشر شده است — برای جزئیات بیشتر فایل [LICENSE](LICENSE) را ببینید.
+
+## نسخه
+
+نسخه جاری پروژه در فایل [VERSION](VERSION) نگهداری می‌شود. هر آپدیت در پوشه `deploy/` دارای اسکریپت و راهنمای جداگانه است.
 
 ---
 
