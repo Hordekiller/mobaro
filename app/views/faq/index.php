@@ -35,9 +35,9 @@ $title = 'سؤالات متداول | ' . ($settings['brand_name'] ?? 'موبا�
         </a>
     </div>
     <?php else : ?>
-    <?php
-    $allCategories = array_keys($grouped);
-    ?>
+        <?php
+        $allCategories = array_keys($grouped);
+        ?>
     <div class="flex flex-wrap gap-2 mb-8" id="faq-category-chips">
         <button type="button" data-category="all" onclick="filterFaq('all', this)" class="px-4 py-2 rounded-full text-sm font-medium border transition-all bg-rose-600 text-white border-rose-600">
             همه

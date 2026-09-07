@@ -162,171 +162,171 @@ declare(strict_types=1);
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div class="bg-white rounded-[18px] p-5 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
                     <h3 class="font-bold text-lg mb-4">آخرین نوبت‌ها</h3>
-                    <?php if (!empty($recentAppointments)) : ?>
-                        <?php foreach ($recentAppointments as $a) : ?>
+                        <?php if (!empty($recentAppointments)) : ?>
+                            <?php foreach ($recentAppointments as $a) : ?>
                         <div class="flex items-center gap-3 py-2.5 border-b border-rose-100 last:border-0">
                             <div class="w-9 h-9 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-xs flex-shrink-0"><i class="fa-solid fa-user"></i></div>
                             <div class="flex-1"><span class="font-semibold text-sm"><?= e($a['user_name']) ?></span><span class="text-zinc-400 text-xs mr-2"><?= e($a['service_title']) ?></span></div>
                             <span class="text-xs text-zinc-400"><?= jdate('Y/m/d', strtotime($a['appointment_date'])) ?></span>
                         </div>
-                        <?php endforeach; ?>
-                    <?php else :
-                        ?><p class="text-zinc-400 text-sm text-center py-6">نوبتی ثبت نشده</p>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php else :
+                            ?><p class="text-zinc-400 text-sm text-center py-6">نوبتی ثبت نشده</p>
+                        <?php endif; ?>
                 </div>
                 <div class="bg-white rounded-[18px] p-5 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
                     <h3 class="font-bold text-lg mb-4">آخرین سفارش‌ها</h3>
-                    <?php if (!empty($recentOrders)) : ?>
-                        <?php foreach ($recentOrders as $o) : ?>
+                        <?php if (!empty($recentOrders)) : ?>
+                            <?php foreach ($recentOrders as $o) : ?>
                         <div class="flex items-center gap-3 py-2.5 border-b border-rose-100 last:border-0">
                             <div class="w-9 h-9 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs flex-shrink-0"><i class="fa-solid fa-bag-shopping"></i></div>
                             <div class="flex-1"><span class="font-semibold text-sm"><?= e($o['user_name']) ?></span><span class="text-zinc-400 text-xs mr-2"><?= priceFormat($o['total']) ?></span></div>
                             <span class="text-xs px-2 py-0.5 rounded-full font-semibold <?= $o['status'] === 'delivered' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700' ?>"><?= e($o['status']) ?></span>
                         </div>
-                        <?php endforeach; ?>
-                    <?php else :
-                        ?><p class="text-zinc-400 text-sm text-center py-6">سفارشی ثبت نشده</p>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php else :
+                            ?><p class="text-zinc-400 text-sm text-center py-6">سفارشی ثبت نشده</p>
+                        <?php endif; ?>
                 </div>
             </div>
 
-        <?php elseif ($section === 'settings') : ?>
-            <?php $table = 'settings'; ?>
+                    <?php elseif ($section === 'settings') : ?>
+                        <?php $table = 'settings'; ?>
             <div class="mb-6">
                 <h2 class="text-2xl font-extrabold">تنظیمات سایت</h2>
             </div>
-            <?php
-            $settingGroups = [
-                'اطلاعات برند' => [
-                    'brand_name' => 'نام برند',
-                    'brand_phone' => 'تلفن برند',
-                    'brand_address' => 'آدرس',
-                    'brand_hours' => 'ساعت کاری',
-                    'brand_email' => 'ایمیل',
-                    'brand_instagram' => 'لینک اینستاگرام',
-                    'brand_telegram' => 'لینک تلگرام',
-                    'brand_linkedin' => 'لینک لینکدین',
-                    'brand_whatsapp' => 'لینک واتساپ',
-                    'brand_city' => 'شهر',
-                ],
-                'رنگ‌ها' => [
-                    'color_primary' => 'رنگ اصلی',
-                    'color_primary_dark' => 'رنگ اصلی (تیره)',
-                    'color_gold' => 'رنگ طلایی',
-                ],
-                'هدر صفحه اصلی' => [
-                    'hero_title' => 'عنوان هدر',
-                    'hero_description' => 'توضیحات هدر',
-                    'hero_customers_text' => 'متن تعداد مشتریان (HTML)',
-                    'hero_trust_1_icon' => 'آیکون ۱ نوار اعتماد (کلاس فونت‌آوسام)',
-                    'hero_trust_1_text' => 'متن ۱ نوار اعتماد',
-                    'hero_trust_2_icon' => 'آیکون ۲ نوار اعتماد (کلاس فونت‌آوسام)',
-                    'hero_trust_2_text' => 'متن ۲ نوار اعتماد',
-                    'hero_trust_3_icon' => 'آیکون ۳ نوار اعتماد (کلاس فونت‌آوسام)',
-                    'hero_trust_3_text' => 'متن ۳ نوار اعتماد',
-                    'hero_trust_4_icon' => 'آیکون ۴ نوار اعتماد (کلاس فونت‌آوسام)',
-                    'hero_trust_4_text' => 'متن ۴ نوار اعتماد',
-                ],
-                'رزرو نوبت' => [
-                    'booking_phone' => 'تلفن هماهنگی رزرو',
-                ],
-                'وبلاگ' => [
-                    'blog_posts_per_page' => 'تعداد پست در صفحه وبلاگ',
-                    'blog_default_author' => 'نویسنده پیش‌فرض وبلاگ',
-                    'blog_sidebar_about' => 'متن «درباره ما» در سایدبار وبلاگ',
-                    'blog_service_1_name' => 'نام خدمت ۱ سایدبار',
-                    'blog_service_1_price' => 'قیمت خدمت ۱',
-                    'blog_service_2_name' => 'نام خدمت ۲ سایدبار',
-                    'blog_service_2_price' => 'قیمت خدمت ۲',
-                    'blog_service_3_name' => 'نام خدمت ۳ سایدبار',
-                    'blog_service_3_price' => 'قیمت خدمت ۳',
-                ],
-                'تخفیف‌ها' => [
-                    'discount_min_order_global' => 'حداقل مبلغ خرید برای اعمال تخفیف',
-                    'discount_default_validity_days' => 'مدت اعتبار پیش‌فرض تخفیف (روز)',
-                    'promo_coupon_code' => 'کد تخفیف پروموشن داشبورد',
-                ],
-                'صفحه تماس' => [
-                    'contact_email' => 'ایمیل دریافت پیام‌های تماس',
-                    'contact_map_location' => 'موقعیت مکانی (Google Maps Embed)',
-                    'contact_header_text' => 'متن هدر صفحه تماس',
-                ],
-                'صفحه درباره ما' => [
-                    'about_title' => 'عنوان صفحه درباره ما',
-                    'about_subtitle' => 'زیرعنوان صفحه درباره ما',
-                    'about_content' => 'محتوای صفحه درباره ما',
-                    'about_image' => 'تصویر صفحه درباره ما',
-                    'about_stat_years' => 'آمار: سال تجربه',
-                    'about_stat_clients' => 'آمار: تعداد مشتری',
-                    'about_stat_services' => 'آمار: تعداد خدمات',
-                ],
-                'آکادمی' => [
-                    'academy_instructor_bio' => 'بیوگرافی پیش‌فرض مدرس',
-                    'academy_support_days' => 'متن پشتیبانی سایدبار',
-                    'academy_support_guarantee' => 'متن ضمانت بازگشت وجه',
-                    'academy_support_feature_1' => 'مورد پشتیبانی ۱',
-                    'academy_support_feature_2' => 'مورد پشتیبانی ۲',
-                    'academy_support_feature_3' => 'مورد پشتیبانی ۳',
-                ],
-                'تصاویر هیرو' => [
-                    'hero_bg_image' => 'نام تصویر پس‌زمینه هیرو (مثلاً hero-bg.jpg)',
-                    'hero_model_image' => 'نام تصویر مدل هیرو (مثلاً hero-model.jpg)',
-                    'hero_artist_name' => 'نام آرایشگر در کارت هیرو',
-                    'hero_artist_service' => 'خدمت آرایشگر در کارت هیرو',
-                ],
-                'صفحات استاتیک' => [
-                    'privacy_content' => 'محتوای حریم خصوصی (HTML)',
-                    'privacy_updated_at' => 'تاریخ آخرین به‌روزرسانی حریم خصوصی',
-                    'terms_content' => 'محتوای شرایط استفاده (HTML)',
-                    'terms_updated_at' => 'تاریخ آخرین به‌روزرسانی شرایط استفاده',
-                ],
-                'فوتر' => [
-                    'footer_description' => 'توضیحات فوتر',
-                ],
-                'آنالیتیکس' => [
-                    'analytics_gtag_id' => 'شناسه Google Analytics 4 (مثال: G-XXXXXXXXXX)',
-                ],
-                'لوگو و برند' => [
-                    'site_logo' => 'لوگوی سایت (با پس‌زمینه شفاف)',
-                ],
-                'ویرایشگر متن' => [
-                    'tinymce_source' => 'روش بارگذاری ویرایشگر متن (برای وبلاگ، محصولات و آکادمی)',
-                ],
-                'امنیت' => [
-                    'admin_login_max_attempts' => 'حداکثر تلاش ناموفق ورود ادمین (پیش‌فرض ۵)',
-                ],
-            ];
-            $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
-            $selectKeys = [
-                'tinymce_source' => [
-                    'local' => 'بارگذاری از داخل سایت (لوکال)',
-                    'cdn' => 'بارگذاری از CDN (ابری)',
-                ],
-            ];
-            ?>
-            <?php
-            $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'about_image', 'site_logo'];
-            $imagePaths = [
-                'hero_bg_image' => '/assets/images/',
-                'hero_model_image' => '/assets/images/',
-                'about_image' => '/assets/images/',
-                'site_logo' => '/assets/images/',
-            ];
-            ?>
+                        <?php
+                        $settingGroups = [
+                        'اطلاعات برند' => [
+                        'brand_name' => 'نام برند',
+                        'brand_phone' => 'تلفن برند',
+                        'brand_address' => 'آدرس',
+                        'brand_hours' => 'ساعت کاری',
+                        'brand_email' => 'ایمیل',
+                        'brand_instagram' => 'لینک اینستاگرام',
+                        'brand_telegram' => 'لینک تلگرام',
+                        'brand_linkedin' => 'لینک لینکدین',
+                        'brand_whatsapp' => 'لینک واتساپ',
+                        'brand_city' => 'شهر',
+                        ],
+                        'رنگ‌ها' => [
+                        'color_primary' => 'رنگ اصلی',
+                        'color_primary_dark' => 'رنگ اصلی (تیره)',
+                        'color_gold' => 'رنگ طلایی',
+                        ],
+                        'هدر صفحه اصلی' => [
+                        'hero_title' => 'عنوان هدر',
+                        'hero_description' => 'توضیحات هدر',
+                        'hero_customers_text' => 'متن تعداد مشتریان (HTML)',
+                        'hero_trust_1_icon' => 'آیکون ۱ نوار اعتماد (کلاس فونت‌آوسام)',
+                        'hero_trust_1_text' => 'متن ۱ نوار اعتماد',
+                        'hero_trust_2_icon' => 'آیکون ۲ نوار اعتماد (کلاس فونت‌آوسام)',
+                        'hero_trust_2_text' => 'متن ۲ نوار اعتماد',
+                        'hero_trust_3_icon' => 'آیکون ۳ نوار اعتماد (کلاس فونت‌آوسام)',
+                        'hero_trust_3_text' => 'متن ۳ نوار اعتماد',
+                        'hero_trust_4_icon' => 'آیکون ۴ نوار اعتماد (کلاس فونت‌آوسام)',
+                        'hero_trust_4_text' => 'متن ۴ نوار اعتماد',
+                        ],
+                        'رزرو نوبت' => [
+                        'booking_phone' => 'تلفن هماهنگی رزرو',
+                        ],
+                        'وبلاگ' => [
+                        'blog_posts_per_page' => 'تعداد پست در صفحه وبلاگ',
+                        'blog_default_author' => 'نویسنده پیش‌فرض وبلاگ',
+                        'blog_sidebar_about' => 'متن «درباره ما» در سایدبار وبلاگ',
+                        'blog_service_1_name' => 'نام خدمت ۱ سایدبار',
+                        'blog_service_1_price' => 'قیمت خدمت ۱',
+                        'blog_service_2_name' => 'نام خدمت ۲ سایدبار',
+                        'blog_service_2_price' => 'قیمت خدمت ۲',
+                        'blog_service_3_name' => 'نام خدمت ۳ سایدبار',
+                        'blog_service_3_price' => 'قیمت خدمت ۳',
+                        ],
+                        'تخفیف‌ها' => [
+                        'discount_min_order_global' => 'حداقل مبلغ خرید برای اعمال تخفیف',
+                        'discount_default_validity_days' => 'مدت اعتبار پیش‌فرض تخفیف (روز)',
+                        'promo_coupon_code' => 'کد تخفیف پروموشن داشبورد',
+                        ],
+                        'صفحه تماس' => [
+                        'contact_email' => 'ایمیل دریافت پیام‌های تماس',
+                        'contact_map_location' => 'موقعیت مکانی (Google Maps Embed)',
+                        'contact_header_text' => 'متن هدر صفحه تماس',
+                        ],
+                        'صفحه درباره ما' => [
+                        'about_title' => 'عنوان صفحه درباره ما',
+                        'about_subtitle' => 'زیرعنوان صفحه درباره ما',
+                        'about_content' => 'محتوای صفحه درباره ما',
+                        'about_image' => 'تصویر صفحه درباره ما',
+                        'about_stat_years' => 'آمار: سال تجربه',
+                        'about_stat_clients' => 'آمار: تعداد مشتری',
+                        'about_stat_services' => 'آمار: تعداد خدمات',
+                        ],
+                        'آکادمی' => [
+                        'academy_instructor_bio' => 'بیوگرافی پیش‌فرض مدرس',
+                        'academy_support_days' => 'متن پشتیبانی سایدبار',
+                        'academy_support_guarantee' => 'متن ضمانت بازگشت وجه',
+                        'academy_support_feature_1' => 'مورد پشتیبانی ۱',
+                        'academy_support_feature_2' => 'مورد پشتیبانی ۲',
+                        'academy_support_feature_3' => 'مورد پشتیبانی ۳',
+                        ],
+                        'تصاویر هیرو' => [
+                        'hero_bg_image' => 'نام تصویر پس‌زمینه هیرو (مثلاً hero-bg.jpg)',
+                        'hero_model_image' => 'نام تصویر مدل هیرو (مثلاً hero-model.jpg)',
+                        'hero_artist_name' => 'نام آرایشگر در کارت هیرو',
+                        'hero_artist_service' => 'خدمت آرایشگر در کارت هیرو',
+                        ],
+                        'صفحات استاتیک' => [
+                        'privacy_content' => 'محتوای حریم خصوصی (HTML)',
+                        'privacy_updated_at' => 'تاریخ آخرین به‌روزرسانی حریم خصوصی',
+                        'terms_content' => 'محتوای شرایط استفاده (HTML)',
+                        'terms_updated_at' => 'تاریخ آخرین به‌روزرسانی شرایط استفاده',
+                        ],
+                        'فوتر' => [
+                        'footer_description' => 'توضیحات فوتر',
+                        ],
+                        'آنالیتیکس' => [
+                        'analytics_gtag_id' => 'شناسه Google Analytics 4 (مثال: G-XXXXXXXXXX)',
+                        ],
+                        'لوگو و برند' => [
+                        'site_logo' => 'لوگوی سایت (با پس‌زمینه شفاف)',
+                        ],
+                        'ویرایشگر متن' => [
+                        'tinymce_source' => 'روش بارگذاری ویرایشگر متن (برای وبلاگ، محصولات و آکادمی)',
+                        ],
+                        'امنیت' => [
+                        'admin_login_max_attempts' => 'حداکثر تلاش ناموفق ورود ادمین (پیش‌فرض ۵)',
+                        ],
+                        ];
+                        $textareaKeys = ['hero_description', 'about_content', 'contact_map_location', 'privacy_content', 'terms_content', 'footer_description', 'blog_sidebar_about', 'academy_instructor_bio'];
+                        $selectKeys = [
+                        'tinymce_source' => [
+                        'local' => 'بارگذاری از داخل سایت (لوکال)',
+                        'cdn' => 'بارگذاری از CDN (ابری)',
+                        ],
+                        ];
+                        ?>
+                        <?php
+                        $imageUploadKeys = ['hero_bg_image', 'hero_model_image', 'about_image', 'site_logo'];
+                        $imagePaths = [
+                        'hero_bg_image' => '/assets/images/',
+                        'hero_model_image' => '/assets/images/',
+                        'about_image' => '/assets/images/',
+                        'site_logo' => '/assets/images/',
+                        ];
+                        ?>
             <form action="/admin/settings/update" method="POST" enctype="multipart/form-data" class="space-y-6">
-                <?= csrf() ?>
-                <?php foreach ($settingGroups as $groupTitle => $fields) : ?>
+                        <?= csrf() ?>
+                        <?php foreach ($settingGroups as $groupTitle => $fields) : ?>
                 <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
                     <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;"><?= e($groupTitle) ?></h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <?php foreach ($fields as $key => $label) :
-                            $value = $settings[$key] ?? '';
-                            ?>
+                            <?php foreach ($fields as $key => $label) :
+                                $value = $settings[$key] ?? '';
+                                ?>
                         <div>
                             <label for="setting_<?= e($key) ?>" class="block text-sm font-semibold mb-1.5"><?= e($label) ?></label>
-                            <?php if (in_array($key, $textareaKeys)) : ?>
+                                <?php if (in_array($key, $textareaKeys)) : ?>
                                 <textarea id="setting_<?= e($key) ?>" name="setting_<?= e($key) ?>" rows="3" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all"><?= e($value) ?></textarea>
-                            <?php elseif (in_array($key, $imageUploadKeys)) : ?>
+                                <?php elseif (in_array($key, $imageUploadKeys)) : ?>
                                 <div class="space-y-2">
                                     <?php if (!empty($value)) : ?>
                                     <div class="flex items-center gap-3">
@@ -342,20 +342,20 @@ declare(strict_types=1);
                                     </label>
                                     <?php endif; ?>
                                 </div>
-                            <?php elseif (isset($selectKeys[$key])) : ?>
+                                <?php elseif (isset($selectKeys[$key])) : ?>
                                 <select id="setting_<?= e($key) ?>" name="setting_<?= e($key) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                                     <?php foreach ($selectKeys[$key] as $optVal => $optLabel) : ?>
                                     <option value="<?= e($optVal) ?>" <?= ($value === $optVal || ($value === '' && $optVal === 'cdn')) ? 'selected' : '' ?>><?= e($optLabel) ?></option>
                                     <?php endforeach; ?>
                                 </select>
-                            <?php else : ?>
+                                <?php else : ?>
                                 <input id="setting_<?= e($key) ?>" type="text" name="setting_<?= e($key) ?>" value="<?= e($value) ?>" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
-                            <?php endif; ?>
+                                <?php endif; ?>
                         </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                        <?php endforeach; ?>
                 <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات</button>
             </form>
 
@@ -363,7 +363,7 @@ declare(strict_types=1);
                 <h3 class="font-bold text-lg mb-1">تغییر رمز عبور ادمین</h3>
                 <p class="text-zinc-400 text-sm mb-4">رمز عبور حساب مدیریت خود را تغییر دهید</p>
                 <form action="/admin/password/change" method="POST" class="max-w-sm space-y-4">
-                    <?= csrf() ?>
+                        <?= csrf() ?>
                     <div>
                         <label for="current_password" class="block text-sm font-semibold mb-1.5">رمز عبور فعلی</label>
                         <input id="current_password" type="password" name="current_password" required class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
@@ -380,14 +380,14 @@ declare(strict_types=1);
                 </form>
             </div>
 
-        <?php elseif ($section === 'captcha') : ?>
+                    <?php elseif ($section === 'captcha') : ?>
             <div class="mb-6">
                 <h2 class="text-2xl font-extrabold">تنظیمات کپچا (کد امنیتی)</h2>
                 <p class="text-zinc-400 text-sm">مدیریت کد امنیتی در بخش‌های مختلف سایت</p>
             </div>
 
             <form action="/admin/captcha/save" method="POST" class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
-                <?= csrf() ?>
+                        <?= csrf() ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="md:col-span-2">
                         <h3 class="font-bold text-lg mb-3">فعال‌سازی کپچا</h3>
@@ -449,17 +449,17 @@ declare(strict_types=1);
                 <button type="submit" class="mt-6 px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات کپچا</button>
             </form>
 
-        <?php elseif ($section === 'gallery') : ?>
-            <?php require_once __DIR__ . '/gallery.php'; ?>
-        <?php elseif ($section === 'sms') : ?>
-            <?php require_once __DIR__ . '/sms.php'; ?>
-        <?php elseif ($section === 'seo') : ?>
+                    <?php elseif ($section === 'gallery') : ?>
+                        <?php require_once __DIR__ . '/gallery.php'; ?>
+                    <?php elseif ($section === 'sms') : ?>
+                        <?php require_once __DIR__ . '/sms.php'; ?>
+                    <?php elseif ($section === 'seo') : ?>
             <div class="mb-6">
                 <h2 class="text-2xl font-extrabold">مدیریت سئو (SEO)</h2>
                 <p class="text-zinc-400 text-sm">تنظیمات سئوی سراسری و صفحه به صفحه</p>
             </div>
             <form action="/admin/seo/save" method="POST" enctype="multipart/form-data" class="space-y-6">
-                <?= csrf() ?>
+                        <?= csrf() ?>
 
                 <!-- Global SEO defaults -->
                 <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
@@ -576,10 +576,10 @@ declare(strict_types=1);
                 </div>
 
                 <!-- Page-specific SEO -->
-                <?php foreach ($seoPages as $seoPage) :
-                    $slug = $seoPage['page_slug'];
-                    $label = $pageLabels[$slug] ?? $slug;
-                    ?>
+                        <?php foreach ($seoPages as $seoPage) :
+                            $slug = $seoPage['page_slug'];
+                            $label = $pageLabels[$slug] ?? $slug;
+                            ?>
                 <div class="bg-white rounded-[18px] p-6 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
                     <h3 class="font-bold text-base mb-4 pb-3 border-b border-rose-100" style="border-right:4px solid #e11d48;padding-right:12px;">
                         <i class="fa-solid fa-file-lines ml-1 text-rose-500"></i><?= e($label) ?>
@@ -620,22 +620,22 @@ declare(strict_types=1);
                         </div>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                        <?php endforeach; ?>
                 <button type="submit" class="px-8 py-3 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">ذخیره تنظیمات سئو</button>
             </form>
-        <?php elseif ($section === 'payment') : ?>
-            <?php require_once __DIR__ . '/payment.php'; ?>
-        <?php else : ?>
-            <?php $table = $section;
-            if (in_array($section, ['hair-models'])) {
-                $table = 'hair_models';
-            } ?>
+                    <?php elseif ($section === 'payment') : ?>
+                        <?php require_once __DIR__ . '/payment.php'; ?>
+                    <?php else : ?>
+                        <?php $table = $section;
+                        if (in_array($section, ['hair-models'])) {
+                            $table = 'hair_models';
+                        } ?>
             <div class="mb-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3">
                 <div>
                     <h2 class="text-2xl font-extrabold">مدیریت <?= $sections[$section][1] ?></h2>
-                    <?php if (isset($total)) :
-                        ?><p class="text-zinc-400 text-sm"><?= faNum($total) ?> مورد</p><?php
-                    endif; ?>
+                        <?php if (isset($total)) :
+                            ?><p class="text-zinc-400 text-sm"><?= faNum($total) ?> مورد</p><?php
+                        endif; ?>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
                     <form method="GET" action="/admin/<?= e($section) ?>" class="flex flex-wrap items-center gap-2">
@@ -646,15 +646,15 @@ declare(strict_types=1);
                         <a href="/admin/<?= e($section) ?>" class="px-3 py-2.5 bg-red-50 text-red-500 rounded-xl text-sm hover:bg-red-100 transition-all"><i class="fa-solid fa-xmark"></i></a>
                         <?php endif; ?>
                     </form>
-                    <?php if (!in_array($section, ['orders', 'transactions', 'newsletter', 'contact-messages', 'reviews', 'blog-comments', 'enrollments', 'appointments', 'users'])) : ?>
+                        <?php if (!in_array($section, ['orders', 'transactions', 'newsletter', 'contact-messages', 'reviews', 'blog-comments', 'enrollments', 'appointments', 'users'])) : ?>
                     <button onclick="showAddModal()" class="px-5 py-2.5 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all">
                         <i class="fa-solid fa-plus ml-1"></i>افزودن جدید
                     </button>
-                    <?php endif; ?>
+                        <?php endif; ?>
                 </div>
             </div>
 
-            <?php if ($section === 'orders' && !empty($orderStats)) : ?>
+                        <?php if ($section === 'orders' && !empty($orderStats)) : ?>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
                 <div class="bg-white rounded-xl p-4 shadow-[0_4px_20px_rgba(225,29,72,0.06)]">
                     <div class="text-xs text-zinc-400 mb-1">کل سفارش‌ها</div>
@@ -673,9 +673,9 @@ declare(strict_types=1);
                     <div class="text-2xl font-extrabold text-rose-600"><?= faNum($orderStats['pending_count'] ?? 0) ?></div>
                 </div>
             </div>
-            <?php endif; ?>
+                        <?php endif; ?>
 
-            <?php if (!empty($columns)) : ?>
+                        <?php if (!empty($columns)) : ?>
             <div class="bg-white rounded-[18px] shadow-[0_4px_20px_rgba(225,29,72,0.06)] overflow-x-auto">
                 <table class="w-full border-collapse admin-table">
                     <thead>
@@ -687,8 +687,8 @@ declare(strict_types=1);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                        $statusLabels = [
+                            <?php
+                            $statusLabels = [
                             'pending' => 'در انتظار',
                             'confirmed' => 'تأیید شده',
                             'done' => 'انجام شده',
@@ -700,32 +700,32 @@ declare(strict_types=1);
                             'rejected' => 'رد شده',
                             'failed' => 'ناموفق',
                             'active' => 'فعال',
-                        ];
-                        ?>
-                        <?php if (!empty($items)) : ?>
-                            <?php foreach ($items as $item) : ?>
+                            ];
+                            ?>
+                            <?php if (!empty($items)) : ?>
+                                <?php foreach ($items as $item) : ?>
                             <tr class="border-b border-rose-100 hover:bg-rose-50/50 transition-all">
-                                <?php foreach ($columns as $col) :
-                                    $val = $item[$col['key']] ?? '';
-                                    if ($col['type'] === 'image') : ?>
+                                    <?php foreach ($columns as $col) :
+                                        $val = $item[$col['key']] ?? '';
+                                        if ($col['type'] === 'image') : ?>
                                         <td class="py-3 px-4"><img src="/assets/images/<?= e($val) ?>" alt="" class="w-12 h-12 rounded-lg object-cover" data-hide-on-error></td>
-                                    <?php elseif ($col['type'] === 'price') : ?>
+                                        <?php elseif ($col['type'] === 'price') : ?>
                                         <td class="py-3 px-4 font-bold"><?= priceFormat($val) ?></td>
-                                    <?php elseif ($col['type'] === 'status') : ?>
+                                        <?php elseif ($col['type'] === 'status') : ?>
                                         <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= match ($val) {
                                             'active', 'confirmed', 'delivered', 'completed' => 'bg-green-50 text-green-700',
                                             'pending', 'processing', 'shipped' => 'bg-amber-50 text-amber-700',
                                             'cancelled', 'failed', 'rejected' => 'bg-red-50 text-red-500',
                                             default => 'bg-zinc-100 text-zinc-600',
                                                                                                                           } ?>"><?= e($statusLabels[$val] ?? $val) ?></span></td>
-                                    <?php elseif ($col['type'] === 'boolean') : ?>
+                                        <?php elseif ($col['type'] === 'boolean') : ?>
                                         <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= $val ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500' ?>"><?= $val ? 'بله' : 'خیر' ?></span></td>
-                                    <?php elseif ($col['type'] === 'textarea') : ?>
+                                        <?php elseif ($col['type'] === 'textarea') : ?>
                                         <td class="py-3 px-4 text-sm text-zinc-400 max-w-xs truncate"><?= e(strip_tags($val)) ?></td>
-                                    <?php else : ?>
+                                        <?php else : ?>
                                         <td class="py-3 px-4 text-sm"><?= e($val) ?></td>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
                                 <td class="py-3 px-4 text-center">
                                     <div class="flex gap-1.5 justify-center">
                                         <button onclick="showEditModal(<?= htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8') ?>)" class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-lg text-xs font-semibold hover:bg-rose-600 hover:text-white transition-all">ویرایش</button>
@@ -736,37 +736,37 @@ declare(strict_types=1);
                                     </div>
                                 </td>
                             </tr>
-                            <?php endforeach; ?>
-                        <?php else : ?>
+                                <?php endforeach; ?>
+                            <?php else : ?>
                             <tr><td colspan="<?= count($columns) + 1 ?>" class="text-center py-10 text-zinc-400">آیتمی یافت نشد</td></tr>
-                        <?php endif; ?>
+                            <?php endif; ?>
                     </tbody>
                 </table>
             </div>
-            <?php endif; ?>
+                        <?php endif; ?>
 
-            <?php if (isset($totalPages) && $totalPages > 1) : ?>
+                        <?php if (isset($totalPages) && $totalPages > 1) : ?>
             <div class="flex justify-center items-center gap-2 mt-6">
-                <?php if ($page > 1) : ?>
+                            <?php if ($page > 1) : ?>
                 <a href="?page=<?= $page - 1 ?>&s=<?= e($_GET['s'] ?? '') ?>" class="w-10 h-10 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-sm">
                     <i class="fa-solid fa-chevron-right"></i>
                 </a>
-                <?php endif; ?>
-                <?php
-                $startPage = max(1, $page - 2);
-                $endPage = min($totalPages, $page + 2);
-                for ($i = $startPage; $i <= $endPage; $i++) : ?>
+                            <?php endif; ?>
+                            <?php
+                            $startPage = max(1, $page - 2);
+                            $endPage = min($totalPages, $page + 2);
+                            for ($i = $startPage; $i <= $endPage; $i++) : ?>
                 <a href="?page=<?= $i ?>&s=<?= e($_GET['s'] ?? '') ?>" class="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm transition-all <?= $i === $page ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' : 'border border-zinc-300 text-zinc-600 hover:bg-rose-600 hover:text-white hover:border-rose-600' ?>">
-                    <?= faNum($i) ?>
+                                <?= faNum($i) ?>
                 </a>
-                <?php endfor; ?>
-                <?php if ($page < $totalPages) : ?>
+                            <?php endfor; ?>
+                            <?php if ($page < $totalPages) : ?>
                 <a href="?page=<?= $page + 1 ?>&s=<?= e($_GET['s'] ?? '') ?>" class="w-10 h-10 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all text-sm">
                     <i class="fa-solid fa-chevron-left"></i>
                 </a>
-                <?php endif; ?>
+                            <?php endif; ?>
             </div>
-            <?php endif; ?>
+                        <?php endif; ?>
 
             <div id="itemModal" class="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm flex items-center justify-center hidden" role="dialog" aria-modal="true" tabindex="0" data-modal-backdrop>
                 <div class="bg-white rounded-[20px] p-6 w-full max-w-2xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -962,7 +962,7 @@ declare(strict_types=1);
                             <?php endif; ?>
                             
                             
-            <?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
+                        <?php if ($section === 'hair-prices' && !empty($allServices) && !empty($allHairLengths)) : ?>
                             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="hpService" class="block text-sm font-semibold mb-1.5">خدمت</label>
@@ -997,12 +997,12 @@ declare(strict_types=1);
                                     </label>
                                 </div>
                             </div>
-            <?php endif; ?>
+                        <?php endif; ?>
                         <button type="submit" id="save-btn" class="w-full py-3.5 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" onclick="this.disabled=true;this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin ml-2\'></i>در حال ذخیره...';if(typeof tinymce!=='undefined')tinymce.triggerSave();this.closest('form').submit();">ذخیره</button>
                     </form>
                 </div>
             </div>
-        <?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

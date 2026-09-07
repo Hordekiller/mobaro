@@ -589,6 +589,20 @@ CREATE TABLE IF NOT EXISTS verification_codes (
     INDEX idx_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- FAQs (global FAQ system, update 46)
+CREATE TABLE IF NOT EXISTS faqs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question VARCHAR(500) NOT NULL,
+    answer TEXT NOT NULL,
+    category VARCHAR(100) DEFAULT NULL,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_active_sort (is_active, sort_order),
+    KEY idx_category (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Default hair lengths
 INSERT IGNORE INTO hair_lengths (id, title, min_cm, max_cm, sort_order, is_active) VALUES
 (1, 'کوتاه (زیر شانه)', 0, 30, 1, 1),

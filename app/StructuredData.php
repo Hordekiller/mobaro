@@ -445,7 +445,6 @@ class StructuredData
             'دقیقه' => (int) round($amount),
             'هفته' => (int) round($amount * 7 * 24 * 60),
             'ماه' => (int) round($amount * 30 * 24 * 60),
-            default => 0,
         };
 
         if ($minutes <= 0) {

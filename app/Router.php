@@ -54,9 +54,7 @@ class Router
                 // which would turn "+" into a space). Numeric casts below then see
                 // the decoded value (e.g. "%31" -> "1"), also the intended number.
                 foreach ($params as $k => $v) {
-                    if (is_string($v)) {
-                        $params[$k] = rawurldecode($v);
-                    }
+                    $params[$k] = rawurldecode($v);
                 }
 
                 // Numeric path segments (id, size, width, height, seed) are
