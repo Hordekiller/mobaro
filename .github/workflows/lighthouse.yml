@@ -1,0 +1,87 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Lighthouse (@ / and /shop)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mobaro
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      APP_ENV: testing
+      APP_URL: http://127.0.0.1:8080
+      APP_DEBUG: 'false'
+      FORCE_HTTPS: 'false'
+      DB_HOST: 127.0.0.1
+      DB_NAME: mobaro
+      DB_USER: root
+      DB_PASS: root
+      DB_CHARSET: utf8mb4
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240  # v2
+        with:
+          php-version: '8.2'
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: '20'
+
+      - name: Install PHP dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Import database schema and seed
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot < database/schema.sql
+          mysql -h 127.0.0.1 -uroot -proot < database/seed.sql
+
+      - name: Start PHP dev server
+        run: |
+          php -d variables_order=EGPCS -S 127.0.0.1:8080 -t public > storage/lighthouse-server.log 2>&1 &
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null "http://127.0.0.1:8080/" 2>/dev/null; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "waiting ($i/30)..."
+            sleep 2
+          done
+          echo "Server failed to become ready"
+          cat storage/lighthouse-server.log 2>/dev/null || true
+          exit 1
+
+      - name: Run Lighthouse CI
+        run: npx -y @lhci/cli@0.14.0 autorun
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: lighthouse-reports
+          path: storage/lighthouse-reports/
+          if-no-files-found: ignore

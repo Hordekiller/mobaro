@@ -102,3 +102,8 @@ public/sitemap-*.xml
 .phpunit.cache/
 .phpunit.coverage/
 coverage.xml
+
+# Lighthouse CI reports and server log
+storage/lighthouse-reports/
+storage/lighthouse-server.log
+.lighthouseci/
