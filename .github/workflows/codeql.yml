@@ -13,9 +13,6 @@ jobs:
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
-      packages: read
-      actions: read
       contents: read
 
     strategy:
@@ -39,3 +36,8 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
+          # This private repository does not have GitHub Advanced Security
+          # enabled, so SARIF upload returns HTTP 403. Keep the full CodeQL
+          # extraction and query evaluation, but do not require code scanning
+          # upload for the workflow to pass.
+          upload: false
