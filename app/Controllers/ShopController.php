@@ -600,7 +600,7 @@ class ShopController extends BaseController
         $useWallet = !empty($_POST['use_wallet']);
         $addressResult = $this->resolveAddress($cart, $user['id']);
 
-        $idemKey = sha1((string) $user['id'] . '|' . $this->cartFingerprint($cart) . '|' . $couponCode . '|' . ($useWallet ? 'wallet' : 'gateway'));
+        $idemKey = hash('sha256', (string) $user['id'] . '|' . $this->cartFingerprint($cart) . '|' . $couponCode . '|' . ($useWallet ? 'wallet' : 'gateway'));
 
         $orderId = 0;
         $finalTotal = 0;
@@ -777,7 +777,7 @@ class ShopController extends BaseController
     {
         $parts = array_map(fn($item) => ($item['type'] ?? 'product') . ':' . $item['id'] . ':' . $item['qty'] . ':' . $item['price'], $cart);
         sort($parts);
-        return md5(implode('|', $parts));
+        return hash('sha256', implode('|', $parts));
     }
 
     private function validateCartItems(array $cart): array

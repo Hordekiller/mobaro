@@ -286,7 +286,7 @@ class SmsService
             $smsResult = $this->sendVerify($phone, $code);
 
             if (!$smsResult['status']) {
-                $masked = substr($phone, 0, 4) . '****' . substr($phone, -2);
+                $masked = preg_replace('/[\r\n]+/', ' ', substr($phone, 0, 4) . '****' . substr($phone, -2));
                 error_log("SMS send failed for {$masked}");
             }
 
