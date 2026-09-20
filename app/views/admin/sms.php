@@ -140,11 +140,11 @@ $search = $search ?? '';
         <input type="hidden" name="id" id="template-id" value="">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-semibold mb-1.5">نام قالب</label>
+                <label for="template-name" class="block text-sm font-semibold mb-1.5">نام قالب</label>
                 <input type="text" name="name" id="template-name" placeholder="مثال: کد تأیید" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required>
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-1.5">نوع</label>
+                <label for="template-type" class="block text-sm font-semibold mb-1.5">نوع</label>
                 <select name="sms_type" id="template-type" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
                     <option value="notification">اعلان</option>
                     <option value="bulk">انبوه</option>
@@ -152,11 +152,11 @@ $search = $search ?? '';
             </div>
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">متن قالب (از {Variable} برای متغیرها استفاده کنید)</label>
+            <label for="template-body" class="block text-sm font-semibold mb-1.5">متن قالب (از {Variable} برای متغیرها استفاده کنید)</label>
             <textarea name="body" id="template-body" rows="3" placeholder="وضعیت سفارش {Code} شما: {Status}" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all" required></textarea>
         </div>
         <div>
-            <label class="block text-sm font-semibold mb-1.5">متغیرها ( جدا شده با کاما)</label>
+            <label for="template-variables" class="block text-sm font-semibold mb-1.5">متغیرها ( جدا شده با کاما)</label>
             <input type="text" name="variables" id="template-variables" placeholder="Code, Name" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all">
         </div>
         <div class="flex items-center gap-4">

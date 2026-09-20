@@ -309,6 +309,7 @@ if ($instagramUrl !== '' && $instagramUrl !== '#') {
                               class="w-full bg-white focus:outline-none rounded-3xl px-4 sm:px-6 py-4 sm:py-5 text-sm resize-none"
                               placeholder="نظر خود را بنویسید..."></textarea>
                     <div class="flex justify-between items-center px-3 sm:px-4 pb-3 sm:pb-4 mt-2">
+                        <label for="comment-name" class="sr-only">نام شما</label>
                         <input type="text" id="comment-name" placeholder="نام شما (در صورت عدم ورود)" class="px-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:border-rose-500 outline-none w-48 hidden">
                         <div></div>
                         <button onclick="postComment()"

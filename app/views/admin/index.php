@@ -334,7 +334,8 @@ declare(strict_types=1);
                                         <span class="text-xs text-zinc-400 truncate max-w-[180px]"><?= e($value) ?></span>
                                     </div>
                                     <?php endif; ?>
-                                    <input type="file" name="setting_file_<?= e($key) ?>" accept="image/*" class="w-full text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 file:cursor-pointer">
+                                    <label for="setting_file_<?= e($key) ?>" class="mt-1.5 block text-xs text-zinc-400">انتخاب فایل جدید</label>
+                                    <input type="file" id="setting_file_<?= e($key) ?>" name="setting_file_<?= e($key) ?>" accept="image/*" class="w-full text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 file:cursor-pointer">
                                     <?php if (!empty($value)) : ?>
                                     <label class="flex items-center gap-2 text-xs text-zinc-400">
                                         <input type="checkbox" name="delete_image_<?= e($key) ?>" value="1" class="rounded border-zinc-300 text-rose-600 focus:ring-rose-500">
@@ -494,7 +495,7 @@ declare(strict_types=1);
                                     <span class="text-xs text-zinc-400 truncate max-w-[180px]"><?= e($ogImg) ?></span>
                                 </div>
                                 <?php endif; ?>
-                                <input type="file" name="seo_global_og_image" accept="image/*" class="w-full text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 file:cursor-pointer">
+                                <input type="file" id="seo_global_og_image" name="seo_global_og_image" accept="image/*" class="w-full text-sm text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 file:cursor-pointer">
                                 <?php if (!empty($ogImg)) : ?>
                                 <label class="flex items-center gap-2 text-xs text-zinc-400">
                                     <input type="checkbox" name="delete_seo_global_og_image" value="1" class="rounded border-zinc-300 text-rose-600 focus:ring-rose-500">
@@ -529,7 +530,8 @@ declare(strict_types=1);
                         <i class="fa-solid fa-file-code ml-1 text-rose-500"></i>محتوای robots.txt
                     </h3>
                     <div>
-                        <textarea name="seo_global[robots_txt]" rows="8" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" placeholder="User-agent: *&#10;Allow: /&#10;Disallow: /admin/"><?= e($globalSeo['robots_txt'] ?? '') ?></textarea>
+                        <label for="seo_global_robots_txt" class="sr-only">محتوای robots.txt</label>
+                        <textarea id="seo_global_robots_txt" name="seo_global[robots_txt]" rows="8" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" placeholder="User-agent: *&#10;Allow: /&#10;Disallow: /admin/"><?= e($globalSeo['robots_txt'] ?? '') ?></textarea>
                         <p class="text-xs text-zinc-400 mt-2">خالی بگذارید تا مقادیر پیش‌فرض استفاده شود.</p>
                     </div>
                 </div>
@@ -539,7 +541,8 @@ declare(strict_types=1);
                         <i class="fa-solid fa-file-lines ml-1 text-rose-500"></i>محتوای llms.txt
                     </h3>
                     <div>
-                        <textarea name="seo_global[llms_txt]" rows="8" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" placeholder="# موبارو"><?= e($globalSeo['llms_txt'] ?? '') ?></textarea>
+                        <label for="seo_global_llms_txt" class="sr-only">محتوای llms.txt</label>
+                        <textarea id="seo_global_llms_txt" name="seo_global[llms_txt]" rows="8" class="w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl focus:border-rose-500 focus:ring-0 outline-none transition-all font-mono text-sm" placeholder="# موبارو"><?= e($globalSeo['llms_txt'] ?? '') ?></textarea>
                         <p class="text-xs text-zinc-400 mt-2">خالی بگذارید تا نسخهٔ خودکار (صفحات اصلی، محصولات، دوره‌ها و وبلاگ) استفاده شود.</p>
                     </div>
                 </div>
@@ -1264,6 +1267,7 @@ function closeItemModal(e) {
             <div id="tinymceMediaEmpty" class="hidden text-center py-10 text-zinc-400 text-sm">تصویری در گالری نیست. از تب «آپلود جدید» استفاده کنید.</div>
         </div>
         <div id="tinymceTabUploadPanel" class="hidden">
+            <label for="tinymceNewFile" class="block text-xs text-zinc-400 mb-1.5">انتخاب تصویر جدید</label>
             <input id="tinymceNewFile" type="file" accept="image/*" class="form-input w-full px-4 py-3 bg-rose-50 border-2 border-transparent rounded-xl transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700">
             <button type="button" onclick="uploadTinymceFile()" class="mt-4 w-full py-3 bg-gradient-to-l from-rose-600 to-rose-700 text-white rounded-xl font-bold text-sm hover:shadow-lg transition-all">آپلود و درج</button>
         </div>

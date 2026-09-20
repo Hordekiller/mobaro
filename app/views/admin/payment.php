@@ -42,8 +42,8 @@ $paymentStats = $paymentStats ?? ['total' => 0, 'success' => 0, 'failed' => 0];
         <form action="/admin/payment/save" method="POST" class="space-y-4">
             <?= csrf() ?>
             <div>
-                <label class="block text-sm font-semibold mb-1.5">کد مرچنت زرین‌پال</label>
-                <input type="text" name="zarinpal_merchant_id" value="<?= e($paymentSettings['zarinpal_merchant_id'] ?? '') ?>" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                <label for="zarinpal_merchant_id" class="block text-sm font-semibold mb-1.5">کد مرچنت زرین‌پال</label>
+                <input type="text" id="zarinpal_merchant_id" name="zarinpal_merchant_id" value="<?= e($paymentSettings['zarinpal_merchant_id'] ?? '') ?>" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                     class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 outline-none transition-all" dir="ltr">
                 <p class="text-xs text-zinc-400 mt-1">از پنل زرین‌پال → تنظیمات → درگاه پرداخت</p>
             </div>

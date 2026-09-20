@@ -140,7 +140,7 @@ $inWishlist = Auth::check()
                             <span class="text-zinc-700 font-medium"><?= e($product['brand']) ?></span>
                         </div>
                         <?php endif; ?>
-                        <?php if ($product['stock'] ?? 0 > 0) : ?>
+                        <?php if (($product['stock'] ?? 0) > 0) : ?>
                         <div class="flex items-center gap-2">
                             <span class="text-zinc-400">موجودی:</span>
                             <span class="text-emerald-600 font-medium"><?= $product['stock'] ?> عدد</span>
