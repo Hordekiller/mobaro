@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.14-27ae60?style=flat-square" alt="Version 1.1.14"/>
+  <img src="https://img.shields.io/badge/version-1.1.15-27ae60?style=flat-square" alt="Version 1.1.15"/>
   <img src="https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=flat-square&logo=php" alt="PHP Version"/>
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql" alt="MySQL"/>
@@ -93,7 +93,7 @@
 ### ۲. استخراج و نصب وابستگی‌ها
 
 ```bash
-tar xzf mobaro-v1.1.14.tar.gz -d /public_html/
+tar xzf mobaro-v1.1.15.tar.gz -d /public_html/
 cd /public_html/
 composer install --no-dev --optimize-autoloader
 ```

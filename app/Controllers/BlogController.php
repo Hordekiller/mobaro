@@ -101,13 +101,40 @@ class BlogController extends BaseController
 
         $sidebar = $this->getSidebar();
         $settings = Settings::all();
-        $seo = SEOService::forPage('blog');
+        $seo = self::listingSeo(SEOService::forPage('blog'), $category, $page, $search);
 
         $this->view('blog/index', [
             'posts' => $posts, 'category' => $category, 'search' => $search,
             'page' => $page, 'totalPages' => $totalPages, 'settings' => $settings,
             'seo' => $seo,
         ] + $sidebar);
+    }
+
+    /**
+     * Indexation policy for /blog listing variants.
+     *
+     * Category pages (page 1) stay indexable with a self-canonical so they
+     * can rank as real landing pages; search results and page>=2 get
+     * noindex,follow with the canonical pointing at the page-1 equivalent.
+     *
+     * @param array<string, mixed> $seo
+     * @return array<string, mixed>
+     */
+    public static function listingSeo(array $seo, string $category, int $page, string $search): array
+    {
+        $categoryParam = $category !== '' ? ['category' => $category] : [];
+        $canonicalQuery = http_build_query($categoryParam, '', '&', PHP_QUERY_RFC3986);
+
+        if ($search !== '' || $page > 1) {
+            if (!str_contains((string) ($seo['robots'] ?? ''), 'noindex')) {
+                $seo['robots'] = 'noindex, follow';
+            }
+        }
+        $seo['canonical'] = $search !== '' || $canonicalQuery === ''
+            ? url('/blog')
+            : url('/blog?' . $canonicalQuery);
+
+        return $seo;
     }
 
     public function postComment(string $slug): void

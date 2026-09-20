@@ -50,7 +50,7 @@ class SEOService
             'og_image'    => !empty($course['image'])
                 ? asset('images/' . ltrim((string) $course['image'], '/'))
                 : (Settings::get('og_image', '/favicon/og-image.png') ?: '/favicon/og-image.png'),
-            'og_type'     => 'website',
+            'og_type'     => 'article',
             'robots'      => '',
         ];
     }
@@ -81,7 +81,7 @@ class SEOService
             'og_image'    => !empty($product['image'])
                 ? asset('images/' . ltrim((string) $product['image'], '/'))
                 : (Settings::get('og_image', '/favicon/og-image.png') ?: '/favicon/og-image.png'),
-            'og_type'     => 'website',
+            'og_type'     => 'product',
             'robots'      => '',
         ];
     }
@@ -104,6 +104,7 @@ class SEOService
                 'privacy' => url('/privacy'),
                 'models'  => url('/models'),
                 'blog'    => url('/blog'),
+                'booking' => url('/booking'),
                 default   => url('/'),
             };
 

@@ -155,15 +155,18 @@ class ShopController extends BaseController
             $wishlist = $_SESSION['wishlist'] ?? [];
         }
         $settings = Settings::all();
-        $seo = SEOService::forPage('shop');
-
-        $seoFilterParams = ['category', 'brand', 'search', 'sort', 'price_min', 'price_max', 'rating', 'is_sale', 'is_new', 'in_stock'];
-        foreach ($seoFilterParams as $_fk) {
-            if (!empty($_GET[$_fk])) {
-                $seo['robots'] = 'noindex,follow';
-                break;
-            }
-        }
+        $seo = self::listingSeo(SEOService::forPage('shop'), [
+            'category'  => $category,
+            'brand'     => $brand,
+            'search'    => $search,
+            'sort'      => $sort,
+            'price_min' => $priceMin,
+            'price_max' => $priceMax,
+            'rating'    => $rating,
+            'is_sale'   => $isSale,
+            'is_new'    => $isNew,
+            'in_stock'  => $inStock,
+        ], $page, $search);
 
         $this->view('shop/index', [
             'products' => $products, 'category' => $category, 'brand' => $brand,
@@ -176,6 +179,49 @@ class ShopController extends BaseController
             'isSale' => $isSale, 'isNew' => $isNew, 'inStock' => $inStock,
             'maxCatalogPrice' => $maxCatalogPrice,
         ] + $facets);
+    }
+
+    /**
+     * Indexation policy for /shop listing variants.
+     *
+     * Category/brand and facet pages (page 1) stay indexable and carry a
+     * self-canonical so they can rank as real landing pages. Only search
+     * results and page>=2 get noindex,follow (canonical points at the
+     * page-1 equivalent). An explicitly configured noindex (per-page SEO
+     * or default_robots) is always respected.
+     *
+     * @param array<string, mixed> $seo
+     * @param array<string, mixed> $filters Normalized query values
+     * @return array<string, mixed>
+     */
+    public static function listingSeo(array $seo, array $filters, int $page, string $search): array
+    {
+        $seoCanonicalParams = [];
+        foreach ($filters as $_fk => $_fv) {
+            $isZero = (is_int($_fv) || is_numeric($_fv)) && (int) $_fv === 0;
+            if (
+                $_fk === 'page' || $_fk === 'search' || $_fv === '' || $isZero
+                || ($_fk === 'category' && $_fv === 'all')
+                || ($_fk === 'brand' && $_fv === 'all')
+                || ($_fk === 'sort' && $_fv === 'newest')
+            ) {
+                continue;
+            }
+            $seoCanonicalParams[$_fk] = $_fv;
+        }
+
+        if ($search !== '' || $page > 1) {
+            if (!str_contains((string) ($seo['robots'] ?? ''), 'noindex')) {
+                $seo['robots'] = 'noindex, follow';
+            }
+        }
+
+        $canonicalQuery = http_build_query($seoCanonicalParams, '', '&', PHP_QUERY_RFC3986);
+        $seo['canonical'] = $search !== '' || $canonicalQuery === ''
+            ? url('/shop')
+            : url('/shop?' . $canonicalQuery);
+
+        return $seo;
     }
 
     public function show(int $id): void

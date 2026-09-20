@@ -25,7 +25,7 @@ final class SEOFixesTest extends TestCase
         ]);
 
         $this->assertSame(url('/product/42'), $seo['canonical']);
-        $this->assertSame('website', $seo['og_type']);
+        $this->assertSame('product', $seo['og_type']);
         $this->assertStringContainsString('شامپو طبیعی', $seo['title']);
     }
 

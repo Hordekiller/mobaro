@@ -485,7 +485,7 @@ CREATE TABLE IF NOT EXISTS seo_meta (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('contact'), ('about'), ('academy');
+INSERT IGNORE INTO seo_meta (page_slug) VALUES ('home'), ('shop'), ('blog'), ('contact'), ('about'), ('academy'), ('faq'), ('models'), ('privacy'), ('terms'), ('booking');
 
 -- Contact Messages
 CREATE TABLE IF NOT EXISTS contact_messages (

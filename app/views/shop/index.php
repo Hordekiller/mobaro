@@ -39,7 +39,7 @@ function filterUrl(array $overrides = []): string
                 <i class="fa-solid fa-chevron-left text-xs text-rose-400"></i>
                 <span class="text-rose-500 font-medium">فروشگاه</span>
             </div>
-            <h2 class="text-2xl md:text-3xl font-bold mt-3 text-zinc-800">محصولات آرایشی و بهداشتی</h2>
+            <h1 class="text-2xl md:text-3xl font-bold mt-3 text-zinc-800">محصولات آرایشی و بهداشتی</h1>
             <p class="text-zinc-500 mt-2">بهترین محصولات با کیفیت برتر</p>
         </div>
     </div>

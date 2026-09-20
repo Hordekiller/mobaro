@@ -8,7 +8,7 @@ $title = 'رزرو نوبت | ' . ($settings['brand_name'] ?? 'موبارو'); ?
         <div class="max-w-2xl mx-auto">
             <div class="text-center mb-8">
                 <span class="text-rose-500 text-sm tracking-[2px] font-medium">نوبت‌دهی آنلاین</span>
-                <h2 class="text-3xl font-bold text-zinc-800 mt-2">نوبت خود را رزرو کنید</h2>
+                <h1 class="text-3xl font-bold text-zinc-800 mt-2">نوبت خود را رزرو کنید</h1>
             </div>
 
             <div class="bg-white rounded-2xl p-6 shadow-lg border border-zinc-100">

@@ -10,6 +10,7 @@ use App\Database;
 use App\Settings;
 use App\Captcha;
 use App\Auth;
+use App\SEOService;
 use App\Services\SmsService;
 use DateTime;
 use DateTimeZone;
@@ -40,7 +41,9 @@ class BookingController extends BaseController
         $captchaEnabled = Captcha::isEnabled('booking');
         $captchaQuestion = $captchaEnabled ? Captcha::store() : '';
 
-        $this->view('booking/index', compact('services', 'artists', 'settings', 'captchaQuestion', 'captchaEnabled') + [
+        $seo = SEOService::forPage('booking');
+
+        $this->view('booking/index', compact('services', 'artists', 'settings', 'captchaQuestion', 'captchaEnabled', 'seo') + [
             'artistsJson' => json_encode(array_map(fn($a) => [
                 'id' => (int) $a['id'],
                 'name' => $a['name'],

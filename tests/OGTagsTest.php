@@ -5,7 +5,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Regression tests for Open Graph tag fixes (update 58 / Section 4):
- *  - og:type is article for blog posts and website for every other page.
+ *  - og:type is article for blog posts/courses, product for products, and
+ *    website for every other (static) page.
  *  - og:url / og:site_name / og:type are emitted from the shared header.
  */
 final class OGTagsTest extends TestCase
@@ -32,7 +33,7 @@ final class OGTagsTest extends TestCase
         $this->assertSame('article', $seo['og_type']);
     }
 
-    public function testCourseAndPageSeoMarkOgTypeWebsite(): void
+    public function testCourseAndPageSeoMarkOgTypeArticleAndWebsite(): void
     {
         $course = SEOService::forCourse([
             'title'       => 'دوره آرایش',
@@ -41,7 +42,7 @@ final class OGTagsTest extends TestCase
             'id'          => 1,
             'slug'        => null,
         ]);
-        $this->assertSame('website', $course['og_type']);
+        $this->assertSame('article', $course['og_type']);
 
         $page = SEOService::forPage('home');
         $this->assertSame('website', $page['og_type']);

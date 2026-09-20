@@ -2636,7 +2636,7 @@ class AdminController extends BaseController
 
     private function sectionSeo(array &$data): void
     {
-        $defaultSlugs = ['home', 'shop', 'blog', 'contact', 'about', 'academy'];
+        $defaultSlugs = ['home', 'shop', 'blog', 'contact', 'about', 'academy', 'faq', 'models', 'privacy', 'terms', 'booking'];
         foreach ($defaultSlugs as $slug) {
             Database::query(
                 "INSERT IGNORE INTO seo_meta (page_slug) VALUES (?)",
@@ -2644,8 +2644,10 @@ class AdminController extends BaseController
             );
         }
 
+        $slugList = "'" . implode("','", $defaultSlugs) . "'";
+        $slugOrder = "FIELD(page_slug, '" . implode("','", $defaultSlugs) . "')";
         $data['seoPages'] = Database::fetchAll(
-            "SELECT * FROM seo_meta WHERE page_slug IN ('home','shop','blog','contact','about','academy') ORDER BY FIELD(page_slug, 'home','shop','blog','contact','about','academy')"
+            "SELECT * FROM seo_meta WHERE page_slug IN ({$slugList}) ORDER BY {$slugOrder}"
         );
         $data['pageLabels'] = [
             'home'    => 'صفحه اصلی',
@@ -2654,6 +2656,11 @@ class AdminController extends BaseController
             'contact' => 'تماس با ما',
             'about'   => 'درباره ما',
             'academy' => 'آکادمی',
+            'faq'     => 'سؤالات متداول',
+            'models'  => 'مدل‌ها',
+            'privacy' => 'حریم خصوصی',
+            'terms'   => 'شرایط استفاده',
+            'booking' => 'رزرو نوبت',
         ];
         $data['globalSeo'] = [
             'meta_title'       => Settings::get('meta_title', ''),
