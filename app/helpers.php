@@ -9,10 +9,17 @@ use App\Settings;
 function env(string $key, mixed $default = null): mixed
 {
     static $dotenv = [];
+    static $fallback = [];
     if (empty($dotenv)) {
         $dotenv = $_ENV;
     }
-    return $dotenv[$key] ?? $default;
+    if (array_key_exists($key, $dotenv)) {
+        return $dotenv[$key];
+    }
+    if (empty($fallback)) {
+        $fallback = getenv() ?: [];
+    }
+    return $fallback[$key] ?? $default;
 }
 
 function asset(string $path): string
