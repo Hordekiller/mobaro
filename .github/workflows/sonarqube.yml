@@ -1,0 +1,59 @@
+name: SonarQube Cloud
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  sonarqube:
+    name: SonarQube Cloud
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mobaro
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      APP_ENV: testing
+      DB_HOST: 127.0.0.1
+      DB_NAME: mobaro
+      DB_USER: root
+      DB_PASS: root
+      DB_CHARSET: utf8mb4
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240  # v2
+        with:
+          php-version: '8.2'
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Import database schema
+        run: mysql -h 127.0.0.1 -uroot -proot < database/schema.sql && mysql -h 127.0.0.1 -uroot -proot < database/seed.sql
+
+      - name: Run tests with coverage
+        run: php -d variables_order=EGPCS vendor/bin/phpunit --coverage-clover coverage.xml --log-junit test-results.xml
+
+      - name: SonarQube Cloud scan
+        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703  # v5
