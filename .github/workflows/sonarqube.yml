@@ -56,4 +56,4 @@ jobs:
         run: php -d variables_order=EGPCS vendor/bin/phpunit --coverage-clover coverage.xml --log-junit test-results.xml
 
       - name: SonarQube Cloud scan
-        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703  # v5
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602  # v6
