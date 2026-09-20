@@ -106,3 +106,7 @@ coverage.xml
 storage/lighthouse-reports/
 storage/lighthouse-server.log
 .lighthouseci/
+
+# CI test/coverage artifacts
+test-results.xml
+coverage-text.txt
