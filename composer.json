@@ -15,7 +15,7 @@
         "vlucas/phpdotenv": "^5.6"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.13",
+        "squizlabs/php_codesniffer": "^4.0",
         "phpunit/phpunit": "^11.0",
         "phpstan/phpstan": "^2.2"
     },
